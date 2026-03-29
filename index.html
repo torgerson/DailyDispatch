@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DayBrain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --surface2: #1e1e21;
+    --surface3: #252529;
+    --border: #2a2a2e;
+    --border2: #38383e;
+    --text: #e8e8ea;
+    --text2: #8e8e98;
+    --text3: #5a5a66;
+    --accent: #f0a500;
+    --accent2: #ff6b35;
+    --green: #3ecf8e;
+    --blue: #4a9eff;
+    --red: #ff4d6d;
+    --purple: #a78bfa;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    height: 100vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 48px 1fr;
+    grid-template-columns: 1fr;
+  }
+
+  /* TOPBAR */
+  #topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+    position: relative;
+    z-index: 10;
+  }
+
+  #logo {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+
+  #dateblock {
+    color: var(--text3);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  #focus-bar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0 12px;
+    height: 30px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    min-width: 0;
+  }
+  #focus-bar:hover { border-color: var(--border2); }
+  #focus-bar.active { border-color: var(--accent); }
+
+  #focus-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--text3);
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  #focus-dot.running { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.5 } }
+
+  #focus-label {
+    color: var(--text2);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+  #focus-label.has-focus { color: var(--text); }
+
+  #focus-timer {
+    color: var(--accent);
+    font-size: 11px;
+    flex-shrink: 0;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  #topbar-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .top-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .top-btn:hover { border-color: var(--border2); color: var(--text); }
+  .top-btn.primary { border-color: var(--accent); color: var(--accent); }
+  .top-btn.primary:hover { background: var(--accent); color: #000; }
+
+  #win-count {
+    background: var(--green);
+    color: #000;
+    border-radius: 2px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  /* MAIN LAYOUT */
+  #main {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    overflow: hidden;
+  }
+
+  /* PANEL SHARED */
+  .panel {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel:last-child { border-right: none; border-left: 1px solid var(--border); }
+
+  .panel-header {
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .panel-title {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  .panel-count {
+    font-size: 10px;
+    color: var(--text3);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 1px 6px;
+  }
+
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+  }
+  .panel-body::-webkit-scrollbar { width: 4px; }
+  .panel-body::-webkit-scrollbar-track { background: transparent; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .panel-input-area {
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* CONTEXT PANEL (left) */
+  #context-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .context-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .context-item:hover { border-color: var(--border2); }
+  .context-item.current {
+    border-color: var(--accent);
+    background: rgba(240,165,0,0.06);
+  }
+  .context-item.current::before {
+    content: '';
+    position: absolute;
+    left: -1px; top: -1px; bottom: -1px;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .ctx-label {
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ctx-meta {
+    font-size: 10px;
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ctx-badge {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 0 4px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .ctx-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .ctx-btn {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    color: var(--text3);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ctx-btn:hover { color: var(--text); border-color: var(--border2); }
+  .ctx-btn.danger:hover { color: var(--red); border-color: var(--red); }
+
+  .day-divider {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 4px 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 6px;
+  }
+  .day-divider:first-child { border-top: none; margin-top: 0; }
+
+  /* CENTER PANEL */
+  #center-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #timeline {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  #timeline::-webkit-scrollbar { width: 4px; }
+  #timeline::-webkit-scrollbar-track { background: transparent; }
+  #timeline::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .timeline-day-header {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 0 6px;
+    border-top: 1px solid var(--border);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .timeline-day-header:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+  .timeline-day-header .day-wins {
+    color: var(--green);
+    font-size: 10px;
+    font-family: var(--mono);
+  }
+
+  .timeline-entry {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 4px 0;
+    border-radius: 3px;
+    transition: background 0.1s;
+  }
+  .timeline-entry:hover { background: rgba(255,255,255,0.02); }
+
+  .entry-time {
+    font-size: 10px;
+    color: var(--text3);
+    padding-top: 2px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .entry-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .entry-content {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .entry-type-badge {
+    display: inline-block;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-right: 6px;
+    font-weight: 600;
+  }
+  .badge-win { background: rgba(62,207,142,0.15); color: var(--green); }
+  .badge-context { background: rgba(240,165,0,0.12); color: var(--accent); }
+  .badge-thread { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .badge-note { background: rgba(74,158,255,0.12); color: var(--blue); }
+
+  .entry-meta {
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  /* Quick entry */
+  #quick-entry {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .entry-type-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .type-tab {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .type-tab:hover { color: var(--text); }
+  .type-tab.active[data-type="win"] { background: rgba(62,207,142,0.1); border-color: var(--green); color: var(--green); }
+  .type-tab.active[data-type="note"] { background: rgba(74,158,255,0.1); border-color: var(--blue); color: var(--blue); }
+  .type-tab.active[data-type="thread"] { background: rgba(167,139,250,0.1); border-color: var(--purple); color: var(--purple); }
+
+  .entry-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  #entry-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 7px 10px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  #entry-input:focus { border-color: var(--border2); }
+  #entry-input::placeholder { color: var(--text3); }
+
+  #entry-submit {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 7px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  #entry-submit:hover { border-color: var(--border2); color: var(--text); }
+
+  .entry-hint {
+    margin-top: 5px;
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .entry-hint kbd {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 0 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+  }
+
+  /* THREADS PANEL (right) */
+  .thread-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .thread-item.status-done {
+    opacity: 0.4;
+    border-color: transparent;
+  }
+  .thread-item.status-done .thread-label { text-decoration: line-through; }
+
+  .thread-item.status-waiting { border-left: 3px solid var(--blue); }
+  .thread-item.status-open { border-left: 3px solid var(--purple); }
+  .thread-item.status-blocked { border-left: 3px solid var(--red); }
+
+  .thread-label {
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 5px;
+    line-height: 1.4;
+  }
+
+  .thread-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .thread-status-btn {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: var(--surface3);
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .thread-status-btn:hover { color: var(--text); border-color: var(--border2); }
+  .thread-status-btn.s-open { color: var(--purple); border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.08); }
+  .thread-status-btn.s-waiting { color: var(--blue); border-color: rgba(74,158,255,0.3); background: rgba(74,158,255,0.08); }
+  .thread-status-btn.s-blocked { color: var(--red); border-color: rgba(255,77,109,0.3); background: rgba(255,77,109,0.08); }
+  .thread-status-btn.s-done { color: var(--green); border-color: rgba(62,207,142,0.3); background: rgba(62,207,142,0.08); }
+
+  .thread-date { font-size: 10px; color: var(--text3); margin-left: auto; }
+
+  .thread-del {
+    position: absolute;
+    top: 6px; right: 8px;
+    font-size: 14px;
+    color: var(--text3);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s;
+    background: none;
+    border: none;
+  }
+  .thread-del:hover { color: var(--red); }
+
+  #thread-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 7px 10px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 6px;
+  }
+  #thread-input:focus { border-color: var(--purple); }
+  #thread-input::placeholder { color: var(--text3); }
+
+  #thread-submit {
+    width: 100%;
+    background: rgba(167,139,250,0.08);
+    border: 1px solid rgba(167,139,250,0.3);
+    color: var(--purple);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+  }
+  #thread-submit:hover { background: rgba(167,139,250,0.15); }
+
+  /* FOCUS MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.hidden { display: none; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 24px;
+    width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .modal-title {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 16px;
+    letter-spacing: -0.2px;
+  }
+
+  .modal-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    outline: none;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-input::placeholder { color: var(--text3); }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  .modal-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 7px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+  }
+  .modal-btn:hover { color: var(--text); border-color: var(--border2); }
+  .modal-btn.confirm {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+  .modal-btn.confirm:hover { background: #e09500; }
+
+  .ctx-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .ctx-tag {
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--mono);
+  }
+  .ctx-tag:hover { border-color: var(--accent); color: var(--accent); }
+  .ctx-tag.active { border-color: var(--accent); background: rgba(240,165,0,0.1); color: var(--accent); }
+
+  .modal-label {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  /* Empty states */
+  .empty-state {
+    color: var(--text3);
+    font-size: 11px;
+    text-align: center;
+    padding: 24px 10px;
+    line-height: 1.8;
+  }
+
+  /* Filter bar */
+  #filter-bar {
+    display: flex;
+    gap: 4px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .filter-btn {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 2px 8px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .filter-btn:hover { color: var(--text); }
+  .filter-btn.active { border-color: var(--border); background: var(--surface2); color: var(--text); }
+
+  .thread-filters {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tf-btn {
+    font-size: 9px;
+    font-family: var(--mono);
+    padding: 2px 8px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .tf-btn.active { border-color: var(--border); background: var(--surface2); color: var(--text2); }
+
+  /* Scrollbar for thread panel */
+  #thread-panel .panel-body::-webkit-scrollbar { width: 4px; }
+  #thread-panel .panel-body::-webkit-scrollbar-track { background: transparent; }
+  #thread-panel .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .ctx-time-running {
+    color: var(--accent);
+    font-size: 10px;
+  }
+
+  #eod-modal .modal { width: 500px; }
+  #eod-content {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    font-size: 11px;
+    line-height: 1.9;
+    white-space: pre-wrap;
+    color: var(--text);
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: var(--mono);
+  }
+  .copy-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 5px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--text3); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div id="logo">DayBrain</div>
+  <div id="dateblock" id="dateblock"></div>
+  <div id="focus-bar" onclick="openFocusModal()">
+    <div id="focus-dot"></div>
+    <div id="focus-label">No active focus — click to set</div>
+    <div id="focus-timer"></div>
+  </div>
+  <div id="topbar-actions">
+    <button class="top-btn" onclick="openEOD()">⬡ EOD Recap</button>
+    <button class="top-btn primary" onclick="openFocusModal()">⊕ Switch Context</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT: CONTEXT STACK -->
+  <div class="panel" id="context-panel">
+    <div class="panel-header">
+      <span class="panel-title">Context Stack</span>
+      <span class="panel-count" id="ctx-count">0</span>
+    </div>
+    <div class="panel-body" id="context-stack">
+      <div class="empty-state">No contexts yet.<br>Click "Switch Context" to start.</div>
+    </div>
+  </div>
+
+  <!-- CENTER: TIMELINE -->
+  <div id="center-panel">
+    <div id="filter-bar">
+      <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" data-filter="win" onclick="setFilter('win',this)">Wins</button>
+      <button class="filter-btn" data-filter="note" onclick="setFilter('note',this)">Notes</button>
+      <button class="filter-btn" data-filter="context" onclick="setFilter('context',this)">Context</button>
+    </div>
+    <div id="timeline">
+      <div class="empty-state" id="timeline-empty">Nothing logged yet today.<br>Start by setting a focus or logging a win below.</div>
+    </div>
+    <div id="quick-entry">
+      <div class="entry-type-tabs">
+        <button class="type-tab active" data-type="win" onclick="setEntryType('win',this)">✓ Win</button>
+        <button class="type-tab" data-type="note" onclick="setEntryType('note',this)">◎ Note</button>
+      </div>
+      <div class="entry-row">
+        <input type="text" id="entry-input" placeholder="Log a win or note…" autocomplete="off">
+        <button id="entry-submit" onclick="submitEntry()">Log</button>
+      </div>
+      <div class="entry-hint"><kbd>Enter</kbd> to log · <kbd>Tab</kbd> to switch type</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: THREADS -->
+  <div class="panel" id="thread-panel">
+    <div class="panel-header">
+      <span class="panel-title">Loose Threads</span>
+      <span class="panel-count" id="thread-count">0</span>
+    </div>
+    <div class="thread-filters">
+      <button class="tf-btn active" data-sf="all" onclick="setThreadFilter('all',this)">All</button>
+      <button class="tf-btn" data-sf="open" onclick="setThreadFilter('open',this)">Open</button>
+      <button class="tf-btn" data-sf="waiting" onclick="setThreadFilter('waiting',this)">Waiting</button>
+      <button class="tf-btn" data-sf="blocked" onclick="setThreadFilter('blocked',this)">Blocked</button>
+    </div>
+    <div class="panel-body" id="thread-list">
+      <div class="empty-state">No threads yet.<br>Add loose ends below.</div>
+    </div>
+    <div class="panel-input-area">
+      <input type="text" id="thread-input" placeholder="Add a loose thread…" autocomplete="off">
+      <button id="thread-submit" onclick="submitThread()">+ Add Thread</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOCUS MODAL -->
+<div class="modal-overlay hidden" id="focus-modal">
+  <div class="modal">
+    <div class="modal-title">Set Focus Context</div>
+    <div class="modal-label">What are you working on?</div>
+    <input type="text" class="modal-input" id="focus-input" placeholder="e.g. PiqInsight BYOK spec review…" autocomplete="off">
+    <div class="modal-label">Recent contexts</div>
+    <div class="ctx-tags" id="recent-ctx-tags"></div>
+    <div class="modal-label">Category (optional)</div>
+    <div class="ctx-tags">
+      <div class="ctx-tag" data-cat="" onclick="selectCat(this,'')">None</div>
+      <div class="ctx-tag" data-cat="deep-work" onclick="selectCat(this,'deep-work')">Deep Work</div>
+      <div class="ctx-tag" data-cat="meeting" onclick="selectCat(this,'meeting')">Meeting</div>
+      <div class="ctx-tag" data-cat="admin" onclick="selectCat(this,'admin')">Admin</div>
+      <div class="ctx-tag" data-cat="review" onclick="selectCat(this,'review')">Review</div>
+      <div class="ctx-tag" data-cat="comms" onclick="selectCat(this,'comms')">Comms</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeFocusModal()">Cancel</button>
+      <button class="modal-btn confirm" onclick="confirmFocus()">Start Focus</button>
+    </div>
+  </div>
+</div>
+
+<!-- EOD MODAL -->
+<div class="modal-overlay hidden" id="eod-modal">
+  <div class="modal">
+    <div class="modal-title">End of Day Recap</div>
+    <div id="eod-content"></div>
+    <div class="modal-actions">
+      <button class="copy-btn" onclick="copyEOD()">Copy to clipboard</button>
+      <button class="modal-btn confirm" onclick="closeEOD()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STORAGE
+// ============================================================
+const DB_KEY = 'daybrain_v1';
+
+function loadDB() {
+  try { return JSON.parse(localStorage.getItem(DB_KEY)) || { entries: [], contexts: [], threads: [] }; }
+  catch { return { entries: [], contexts: [], threads: [] }; }
+}
+function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+let db = loadDB();
+let currentFilter = 'all';
+let currentThreadFilter = 'all';
+let selectedCat = '';
+let entryType = 'win';
+let focusStart = null;
+let focusLabel = '';
+let timerInterval = null;
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  updateDateblock();
+  renderContextStack();
+  renderTimeline();
+  renderThreads();
+  updateWinCount();
+  restoreFocus();
+  setInterval(updateDateblock, 10000);
+
+  document.getElementById('entry-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitEntry();
+    if (e.key === 'Tab') { e.preventDefault(); cycleEntryType(); }
+  });
+  document.getElementById('thread-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitThread();
+  });
+  document.getElementById('focus-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') confirmFocus();
+    if (e.key === 'Escape') closeFocusModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeFocusModal(); closeEOD(); }
+  });
+}
+
+function updateDateblock() {
+  const now = new Date();
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const d = `${days[now.getDay()]} ${now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+  const t = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('dateblock').textContent = `${d} · ${t}`;
+}
+
+// ============================================================
+// FOCUS
+// ============================================================
+function restoreFocus() {
+  const saved = localStorage.getItem('daybrain_focus');
+  if (!saved) return;
+  const f = JSON.parse(saved);
+  focusLabel = f.label;
+  focusStart = f.start;
+  setFocusUI(focusLabel, true);
+  startTimer();
+}
+
+function openFocusModal() {
+  const modal = document.getElementById('focus-modal');
+  modal.classList.remove('hidden');
+  const inp = document.getElementById('focus-input');
+  inp.value = '';
+  setTimeout(() => inp.focus(), 50);
+  renderRecentCtxTags();
+}
+
+function closeFocusModal() {
+  document.getElementById('focus-modal').classList.add('hidden');
+}
+
+function renderRecentCtxTags() {
+  const recent = db.contexts.slice(-6).reverse();
+  const container = document.getElementById('recent-ctx-tags');
+  if (!recent.length) { container.innerHTML = '<span style="color:var(--text3);font-size:10px">None yet</span>'; return; }
+  container.innerHTML = recent.map(c =>
+    `<div class="ctx-tag" onclick="selectRecentCtx('${escHtml(c.label)}')">${escHtml(c.label)}</div>`
+  ).join('');
+}
+
+function selectRecentCtx(label) {
+  document.getElementById('focus-input').value = label;
+}
+
+function selectCat(el, cat) {
+  selectedCat = cat;
+  document.querySelectorAll('.ctx-tags .ctx-tag[data-cat]').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function confirmFocus() {
+  const val = document.getElementById('focus-input').value.trim();
+  if (!val) return;
+  switchFocus(val, selectedCat);
+  closeFocusModal();
+}
+
+function switchFocus(label, cat) {
+  // Stop current if exists
+  if (focusLabel && focusStart) {
+    const elapsed = Math.round((Date.now() - focusStart) / 60000);
+    logEntry({ type: 'context', content: `Switched from: ${focusLabel}`, meta: `${elapsed}m` });
+  }
+  focusLabel = label;
+  focusStart = Date.now();
+  localStorage.setItem('daybrain_focus', JSON.stringify({ label, start: focusStart, cat }));
+
+  // Store in contexts list
+  const existing = db.contexts.findIndex(c => c.label === label);
+  if (existing >= 0) db.contexts.splice(existing, 1);
+  db.contexts.push({ label, cat: cat || '', date: todayKey(), ts: Date.now() });
+  saveDB(db);
+
+  logEntry({ type: 'context', content: `▶ ${label}${cat ? ` [${cat}]` : ''}`, meta: '' });
+  setFocusUI(label, true);
+  startTimer();
+  renderContextStack();
+}
+
+function setFocusUI(label, running) {
+  const dot = document.getElementById('focus-dot');
+  const lbl = document.getElementById('focus-label');
+  dot.className = running ? 'running' : '';
+  lbl.className = label ? 'has-focus' : '';
+  lbl.textContent = label || 'No active focus — click to set';
+}
+
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimer, 1000);
+  updateTimer();
+}
+
+function updateTimer() {
+  if (!focusStart) { document.getElementById('focus-timer').textContent = ''; return; }
+  const elapsed = Math.floor((Date.now() - focusStart) / 1000);
+  const m = Math.floor(elapsed / 60).toString().padStart(2,'0');
+  const s = (elapsed % 60).toString().padStart(2,'0');
+  document.getElementById('focus-timer').textContent = `${m}:${s}`;
+}
+
+// ============================================================
+// ENTRIES / TIMELINE
+// ============================================================
+function logEntry(entry) {
+  entry.id = Date.now() + Math.random();
+  entry.ts = Date.now();
+  entry.date = todayKey();
+  db.entries.push(entry);
+  saveDB(db);
+  renderTimeline();
+  updateWinCount();
+}
+
+function submitEntry() {
+  const inp = document.getElementById('entry-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  logEntry({ type: entryType, content: val, meta: focusLabel || '' });
+  inp.value = '';
+}
+
+function setEntryType(type, el) {
+  entryType = type;
+  document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const placeholders = { win: 'Log a win…', note: 'Add a note…' };
+  document.getElementById('entry-input').placeholder = placeholders[type] || 'Log…';
+}
+
+function cycleEntryType() {
+  const types = ['win', 'note'];
+  const idx = types.indexOf(entryType);
+  const next = types[(idx + 1) % types.length];
+  const tab = document.querySelector(`.type-tab[data-type="${next}"]`);
+  setEntryType(next, tab);
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderTimeline();
+}
+
+function renderTimeline() {
+  const container = document.getElementById('timeline');
+  const emptyEl = document.getElementById('timeline-empty');
+
+  let entries = db.entries.filter(e => currentFilter === 'all' || e.type === currentFilter);
+  entries = entries.slice().sort((a, b) => b.ts - a.ts);
+
+  if (!entries.length) {
+    emptyEl.style.display = 'block';
+    const existing = container.querySelectorAll('.timeline-entry, .timeline-day-header');
+    existing.forEach(e => e.remove());
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  // Group by day
+  const byDay = {};
+  entries.forEach(e => {
+    if (!byDay[e.date]) byDay[e.date] = [];
+    byDay[e.date].push(e);
+  });
+
+  let html = '';
+  Object.keys(byDay).sort((a,b) => b.localeCompare(a)).forEach(day => {
+    const dayEntries = byDay[day];
+    const wins = dayEntries.filter(e => e.type === 'win').length;
+    const label = day === todayKey() ? 'Today' : formatDayLabel(day);
+    html += `<div class="timeline-day-header">${label}${wins ? `<span class="day-wins">${wins} win${wins>1?'s':''}</span>` : ''}</div>`;
+    dayEntries.forEach(e => {
+      const time = new Date(e.ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      const badgeClass = { win:'badge-win', note:'badge-note', context:'badge-context', thread:'badge-thread' }[e.type] || 'badge-note';
+      html += `<div class="timeline-entry">
+        <div class="entry-time">${time}</div>
+        <div class="entry-body">
+          <div class="entry-content"><span class="entry-type-badge ${badgeClass}">${e.type}</span>${escHtml(e.content)}</div>
+          ${e.meta ? `<div class="entry-meta">${escHtml(e.meta)}</div>` : ''}
+        </div>
+      </div>`;
+    });
+  });
+
+  // Replace inner content
+  const existing = container.querySelectorAll('.timeline-entry, .timeline-day-header');
+  existing.forEach(e => e.remove());
+  container.insertAdjacentHTML('afterbegin', html);
+}
+
+function updateWinCount() {
+  const today = db.entries.filter(e => e.type === 'win' && e.date === todayKey()).length;
+  let el = document.getElementById('win-count');
+  if (!el) return;
+  el.textContent = today;
+  el.style.display = today ? '' : 'none';
+}
+
+// ============================================================
+// CONTEXT STACK
+// ============================================================
+function renderContextStack() {
+  const container = document.getElementById('context-stack');
+  const all = db.contexts.slice().sort((a,b) => b.ts - a.ts);
+
+  if (!all.length) {
+    container.innerHTML = '<div class="empty-state">No contexts yet.<br>Click "Switch Context" to start.</div>';
+    document.getElementById('ctx-count').textContent = 0;
+    return;
+  }
+
+  document.getElementById('ctx-count').textContent = all.length;
+
+  // Group by day
+  const byDay = {};
+  all.forEach(c => {
+    if (!byDay[c.date]) byDay[c.date] = [];
+    byDay[c.date].push(c);
+  });
+
+  let html = '';
+  Object.keys(byDay).sort((a,b) => b.localeCompare(a)).forEach(day => {
+    const label = day === todayKey() ? 'Today' : formatDayLabel(day);
+    html += `<div class="day-divider">${label}</div>`;
+    byDay[day].forEach((c, i) => {
+      const isCurrent = c.label === focusLabel;
+      const elapsed = isCurrent && focusStart ? Math.round((Date.now() - focusStart)/60000) : null;
+      html += `<div class="context-item ${isCurrent ? 'current' : ''}">
+        <div class="ctx-label">${escHtml(c.label)}</div>
+        <div class="ctx-meta">
+          ${c.cat ? `<span class="ctx-badge">${escHtml(c.cat)}</span>` : ''}
+          ${isCurrent && elapsed !== null ? `<span class="ctx-time-running">${elapsed}m running</span>` : ''}
+          <span>${new Date(c.ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span>
+        </div>
+        <div class="ctx-actions">
+          ${!isCurrent ? `<button class="ctx-btn" onclick="switchFocus('${escAttr(c.label)}','${escAttr(c.cat||'')}')">Resume</button>` : ''}
+          <button class="ctx-btn danger" onclick="deleteCtx('${c.ts}')">Remove</button>
+        </div>
+      </div>`;
+    });
+  });
+
+  container.innerHTML = html;
+  // Update timer display every minute
+  if (focusStart) setTimeout(renderContextStack, 60000);
+}
+
+function deleteCtx(ts) {
+  db.contexts = db.contexts.filter(c => String(c.ts) !== String(ts));
+  saveDB(db);
+  renderContextStack();
+}
+
+// ============================================================
+// THREADS
+// ============================================================
+function submitThread() {
+  const inp = document.getElementById('thread-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  db.threads.push({ id: Date.now(), label: val, status: 'open', date: todayKey(), ts: Date.now() });
+  saveDB(db);
+  inp.value = '';
+  renderThreads();
+  // Also log to timeline
+  logEntry({ type: 'thread', content: val, meta: '' });
+}
+
+function setThreadStatus(id, status) {
+  const t = db.threads.find(t => t.id === id);
+  if (t) { t.status = status; saveDB(db); renderThreads(); }
+}
+
+function deleteThread(id) {
+  db.threads = db.threads.filter(t => t.id !== id);
+  saveDB(db);
+  renderThreads();
+}
+
+function setThreadFilter(f, el) {
+  currentThreadFilter = f;
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderThreads();
+}
+
+function renderThreads() {
+  const container = document.getElementById('thread-list');
+  let threads = db.threads.slice().sort((a,b) => {
+    // Open/blocked first, done last
+    const order = { blocked: 0, open: 1, waiting: 2, done: 3 };
+    return (order[a.status]||1) - (order[b.status]||1) || b.ts - a.ts;
+  });
+
+  if (currentThreadFilter !== 'all') threads = threads.filter(t => t.status === currentThreadFilter);
+  document.getElementById('thread-count').textContent = db.threads.filter(t => t.status !== 'done').length;
+
+  if (!threads.length) {
+    container.innerHTML = '<div class="empty-state">No threads here.</div>';
+    return;
+  }
+
+  const statuses = ['open','waiting','blocked','done'];
+  container.innerHTML = threads.map(t => {
+    const nextStatus = statuses[(statuses.indexOf(t.status) + 1) % statuses.length];
+    const statusClass = { open:'s-open', waiting:'s-waiting', blocked:'s-blocked', done:'s-done' }[t.status];
+    const date = t.date === todayKey() ? 'Today' : formatDayLabel(t.date);
+    return `<div class="thread-item status-${t.status}">
+      <button class="thread-del" onclick="deleteThread(${t.id})">×</button>
+      <div class="thread-label">${escHtml(t.label)}</div>
+      <div class="thread-footer">
+        <button class="thread-status-btn ${statusClass}" onclick="cycleThreadStatus(${t.id})">${t.status}</button>
+        <div class="thread-date">${date}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function cycleThreadStatus(id) {
+  const statuses = ['open','waiting','blocked','done'];
+  const t = db.threads.find(t => t.id === id);
+  if (!t) return;
+  t.status = statuses[(statuses.indexOf(t.status) + 1) % statuses.length];
+  saveDB(db);
+  renderThreads();
+}
+
+// ============================================================
+// EOD RECAP
+// ============================================================
+function openEOD() {
+  const modal = document.getElementById('eod-modal');
+  modal.classList.remove('hidden');
+  const today = todayKey();
+  const wins = db.entries.filter(e => e.type === 'win' && e.date === today);
+  const notes = db.entries.filter(e => e.type === 'note' && e.date === today);
+  const contexts = db.contexts.filter(c => c.date === today);
+  const openThreads = db.threads.filter(t => t.status !== 'done');
+  const doneThreads = db.threads.filter(t => t.status === 'done' && t.date === today);
+
+  const dateLabel = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  let out = `EOD RECAP — ${dateLabel}\n`;
+  out += '═'.repeat(40) + '\n\n';
+
+  if (contexts.length) {
+    out += `CONTEXTS WORKED  (${contexts.length})\n`;
+    contexts.forEach(c => out += `  · ${c.label}${c.cat ? ` [${c.cat}]` : ''}\n`);
+    out += '\n';
+  }
+
+  if (wins.length) {
+    out += `WINS  (${wins.length})\n`;
+    wins.forEach(w => out += `  ✓ ${w.content}\n`);
+    out += '\n';
+  }
+
+  if (notes.length) {
+    out += `NOTES  (${notes.length})\n`;
+    notes.forEach(n => out += `  ◎ ${n.content}\n`);
+    out += '\n';
+  }
+
+  if (doneThreads.length) {
+    out += `THREADS RESOLVED  (${doneThreads.length})\n`;
+    doneThreads.forEach(t => out += `  ✓ ${t.label}\n`);
+    out += '\n';
+  }
+
+  if (openThreads.length) {
+    out += `OPEN THREADS  (${openThreads.length})\n`;
+    openThreads.forEach(t => out += `  [${t.status.toUpperCase()}] ${t.label}\n`);
+  }
+
+  if (!wins.length && !notes.length && !contexts.length) out += '(Nothing logged today yet)';
+
+  document.getElementById('eod-content').textContent = out;
+}
+
+function closeEOD() { document.getElementById('eod-modal').classList.add('hidden'); }
+function copyEOD() {
+  navigator.clipboard.writeText(document.getElementById('eod-content').textContent)
+    .then(() => { const btn = document.querySelector('.copy-btn'); btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy to clipboard',1500); });
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDayLabel(key) {
+  const [y,m,d] = key.split('-').map(Number);
+  const date = new Date(y, m-1, d);
+  return date.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+
+init();
+</script>
+</body>
+</html>
