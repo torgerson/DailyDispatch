@@ -1297,15 +1297,26 @@ function renderEventEntry(e){
 }
 let feedScrollObserver=null;
 function loadMoreDays(){feedDaysLoaded+=7;renderActiveView();}
+let _lastScrollLoad=0;
 function setupFeedScrollObserver(){
   if(feedScrollObserver)feedScrollObserver.disconnect();
   const sentinel=document.getElementById('feed-scroll-sentinel');
   if(!sentinel)return;
   const container=document.getElementById('content-area');
   if(!container)return;
+  // Don't set up observer if there are no older entries to load
+  const selD=new Date(selectedDate+'T12:00:00');
+  const oldestLoaded=new Date(selD);oldestLoaded.setDate(oldestLoaded.getDate()-(feedDaysLoaded-1));
+  const oldestDateStr=dateStr(oldestLoaded);
+  const hasOlder=db.entries.some(e=>e.date<oldestDateStr&&!e.eventType&&!e.isHelp);
+  if(!hasOlder){sentinel.remove();return;}
   feedScrollObserver=new IntersectionObserver(entries=>{
     if(entries[0].isIntersecting){
       feedScrollObserver.disconnect();
+      // Debounce: don't load more than once per 500ms
+      const now=Date.now();
+      if(now-_lastScrollLoad<500)return;
+      _lastScrollLoad=now;
       loadMoreDays();
     }
   },{root:container,rootMargin:'200px'});
@@ -3220,7 +3231,7 @@ function ensureHelpNotes(){
 
 /* ═══════════ INIT ═══════════ */
 async function init(){
-  console.log('[DD-INIT] DailyDispatch loading... version 2025-03-30-v3');
+  console.log('[DD-INIT] DailyDispatch loading... version 2025-03-30-v4');
   await loadDB();
   console.log('[DD-INIT] DB loaded:', db.entries.length, 'entries');
   if(!db.sections)db.sections=[];
