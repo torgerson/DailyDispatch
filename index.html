@@ -1556,15 +1556,16 @@ function renderNoteEditor(area,noteId){
   });
   cmEditorView=new EditorView({state,parent:document.getElementById('cm-wrap')});
   cmEditorView.focus();
-  // Handle clicks on crosslinks in the editor
+  // Handle clicks on crosslinks — must capture before CM6 moves cursor
   cmEditorView.dom.addEventListener('mousedown',e=>{
     const el=e.target.closest('.cm-dd-crosslink');
     if(el){
+      const text=el.textContent; // grab text before DOM changes
       e.preventDefault();
-      e.stopPropagation();
-      setTimeout(()=>navCrosslink(el.textContent),0);
+      e.stopImmediatePropagation(); // prevent CM6 from processing this click
+      navCrosslink(text);
     }
-  });
+  },true); // capture phase
 }
 
 /* ── Live Preview Decoration Plugin ── */
@@ -2390,16 +2391,22 @@ function stopResize(){
 /* ═══════════ CROSS-LINKING ═══════════ */
 function navCrosslink(inner){
   const q=inner.toLowerCase().trim();
+  if(!q)return;
   const stripTags=s=>(s||'').replace(/#[a-zA-Z0-9_-]+/g,'').trim().toLowerCase();
-  // Exact match (with or without tags in title)
-  const exact=db.entries.find(e=>e.isNote&&(stripTags(e.noteTitle)===q||(e.noteTitle||'').toLowerCase()===q));
+  // Exact match on stripped title
+  const exact=db.entries.find(e=>e.isNote&&stripTags(e.noteTitle)===q);
   if(exact){openNoteTab(exact.id);return;}
-  // Partial match — title contains the search text
-  const partial=db.entries.find(e=>e.isNote&&stripTags(e.noteTitle).includes(q));
-  if(partial){openNoteTab(partial.id);return;}
-  // Content match — search inside note content
-  const content=db.entries.find(e=>e.isNote&&(e.content||'').toLowerCase().includes(q));
-  if(content){openNoteTab(content.id);}
+  // Exact match on raw title
+  const exactRaw=db.entries.find(e=>e.isNote&&(e.noteTitle||'').toLowerCase()===q);
+  if(exactRaw){openNoteTab(exactRaw.id);return;}
+  // Exact match on first line of content (title might differ)
+  const firstLine=db.entries.find(e=>e.isNote&&(e.content||'').split('\n')[0].replace(/^#+\s*/,'').toLowerCase().trim()===q);
+  if(firstLine){openNoteTab(firstLine.id);return;}
+  // Partial match — only if no exact match found, and require substantial overlap
+  if(q.length>=5){
+    const partial=db.entries.find(e=>e.isNote&&stripTags(e.noteTitle).includes(q));
+    if(partial){openNoteTab(partial.id);return;}
+  }
 }
 
 /* ═══════════ SEARCH TABS ═══════════ */
