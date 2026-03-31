@@ -150,10 +150,12 @@
 
   /* Pinned */
   .pin-card {
-    padding: 3px 0; font-size: 12px; line-height: 1.4; color: var(--text);
+    padding: 4px 0; font-size: 12px; line-height: 1.4; color: var(--text);
     display: flex; align-items: flex-start; gap: 5px; position: relative;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border-bottom: 1px solid var(--border);
   }
+  .pin-card:last-child { border-bottom: none; }
   .pin-icon { font-size: 10px; flex-shrink: 0; margin-top: 1px; }
   .pin-txt { flex: 1; overflow: hidden; text-overflow: ellipsis; }
   .pin-del {
@@ -198,16 +200,36 @@
   .tab .tab-close { font-size: 9px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 3px; opacity: 0; margin-left: 2px; }
   .tab:hover .tab-close { opacity: .5; }
   .tab .tab-close:hover { opacity: 1; background: var(--border-light); color: var(--danger); }
+  .tab[draggable="true"] { cursor: grab; }
+  .tab[draggable="true"]:active { cursor: grabbing; }
+  .tab.drag-source { opacity: 0.25; }
+  .tab.drag-left { box-shadow: inset 3px 0 0 var(--accent); }
+  .tab.drag-right { box-shadow: inset -3px 0 0 var(--accent); }
+  #tab-drag-ghost {
+    position: fixed; z-index: 9999; pointer-events: none;
+    padding: 4px 14px; font-size: 12px; font-weight: 600; font-family: var(--sans);
+    background: var(--surface); color: var(--text); border: 1px solid var(--accent);
+    border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    white-space: nowrap; display: none; transform: translate(-50%, -50%);
+  }
   #new-tab-btn {
     width: 26px; display: flex; align-items: center; justify-content: center;
     font-size: 15px; color: var(--text3); cursor: pointer; background: none; border: none;
+    flex-shrink: 0;
   }
   #new-tab-btn:hover { color: var(--accent); }
+  .tab-spacer { flex: 1; }
+  .tab-icon-btn {
+    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+    font-size: 17px; color: var(--text3); cursor: pointer; background: none; border: none;
+    border-radius: 4px; flex-shrink: 0; margin: auto 0;
+  }
+  .tab-icon-btn:hover { color: var(--accent); background: rgba(203,145,47,0.06); }
   #content-area { flex: 1; overflow-y: auto; padding: 12px 24px 60px; display: flex; flex-direction: column; }
 
   /* Capture */
   #capture {
-    background: #fdf9f3; border: none; border-bottom: 1.5px solid var(--border);
+    background: var(--capture-bg, #fdf9f3); border: none; border-bottom: 1.5px solid var(--border);
     padding: 8px 12px; margin-bottom: 14px; border-radius: 0;
   }
   #capture:focus-within { border-bottom-color: var(--accent); }
@@ -284,15 +306,8 @@
   .entry-content ul { padding-left: 18px; margin: 3px 0; }
   .entry-content .crosslink { color: var(--blue); cursor: pointer; text-decoration: underline dotted; }
 
-  .entry-actions { position: absolute; top: 2px; right: 2px; display: none; gap: 2px; }
-  .entry-card:hover .entry-actions { display: flex; }
-  .eact {
-    width: 20px; height: 20px; border: none; border-radius: 3px;
-    background: var(--surface); cursor: pointer; display: flex; align-items: center;
-    justify-content: center; color: var(--text3); font-size: 10px;
-  }
-  .eact:hover { background: var(--sidebar-bg); color: var(--text); }
-  .eact.danger:hover { color: var(--danger); }
+  /* Pin indicator in feed (static, no interaction) */
+  .entry-pinned-dot { font-size: 10px; flex-shrink: 0; color: var(--danger); pointer-events: none; }
 
   .entry-edit-area { width: 100%; border: 1px solid var(--accent); border-radius: 4px; padding: 5px 7px; font-family: var(--sans); font-size: 13px; line-height: 1.55; resize: vertical; min-height: 40px; outline: none; }
   .entry-append {
@@ -342,7 +357,7 @@
   /* ═══ CM6 EDITOR STYLES — START (rip-out safe) ═══ */
   .cm-wrap {
     position: relative; flex: 1; min-height: 200px; border: 1px solid var(--border-light);
-    border-radius: var(--radius-md); overflow: hidden; background: #fdf9f3;
+    border-radius: var(--radius-md); overflow: hidden; background: var(--capture-bg, #fdf9f3);
   }
   .cm-wrap:focus-within { border-color: var(--accent); }
   .cm-wrap .cm-editor { height: 100%; }
@@ -371,6 +386,12 @@
   .cm-dd-blockquote { color: var(--text2); border-left: 3px solid var(--accent); padding-left: 10px; }
   /* Bullet widget */
   .cm-dd-bullet { display: inline; color: var(--text3); }
+  /* Checkbox */
+  .cm-dd-checkbox {
+    width: 14px; height: 14px; margin: 0 6px 0 0; vertical-align: middle;
+    accent-color: var(--accent); cursor: pointer;
+  }
+  .cm-dd-checked { color: var(--text3); text-decoration: line-through; }
   /* Horizontal rule */
   .cm-dd-hr {
     display: inline-block; width: 100%; height: 2px;
@@ -401,13 +422,37 @@
   }
   .pin-toggle .pin-icon { font-size: 13px; }
 
-  /* Settings page */
-  .settings-section {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
-    padding: 16px 20px; margin-bottom: 16px;
+  /* Settings tab */
+  .settings-tab { padding: 0; }
+  .settings-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
   }
-  .settings-section h2 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  @media(max-width:700px){ .settings-grid { grid-template-columns: 1fr; } }
+  .settings-col { display: flex; flex-direction: column; gap: 0; }
+  .settings-section {
+    background: var(--capture-bg, #fdf9f3); border: 1px solid var(--border-light); border-radius: var(--radius-md);
+    padding: 16px 20px; margin-bottom: 12px;
+  }
+  .settings-section h2 { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--brown); }
   .settings-section p { font-size: 13px; margin-bottom: 4px; }
+
+  /* Search tab */
+  .search-tab { display: flex; flex-direction: column; height: 100%; }
+  .search-tab-bar {
+    display: flex; align-items: center; gap: 10px; padding: 0 0 12px;
+    border-bottom: 1.5px solid var(--border);
+  }
+  .search-tab-input {
+    flex: 1; border: none; outline: none; font-family: var(--sans); font-size: 15px;
+    color: var(--text); background: transparent;
+  }
+  .search-tab-input::placeholder { color: var(--text3); }
+  .search-tab-count { font-size: 11px; color: var(--text3); white-space: nowrap; }
+  .search-tab-results { flex: 1; overflow-y: auto; padding-top: 8px; }
+  .search-date-hdr {
+    font-size: 11px; font-weight: 600; color: var(--brown); padding: 10px 0 4px;
+    border-bottom: 1px solid var(--border-light); margin-bottom: 4px;
+  }
 
   .se-row {
     display: flex; align-items: center; gap: 8px; padding: 6px 0;
@@ -463,7 +508,7 @@
 
   .rs-panel {
     display: flex; flex-direction: column; min-height: 80px; position: relative; transition: opacity 0.15s;
-    background: #fdf9f3; border-radius: var(--radius-md); border: 1px solid var(--border-light);
+    background: var(--capture-bg, #fdf9f3); border-radius: var(--radius-md); border: 1px solid var(--border-light);
     margin-bottom: 8px;
   }
   .rs-panel.dragging { opacity: 0.4; }
@@ -554,29 +599,55 @@
   .ac-item .ac-tag { font-weight: 500; }
   .ac-item .ac-cnt { font-size: 9px; color: var(--text3); }
 
-  /* ── SEARCH ── */
-  #search-overlay {
-    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,.25); z-index: 300; justify-content: center; padding-top: 60px;
+  /* Theme picker */
+  .theme-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+  .theme-card {
+    width: 120px; border: 2px solid var(--border); border-radius: var(--radius-md);
+    padding: 8px; cursor: pointer; transition: border-color 0.15s;
   }
-  #search-overlay.open { display: flex; }
-  #search-box {
-    width: 100%; max-width: 520px; background: var(--surface); border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg); overflow: hidden; max-height: 60vh; display: flex; flex-direction: column;
+  .theme-card:hover { border-color: var(--accent); }
+  .theme-card.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  .theme-preview { display: flex; gap: 3px; margin-bottom: 6px; height: 28px; border-radius: 4px; overflow: hidden; }
+  .theme-swatch { flex: 1; }
+  .theme-name { font-size: 11px; font-weight: 600; text-align: center; color: var(--text2); }
+  .theme-card.active .theme-name { color: var(--accent); }
+
+  /* Help viewer (read-only) */
+  .help-viewer { padding: 0; overflow-y: auto; flex: 1; }
+  .help-content { max-width: 640px; }
+  .help-h1 { font-size: 24px; font-weight: 800; color: #2c1810; margin: 0 0 12px; line-height: 1.3; }
+  .help-h2 { font-size: 18px; font-weight: 700; color: var(--brown); margin: 20px 0 8px; line-height: 1.35; }
+  .help-h3 { font-size: 15px; font-weight: 600; color: var(--text2); margin: 16px 0 6px; }
+  .help-p { font-size: 14px; line-height: 1.7; margin: 0 0 6px; color: var(--text); }
+  .help-ul { padding-left: 20px; margin: 4px 0 8px; font-size: 14px; line-height: 1.7; color: var(--text); }
+  .help-ul li { margin-bottom: 2px; }
+  .help-bq { border-left: 3px solid var(--accent); padding-left: 12px; color: var(--text2); margin: 8px 0; font-size: 14px; line-height: 1.7; }
+  .help-hr { border: none; border-top: 2px solid var(--border); margin: 16px 0; }
+  .help-spacer { height: 8px; }
+  .help-content code { font-family: var(--mono); font-size: 12px; background: var(--sidebar-bg); padding: 1px 5px; border-radius: 3px; }
+  .help-content strong { font-weight: 600; }
+  .help-content a { color: var(--blue); text-decoration: none; }
+  .help-content a:hover { text-decoration: underline; }
+  .help-tags { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border-light); display: flex; gap: 4px; flex-wrap: wrap; }
+  .help-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+  .help-table th { text-align: left; font-weight: 600; padding: 6px 10px; border-bottom: 2px solid var(--border); color: var(--text); }
+  .help-table td { padding: 5px 10px; border-bottom: 1px solid var(--border-light); color: var(--text); }
+
+  /* Summary banner */
+  .summary-banner {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; margin-bottom: 12px;
+    background: var(--accent-light); border: 1px dashed var(--accent);
+    border-radius: var(--radius-md); cursor: pointer;
+    font-size: 12px; font-weight: 500; color: var(--accent);
+    transition: background 0.15s;
   }
-  #search-input-wrap {
-    display: flex; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); gap: 8px;
-  }
-  #search-input {
-    flex: 1; border: none; outline: none; font-family: var(--sans); font-size: 14px; color: var(--text); background: transparent;
-  }
-  #search-input::placeholder { color: var(--text3); }
-  #search-results { overflow-y: auto; padding: 4px; flex: 1; }
-  #search-results mark { background: #fef08a; border-radius: 2px; }
-  .sr-group { font-size: 9px; font-weight: 600; color: var(--text3); padding: 6px 6px 2px; text-transform: uppercase; }
-  .sr-item { padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-bottom: 1px; }
-  .sr-item:hover { background: var(--accent-light); }
-  .sr-empty { padding: 20px; text-align: center; color: var(--text3); font-size: 12px; }
+  .summary-banner:hover { background: var(--accent); color: #fff; }
+  .summary-banner span { font-size: 14px; }
+
+  /* Search results */
+  .sr-empty { padding: 40px 20px; text-align: center; color: var(--text3); font-size: 13px; }
+  mark { background: #fef08a; border-radius: 2px; padding: 0 1px; }
 
   .empty { text-align: center; padding: 16px 8px; color: var(--text3); font-size: 11px; }
 
@@ -663,9 +734,6 @@
     <button id="today-btn" onclick="goToday()">Today</button>
   </div>
   <div class="top-spacer"></div>
-  <button class="top-btn" onclick="openSearch()" title="Search (Cmd+K)">&#128269;</button>
-  <button class="top-btn" onclick="generateWrapUp()" title="Daily Wrap-up">&#128203;</button>
-  <button class="top-btn" onclick="openSettings()" title="Settings" style="font-size:18px">&#9881;&#65039;</button>
 </div>
 
 <!-- LEFT SIDEBAR -->
@@ -688,9 +756,21 @@
     </div>
   </div>
   <div class="sb-section">
+    <div class="sb-hdr" onclick="toggleSb(this)"><h3>Recent</h3><span class="arrow">&#9660;</span></div>
+    <div class="sb-body">
+      <div id="recent-list"></div>
+    </div>
+  </div>
+  <div class="sb-section">
     <div class="sb-hdr" onclick="toggleSb(this)"><h3>Tags</h3><span class="arrow">&#9660;</span></div>
     <div class="sb-body">
       <div class="tag-cloud" id="tag-cloud"></div>
+    </div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-hdr collapsed" onclick="toggleSb(this)"><h3>Help</h3><span class="arrow">&#9660;</span></div>
+    <div class="sb-body">
+      <div id="help-list"></div>
     </div>
   </div>
   <div id="left-drop-zone">Drop section here</div>
@@ -729,60 +809,10 @@
 </div>
 
 <!-- SETTINGS PAGE (hidden, replaces main content) -->
-<div id="settings-page" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:400;overflow-y:auto">
-  <div style="max-width:700px;margin:0 auto;padding:24px 20px 60px">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
-      <button class="modal-btn" onclick="closeSettings()" style="font-size:16px;padding:6px 12px">&larr; Back</button>
-      <h1 style="font-size:20px;font-weight:700">Settings</h1>
-    </div>
+<!-- Tab drag ghost -->
+<div id="tab-drag-ghost"></div>
 
-    <!-- Storage info -->
-    <div class="settings-section">
-      <h2>Storage</h2>
-      <p>Using <strong>IndexedDB</strong> — local, no server, no internet required</p>
-      <p id="settings-stats" style="color:var(--text3)"></p>
-    </div>
-
-    <!-- Data -->
-    <div class="settings-section">
-      <h2>Data</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="modal-btn" onclick="exportData()">&#128229; Export JSON Backup</button>
-        <button class="modal-btn" onclick="document.getElementById('import-file').click()">&#128228; Import JSON Backup</button>
-        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-      </div>
-    </div>
-
-    <!-- Tag Editor -->
-    <div class="settings-section">
-      <h2>Tags</h2>
-      <p style="color:var(--text3);margin-bottom:8px">Drag a tag onto another to merge. Click color to change.</p>
-      <div id="tag-editor-list"></div>
-      <div style="display:flex;gap:6px;margin-top:8px">
-        <input id="new-tag-input" placeholder="Add new tag..." style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')addNewTag()">
-        <button class="modal-btn" onclick="addNewTag()">Add</button>
-      </div>
-    </div>
-
-    <!-- People Editor -->
-    <div class="settings-section">
-      <h2>People</h2>
-      <div id="people-editor-list"></div>
-      <div style="display:flex;gap:6px;margin-top:8px">
-        <input id="new-person-input" placeholder="Add person..." style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')addNewPerson()">
-        <button class="modal-btn" onclick="addNewPerson()">Add</button>
-      </div>
-    </div>
-
-    <!-- Danger Zone -->
-    <div class="settings-section" style="border:2px solid var(--danger);border-radius:var(--radius-md);padding:16px">
-      <h2 style="color:var(--danger)">Danger Zone</h2>
-      <button class="modal-btn danger" onclick="confirmPurge()">&#128465; Purge All Data</button>
-    </div>
-  </div>
-</div>
-
-<!-- PURGE CONFIRM MODAL -->
+<!-- PURGE CONFIRM MODAL (kept as modal — destructive action needs overlay) -->
 <div class="modal-overlay" id="purge-modal" onclick="if(event.target===this)closePurge()">
   <div class="modal-box">
     <div class="modal-title" style="color:var(--danger)">&#9888; Purge All Data</div>
@@ -793,17 +823,6 @@
       <button class="modal-btn" onclick="closePurge()">Cancel</button>
       <button class="modal-btn danger" id="purge-btn" disabled onclick="doPurge()">Purge Everything</button>
     </div>
-  </div>
-</div>
-
-<!-- SEARCH -->
-<div id="search-overlay" onclick="if(event.target===this)closeSearch()">
-  <div id="search-box">
-    <div id="search-input-wrap">
-      <span style="color:var(--text3)">&#128269;</span>
-      <input id="search-input" placeholder="Search everything..." oninput="doSearch(this.value)" onkeydown="if(event.key==='Escape')closeSearch()">
-    </div>
-    <div id="search-results"></div>
   </div>
 </div>
 
@@ -862,14 +881,14 @@ let _tagCache=null;
 function getAllTags(){
   if(_tagCache)return _tagCache;
   const c={};const add=tags=>tags.forEach(t=>{c[t]=(c[t]||0)+1});
-  db.entries.filter(e=>!e.eventType).forEach(e=>add(e.tags||[]));
+  db.entries.filter(e=>!e.eventType&&!e.isHelp).forEach(e=>add(e.tags||[]));
   _tagCache=c;return c;
 }
 function invalidateTagCache(){_tagCache=null;}
 function getAllPeople(){
   const set=new Set();
   (db.people||[]).forEach(p=>set.add(p));
-  db.entries.filter(e=>!e.eventType).forEach(e=>(e.mentions||[]).forEach(m=>set.add(m)));
+  db.entries.filter(e=>!e.eventType&&!e.isHelp).forEach(e=>(e.mentions||[]).forEach(m=>set.add(m)));
   return [...set].sort((a,b)=>a.localeCompare(b));
 }
 
@@ -929,6 +948,7 @@ async function loadDB(){
   const s=settings.find(x=>x.id==='main')||{};
   db.tagColors=s.tagColors||{};
   db.people=s.people||[];
+  db.theme=s.theme||'Warm Notion';
 
   // Migrate from localStorage if IndexedDB was empty
   if(db.entries.length===0){
@@ -992,7 +1012,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[]}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion'}]);
     } else if(db[store]){
       // Clear and re-put (simple, handles deletions)
       await idbClearStore(store);
@@ -1043,20 +1063,107 @@ function renderTabBar(){
   let h='';
   openTabs.forEach(tid=>{
     const isA=tid===activeTab;
-    if(tid==='feed'){h+=`<div class="tab${isA?' active':''}" onclick="switchTab('feed')">&#128221; Feed</div>`;}
+    const drag=tid!=='feed'?` draggable="true" ondragstart="tabDragStart(event,'${tid}')" ondragover="tabDragOver(event)" ondrop="tabDrop(event,'${tid}')" ondragend="tabDragEnd(event)"`:'';
+    const dropTarget=tid==='feed'?` ondragover="tabDragOver(event)" ondrop="tabDrop(event,'${tid}')"`:''
+    if(tid==='feed'){h+=`<div class="tab${isA?' active':''}" onclick="switchTab('feed')"${dropTarget}>&#128221; Feed</div>`;}
+    else if(tid==='settings'){h+=`<div class="tab${isA?' active':''}" onclick="switchTab('settings')"${drag}>&#9881; Settings<span class="tab-close" onclick="event.stopPropagation();closeTab('settings')">&times;</span></div>`;}
+    else if(tid.startsWith('search_')){
+      const st=searchTabs.find(s=>s.id===tid);
+      const label=st?escH((st.query||'Search').slice(0,18)):'Search';
+      h+=`<div class="tab${isA?' active':''}" onclick="switchTab('${tid}')"${drag}>&#128269; ${label}<span class="tab-close" onclick="event.stopPropagation();closeTab('${tid}')">&times;</span></div>`;
+    }
     else{const e=db.entries.find(x=>x.id===tid);const title=e?(e.noteTitle||'Note'):'Note';
-      h+=`<div class="tab${isA?' active':''}" onclick="switchTab('${tid}')">${escH(title.slice(0,22))}<span class="tab-close" onclick="event.stopPropagation();closeTab('${tid}')">&times;</span></div>`;}
+      h+=`<div class="tab${isA?' active':''}" onclick="switchTab('${tid}')"${drag}>${escH(title.slice(0,22))}<span class="tab-close" onclick="event.stopPropagation();closeTab('${tid}')">&times;</span></div>`;}
   });
   h+=`<button id="new-tab-btn" onclick="createNote()" title="New note (Cmd+N)">+</button>`;
+  h+=`<div class="tab-spacer"></div>`;
+  h+=`<button class="tab-icon-btn" onclick="openSearch()" title="Search (Cmd+K)">&#128269;</button>`;
+  h+=`<button class="tab-icon-btn" onclick="openSettings()" title="Settings">&#9881;</button>`;
   document.getElementById('tab-bar').innerHTML=h;
 }
+/* Tab drag-to-reorder */
+let tabDragId=null;
+function tabDragStart(e,tid){
+  tabDragId=tid;
+  e.dataTransfer.effectAllowed='move';
+  // Use a tiny transparent image so the browser ghost doesn't show
+  const img=new Image();img.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  e.dataTransfer.setDragImage(img,0,0);
+  e.target.classList.add('drag-source');
+  // Show floating ghost
+  const ghost=document.getElementById('tab-drag-ghost');
+  ghost.textContent=e.target.textContent.replace('×','').trim();
+  ghost.style.display='block';
+  ghost.style.left=e.clientX+'px';
+  ghost.style.top=e.clientY+'px';
+}
+function tabDragEnd(e){
+  tabDragId=null;
+  document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('drag-source','drag-left','drag-right');});
+  document.getElementById('tab-drag-ghost').style.display='none';
+}
+function tabDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  if(!tabDragId)return;
+  // Move the ghost
+  const ghost=document.getElementById('tab-drag-ghost');
+  ghost.style.left=e.clientX+'px';
+  ghost.style.top=e.clientY+'px';
+  // Find the tab element
+  const tab=e.target.closest('.tab');
+  if(!tab)return;
+  const tid=tabGetId(tab);
+  if(tid===tabDragId)return;
+  document.querySelectorAll('.tab.drag-left,.tab.drag-right').forEach(t=>{
+    if(t!==tab)t.classList.remove('drag-left','drag-right');
+  });
+  const rect=tab.getBoundingClientRect();
+  const midX=rect.left+rect.width/2;
+  if(e.clientX<midX){tab.classList.add('drag-left');tab.classList.remove('drag-right');}
+  else{tab.classList.add('drag-right');tab.classList.remove('drag-left');}
+}
+function tabDrop(e,targetId){
+  e.preventDefault();
+  document.getElementById('tab-drag-ghost').style.display='none';
+  if(!tabDragId||tabDragId===targetId)return;
+  const srcIdx=openTabs.indexOf(tabDragId);
+  const tgtIdx=openTabs.indexOf(targetId);
+  if(srcIdx<0||tgtIdx<0)return;
+  // Determine if dropping before or after based on indicator
+  const tab=e.target.closest('.tab');
+  const dropBefore=tab&&tab.classList.contains('drag-left');
+  openTabs.splice(srcIdx,1);
+  let newTgtIdx=openTabs.indexOf(targetId);
+  if(!dropBefore)newTgtIdx++;
+  // Don't allow before feed
+  if(newTgtIdx<1)newTgtIdx=1;
+  openTabs.splice(newTgtIdx,0,tabDragId);
+  tabDragId=null;
+  renderTabBar();
+}
+function tabGetId(tabEl){
+  // Extract tab id from onclick attribute
+  const oc=tabEl.getAttribute('onclick')||'';
+  const m=oc.match(/switchTab\('([^']+)'\)/);
+  return m?m[1]:null;
+}
 function switchTab(t){activeTab=t;renderTabBar();renderActiveView();}
-function closeTab(t){openTabs=openTabs.filter(x=>x!==t);if(activeTab===t)activeTab=openTabs[openTabs.length-1]||'feed';renderTabBar();renderActiveView();}
+function closeTab(t){
+  openTabs=openTabs.filter(x=>x!==t);
+  if(t.startsWith('search_'))searchTabs=searchTabs.filter(s=>s.id!==t);
+  if(activeTab===t)activeTab=openTabs[openTabs.length-1]||'feed';
+  renderTabBar();renderActiveView();
+}
 
 /* ═══════════ ACTIVE VIEW ═══════════ */
 function renderActiveView(){
   const a=document.getElementById('content-area');
-  if(activeTab==='feed')renderFeed(a);else renderNoteEditor(a,activeTab);
+  if(cmEditorView&&activeTab!==cmNoteId){cmEditorView.destroy();cmEditorView=null;cmNoteId=null;}
+  if(activeTab==='feed')renderFeed(a);
+  else if(activeTab==='settings')renderSettingsTab(a);
+  else if(activeTab.startsWith('search_'))renderSearchTab(a,activeTab);
+  else renderNoteEditor(a,activeTab);
 }
 
 /* ═══════════ FEED ═══════════ */
@@ -1073,7 +1180,7 @@ function renderFeed(area){
   }
   // Filter entries for visible dates
   const dateSet=new Set(dates);
-  const allEntries=db.entries.filter(e=>dateSet.has(e.date)).filter(e=>{
+  const allEntries=db.entries.filter(e=>dateSet.has(e.date)&&!e.isHelp).filter(e=>{
     if(e.eventType&&activeTagFilters.length>0)return false;
     if(activeTagFilters.length===0)return true;
     return activeTagFilters.every(f=>{
@@ -1086,6 +1193,12 @@ function renderFeed(area){
   allEntries.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e);});
 
   let h=`<div id="capture"><textarea id="capture-input" placeholder="What's happening? (#tags supported)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)"></textarea><div id="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button id="submit-btn" onclick="submitEntry()">Add</button></div></div>`;
+
+  // Daily summary banner — show if viewing today (or selected date) and no summary exists yet
+  const hasSummary=db.entries.some(e=>e.date===selectedDate&&e.isNote&&(e.tags||[]).includes('daily-summary'));
+  if(!hasSummary){
+    h+=`<div class="summary-banner" onclick="generateWrapUp()"><span>&#128203;</span> Generate daily summary for ${selectedDate===todayStr()?'today':fmtDateLabel(selectedDate)}</div>`;
+  }
 
   let hasAny=false;
   for(const ds of dates){
@@ -1112,13 +1225,14 @@ function renderFeed(area){
   }
   if(!hasAny){h+=`<div class="empty">No entries${activeTagFilters.length?' matching filters':''}. Start typing above.</div>`;}
 
-  // Load earlier days button — check if ANY older entries exist in full db
+  // Infinite scroll sentinel — auto-loads older days when scrolled into view
   const oldestDate=dates[dates.length-1];
   const hasOlder=db.entries.some(e=>e.date<oldestDate&&!e.eventType);
   if(hasOlder||hasAny){
-    h+=`<div class="load-more"><button onclick="loadMoreDays()">Load earlier days</button></div>`;
+    h+=`<div id="feed-scroll-sentinel" style="height:1px"></div>`;
   }
   area.innerHTML=h;
+  setTimeout(setupFeedScrollObserver,50);
 }
 function showMoreDay(ds){feedDayShowMore[ds]=(feedDayShowMore[ds]||FEED_DAY_CAP)+FEED_DAY_CAP;renderActiveView();}
 function renderDayDivider(ds){
@@ -1141,29 +1255,27 @@ function getEntryBorderColor(tags){
 function renderEntryCard(e){
   const borderColor=getEntryBorderColor(e.tags);
   const pinned=isEntryPinned(e.id);
-  // For the tight layout: time | content (no inline tags) | tag pills | pin indicator
-  let h=`<div class="entry-card" data-id="${e.id}" onclick="openAsNote('${e.id}')" style="border-left-color:${borderColor}">`;
+  let h=`<div class="entry-card" data-id="${e.id}" data-action="open" style="border-left-color:${borderColor}">`;
   h+=`<span class="entry-time">${fmtTime(e.ts)}</span>`;
-  // Content — strip #tags from display (they show as pills)
+  if(pinned){h+=`<span class="entry-pinned-dot" title="Pinned">&#128204;</span>`;}
+  // Content
   if(e.isNote){
     const preview=e.content.replace(/#[a-zA-Z0-9_-]+/g,'').replace(/\[\[([^\]]+)\]\]/g,'$1').replace(/[*`_~#\[\]]/g,'').trim();
     const titleText=escH(e.noteTitle||'Untitled');
     const previewText=preview&&preview!==e.noteTitle?(' — '+escH(preview.slice(0,80))+(preview.length>80?'...':'')):'';
     h+=`<span class="entry-content"><strong>${titleText}</strong>${previewText}</span>`;
   } else {
-    // Render content but strip # tags (show them as separate pills)
     let content=e.content.replace(/#[a-zA-Z0-9_-]+/g,'').trim();
     h+=`<span class="entry-content">${renderMdInline(content)}</span>`;
   }
-  // Tag pills right-aligned
+  // Tag pills right-aligned — no overlap now since actions are removed
   if((e.tags||[]).length){
     h+=`<span class="entry-inline-tags">`;
     (e.tags||[]).forEach(t=>{const c=getTagColor(t);h+=`<span class="tag-pill" style="background:${c}12;color:${c}" onclick="event.stopPropagation();toggleFilter('${escH(t)}')">#${escH(t)}</span>`;});
     h+=`</span>`;
   }
-  if(pinned){h+=`<span class="entry-pin">&#128204;</span>`;}
   h+=`<div class="entry-append-area"></div>`;
-  h+=`<div class="entry-actions"><button class="eact" onclick="event.stopPropagation();copyEntry('${e.id}')" title="Copy">&#128203;</button><button class="eact" onclick="event.stopPropagation();${pinned?`toggleNotePin('${e.id}')`:`pinEntry('${e.id}')`}" title="${pinned?'Unpin':'Pin'}">&#128204;</button><button class="eact danger" onclick="event.stopPropagation();confirmDelete('${e.id}')" title="Delete">&#10005;</button></div></div>`;
+  h+=`</div>`;
   return h;
 }
 // Inline markdown — no tag/mention rendering (those are shown as pills)
@@ -1183,7 +1295,22 @@ function renderEventEntry(e){
   const refLink=e.refId?` <span class="event-ref" onclick="openAsNote('${e.refId}')">view</span>`:'';
   return`<div class="event-entry"><span class="event-time">${fmtTime(e.ts)}</span><span class="event-icon">${et.icon}</span><span class="event-text">${et.verb}: ${escH(e.content.slice(0,60))}${e.content.length>60?'...':''}</span>${refLink}</div>`;
 }
+let feedScrollObserver=null;
 function loadMoreDays(){feedDaysLoaded+=7;renderActiveView();}
+function setupFeedScrollObserver(){
+  if(feedScrollObserver)feedScrollObserver.disconnect();
+  const sentinel=document.getElementById('feed-scroll-sentinel');
+  if(!sentinel)return;
+  const container=document.getElementById('content-area');
+  if(!container)return;
+  feedScrollObserver=new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting){
+      feedScrollObserver.disconnect();
+      loadMoreDays();
+    }
+  },{root:container,rootMargin:'200px'});
+  feedScrollObserver.observe(sentinel);
+}
 function getCtxLabel(cid){const c=db.contexts.find(x=>x.id===cid);return c?c.label:null;}
 function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,160)+'px';}
 function captureKey(e){
@@ -1208,6 +1335,7 @@ function submitEntry(){
 let pendingDeleteId=null;
 function confirmDelete(id){
   const e=db.entries.find(x=>x.id===id);if(!e)return;
+  if(e.isHelp)return; // Help notes cannot be deleted
   pendingDeleteId=id;
   const preview=e.isNote?(e.noteTitle||'Untitled note'):e.content.slice(0,120);
   document.getElementById('delete-preview').textContent=preview;
@@ -1268,7 +1396,7 @@ function closeAppend(){
 function openAsNote(id){
   closeAppend();
   const entry=db.entries.find(e=>e.id===id);
-  if(!entry)return;
+  if(!entry){console.error('openAsNote: entry not found',id);return;}
   // Convert to note if not already
   if(!entry.isNote){
     entry.isNote=true;
@@ -1291,9 +1419,74 @@ function openNoteTab(id){if(!openTabs.includes(id))openTabs.push(id);activeTab=i
 let cmEditorView=null; // active CM6 EditorView instance
 let cmNoteId=null;     // which note is being edited
 
+function renderHelpViewer(area,e){
+  // Render help content as read-only HTML with full markdown
+  const tags=(e.tags||[]).filter(t=>t!=='help').map(t=>{const c=getTagColor(t);return`<span class="tag-pill" style="background:${c}12;color:${c}">#${escH(t)}</span>`;}).join(' ');
+  // Render markdown line by line for proper headings
+  const lines=e.content.split('\n');
+  let html='';
+  let inList=false,inTable=false,tableHadRow=false;
+  lines.forEach(line=>{
+    // Headings
+    if(/^### /.test(line)){html+=`<h3 class="help-h3">${renderHelpInline(line.slice(4))}</h3>`;return;}
+    if(/^## /.test(line)){html+=`<h2 class="help-h2">${renderHelpInline(line.slice(3))}</h2>`;return;}
+    if(/^# /.test(line)){html+=`<h1 class="help-h1">${renderHelpInline(line.slice(2))}</h1>`;return;}
+    // Horizontal rule
+    if(/^(---+|\*\*\*+|___+)\s*$/.test(line)){html+='<hr class="help-hr">';return;}
+    // Blockquote
+    if(/^> /.test(line)){html+=`<blockquote class="help-bq">${renderHelpInline(line.slice(2))}</blockquote>`;return;}
+    // Bullet
+    if(/^\s*[-*] /.test(line)){
+      if(!inList){html+='<ul class="help-ul">';inList=true;}
+      html+=`<li>${renderHelpInline(line.replace(/^\s*[-*] /,''))}</li>`;return;
+    }
+    // Table row
+    if(line.startsWith('|')){
+      // Skip separator rows like |---|---|
+      if(/^\|[\s-:|]+\|$/.test(line))return;
+      if(!inTable){html+='<table class="help-table">';inTable=true;}
+      const cells=line.split('|').filter(c=>c!==undefined).slice(1,-1);
+      const isHeader=!tableHadRow;
+      const tag=isHeader?'th':'td';
+      html+=`<tr>${cells.map(c=>`<${tag}>${renderHelpInline(c.trim())}</${tag}>`).join('')}</tr>`;
+      tableHadRow=true;
+      return;
+    }
+    if(inTable){html+='</table>';inTable=false;tableHadRow=false;}
+    if(inList){html+='</ul>';inList=false;}
+    // Empty line
+    if(!line.trim()){html+='<div class="help-spacer"></div>';return;}
+    // Normal paragraph
+    html+=`<p class="help-p">${renderHelpInline(line)}</p>`;
+  });
+  if(inList)html+='</ul>';
+  if(inTable)html+='</table>';
+  area.innerHTML=`<div class="help-viewer">
+    <div class="help-content">${html}</div>
+    <div class="help-tags">${tags}</div>
+  </div>`;
+}
+function renderHelpInline(text){
+  let h=escH(text);
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g,'<em>$1</em>');
+  h=h.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
+  h=h.replace(/#([a-zA-Z0-9_-]+)/g,(m,tag)=>{const c=getTagColor(tag);return`<span style="color:${c};font-weight:500">#${escH(tag)}</span>`;});
+  h=h.replace(/@([a-zA-Z0-9_.-]+)/g,'<span style="color:var(--blue);font-weight:500">@$1</span>');
+  h=h.replace(/\[\[([^\]]+)\]\]/g,(m,inner)=>{
+    // inner is already escaped, use it directly for display; unescape for navCrosslink
+    const raw=inner.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+    return`<a class="crosslink" onclick="navCrosslink('${raw.replace(/'/g,"\\'")}')" style="color:var(--blue);cursor:pointer;text-decoration:underline dotted">${inner}</a>`;
+  });
+  return h;
+}
+
 function renderNoteEditor(area,noteId){
   const e=db.entries.find(x=>x.id===noteId);
   if(!e||!e.isNote){switchTab('feed');return;}
+  // Help notes: read-only rendered view
+  if(e.isHelp){renderHelpViewer(area,e);return;}
   const entryDate=e.date||todayStr();
   const entryDt=new Date(e.ts);
   const entryTime=String(entryDt.getHours()).padStart(2,'0')+':'+String(entryDt.getMinutes()).padStart(2,'0');
@@ -1314,7 +1507,7 @@ function renderNoteEditor(area,noteId){
         <span class="pin-icon">${pinned?'&#128204;':'&#128204;'}</span>${pinned?'Pinned':'Pin'}
       </button>
       <button class="copy-btn" onclick="navigator.clipboard.writeText(db.entries.find(x=>x.id==='${cmNoteId}').content||'')">&#128203; Copy</button>
-      <button class="copy-btn danger" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDelete('${noteId}')">&#10005; Delete</button>
+      ${e.isHelp?'':'<button class="copy-btn danger" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDelete(\''+noteId+'\')">&#10005; Delete</button>'}
     </div>
     <div class="cm-wrap" id="cm-wrap"></div>
     <div class="note-bar"><span class="cap-hint">Tip: #tags, @mentions, [[links]], - for bullets</span></div>
@@ -1352,6 +1545,15 @@ function renderNoteEditor(area,noteId){
   });
   cmEditorView=new EditorView({state,parent:document.getElementById('cm-wrap')});
   cmEditorView.focus();
+  // Handle clicks on crosslinks in the editor
+  cmEditorView.dom.addEventListener('mousedown',e=>{
+    const el=e.target.closest('.cm-dd-crosslink');
+    if(el){
+      e.preventDefault();
+      e.stopPropagation();
+      setTimeout(()=>navCrosslink(el.textContent),0);
+    }
+  });
 }
 
 /* ── Live Preview Decoration Plugin ── */
@@ -1409,6 +1611,16 @@ function cmDecorateLine(builder,line,Decoration){
     builder.push(Decoration.line({class:'cm-dd-blockquote'}).range(from));
     if(claim(0,2))
       builder.push(Decoration.replace({}).range(from,from+2));
+  }
+  // Checkbox: [ ] or [x] (with optional - or * prefix)
+  else if((hm=text.match(/^(\s*(?:[-*] )?)(\[[ x]\]) /))){
+    const fullPrefix=hm[0].length;
+    const checked=hm[2]==='[x]';
+    const lineNum=line.number;
+    if(claim(0,fullPrefix)){
+      builder.push(Decoration.replace({widget:new CmCheckboxWidget(checked,lineNum)}).range(from,from+fullPrefix));
+      if(checked) builder.push(Decoration.mark({class:'cm-dd-checked'}).range(from+fullPrefix,from+text.length));
+    }
   }
   // Bullet
   else if((hm=text.match(/^(\s*)([-*]) /))){
@@ -1493,6 +1705,27 @@ class CmTextWidget extends CM6.WidgetType{
   constructor(text,cls){super();this.text=text;this.cls=cls;}
   toDOM(){const span=document.createElement('span');span.className=this.cls;span.textContent=this.text;return span;}
   eq(other){return other.text===this.text&&other.cls===this.cls;}
+}
+// Widget for checkbox
+class CmCheckboxWidget extends CM6.WidgetType{
+  constructor(checked,lineNum){super();this.checked=checked;this.lineNum=lineNum;}
+  toDOM(){
+    const cb=document.createElement('input');
+    cb.type='checkbox';
+    cb.checked=this.checked;
+    cb.className='cm-dd-checkbox';
+    cb.addEventListener('mousedown',e=>{
+      e.preventDefault();
+      // Toggle the checkbox in the document
+      if(!cmEditorView)return;
+      const line=cmEditorView.state.doc.line(this.lineNum);
+      const text=line.text;
+      const newText=this.checked?text.replace('[x]','[ ]'):text.replace('[ ]','[x]');
+      cmEditorView.dispatch({changes:{from:line.from,to:line.to,insert:newText}});
+    });
+    return cb;
+  }
+  eq(other){return other.checked===this.checked&&other.lineNum===this.lineNum;}
 }
 // Widget for horizontal rule
 class CmHRWidget extends CM6.WidgetType{
@@ -1581,7 +1814,8 @@ function cmCheckAC(view){
   const lm=before.match(/\[\[([^\]]*)$/);
   if(lm){
     const q=lm[1].toLowerCase();
-    const nm=db.entries.filter(e=>e.isNote&&(e.noteTitle||'').toLowerCase().includes(q)).slice(0,8).map(n=>({label:n.noteTitle||'Untitled',id:n.id}));
+    const stripT=s=>(s||'').replace(/#[a-zA-Z0-9_-]+/g,'').trim();
+    const nm=db.entries.filter(e=>e.isNote&&stripT(e.noteTitle).toLowerCase().includes(q)).slice(0,8).map(n=>({label:stripT(n.noteTitle)||'Untitled',id:n.id}));
     if(nm.length>0){cmShowACLinks(view,pos,nm);return;}
   }
   closeAC();
@@ -1649,11 +1883,12 @@ function noteContentChanged(id,val){
   e.content=val;
   e.tags=extractTags(val);
   e.mentions=extractMentions(val);
+  e.updatedTs=Date.now();
   // Derive title from first line (including hashtags)
   const firstLine=(val.split('\n')[0]||'').trim().slice(0,80);
   e.noteTitle=firstLine||'Untitled';
   renderTabBar();
-  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{registerMentions(e.mentions);save();renderTagCloud();renderAllSections();},300);
+  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{registerMentions(e.mentions);save();renderTagCloud();renderAllSections();renderRecent();},300);
 }
 function noteKey(e,noteId){
   // Autocomplete takes priority
@@ -1715,7 +1950,7 @@ function checkAC(el){
   if(am){const q=am[1].toLowerCase(),people=getAllPeople();let m=people.filter(p=>q===''||p.toLowerCase().includes(q)).slice(0,8);if(m.length===0&&q.length>0)m=[am[1]];if(m.length>0){showACPeople(el,m,am.index);return;}}
   // [[ link autocomplete
   const lm=text.match(/\[\[([^\]]*)$/);
-  if(lm){const q=lm[1].toLowerCase(),nm=db.entries.filter(e=>e.isNote&&(e.noteTitle||'').toLowerCase().includes(q)).slice(0,8).map(n=>({label:n.noteTitle||'Untitled',id:n.id}));if(nm.length>0){showACLinks(el,nm,lm.index);return;}}
+  if(lm){const q=lm[1].toLowerCase(),stT=s=>(s||'').replace(/#[a-zA-Z0-9_-]+/g,'').trim(),nm=db.entries.filter(e=>e.isNote&&stT(e.noteTitle).toLowerCase().includes(q)).slice(0,8).map(n=>({label:stT(n.noteTitle)||'Untitled',id:n.id}));if(nm.length>0){showACLinks(el,nm,lm.index);return;}}
   closeAC();
 }
 // Get pixel coordinates of the caret inside a textarea
@@ -1794,9 +2029,9 @@ function selectAC(){
       if(!db.people)db.people=[];
       if(!db.people.includes(person)){db.people.push(person);db.people.sort((a,b)=>a.localeCompare(b));save('settings');}
     } else if(acState.type==='link'){
-      triggerChar='[';replacement='[['+acState.notes[acState.selected].label+']] ';
+      triggerChar='[[';replacement='[['+acState.notes[acState.selected].label+']] ';
     }
-    const triggerIdx=before.lastIndexOf(triggerChar);
+    const triggerIdx=acState.type==='link'?before.lastIndexOf('[['):before.lastIndexOf(triggerChar);
     if(triggerIdx>=0){
       const from=line.from+triggerIdx;
       view.dispatch({changes:{from,to:pos,insert:replacement},selection:{anchor:from+replacement.length}});
@@ -1871,6 +2106,35 @@ function pinEntry(id){
   save();renderPins();renderActiveView();renderAllSections();
 }
 function isEntryPinned(id){return db.openItems.some(o=>o.entryId===id);}
+
+/* ═══════════ HELP LIST ═══════════ */
+function renderHelpList(){
+  const el=document.getElementById('help-list');
+  if(!el)return;
+  const notes=db.entries.filter(e=>e.isHelp).sort((a,b)=>{
+    // Welcome first, then alphabetical
+    if(a.id==='help_welcome')return -1;if(b.id==='help_welcome')return 1;
+    return(a.noteTitle||'').localeCompare(b.noteTitle||'');
+  });
+  el.innerHTML=notes.map(n=>{
+    const title=escH(n.noteTitle||'Untitled');
+    return`<div class="pin-card" style="cursor:pointer" onclick="openNoteTab('${n.id}')"><span style="font-size:10px;margin-right:4px;color:var(--text3)">&#10068;</span><span class="pin-txt">${title}</span></div>`;
+  }).join('');
+}
+
+/* ═══════════ RECENT NOTES ═══════════ */
+function renderRecent(){
+  const el=document.getElementById('recent-list');
+  if(!el)return;
+  const notes=db.entries.filter(e=>e.isNote&&!e.eventType&&!e.isHelp)
+    .sort((a,b)=>(b.updatedTs||b.ts)-(a.updatedTs||a.ts))
+    .slice(0,5);
+  if(!notes.length){el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:4px">No recent notes</div>';return;}
+  el.innerHTML=notes.map(n=>{
+    const title=escH((n.noteTitle||'Untitled').slice(0,40));
+    return`<div class="pin-card" style="cursor:pointer" onclick="openAsNote('${n.id}')"><span style="font-size:10px;margin-right:4px;color:var(--text3)">&#128196;</span><span class="pin-txt">${title}</span></div>`;
+  }).join('');
+}
 function toggleNotePin(id){
   if(isEntryPinned(id)){
     // Unpin
@@ -2050,24 +2314,32 @@ function dragSecDrop(e,targetId){
 // matchEntries always searches ALL data. Returns full sorted array.
 // Callers are responsible for slicing for rendering.
 function matchEntries(query){
-  const base=db.entries.filter(e=>!e.eventType);
+  const base=db.entries.filter(e=>!e.eventType&&!e.isHelp);
   if(!query||!query.trim())return base.sort((a,b)=>b.ts-a.ts);
-  const parts=query.trim().toLowerCase().split(/\s+/);
-  const tags=[],mentions=[],words=[],excludes=[];
-  parts.forEach(p=>{
-    if(p.startsWith('#'))tags.push(p.slice(1));
-    else if(p.startsWith('@'))mentions.push(p.slice(1));
-    else if(p.startsWith('-')&&p.length>1)excludes.push(p.slice(1));
-    else words.push(p);
-  });
-  return base.filter(e=>{
-    const content=(e.content+' '+(e.noteTitle||'')).toLowerCase();
-    if(tags.length&&!tags.every(t=>(e.tags||[]).some(et=>et.toLowerCase()===t)))return false;
-    if(mentions.length&&!mentions.every(m=>(e.mentions||[]).some(em=>em.toLowerCase()===m)))return false;
-    if(words.length&&!words.every(w=>content.includes(w)))return false;
-    if(excludes.length&&excludes.some(w=>content.includes(w)))return false;
-    return true;
-  }).sort((a,b)=>b.ts-a.ts);
+  // Split on OR (case-insensitive, surrounded by spaces)
+  const orGroups=query.split(/\s+OR\s+/i);
+  const matched=new Set();
+  for(const group of orGroups){
+    const parts=group.trim().toLowerCase().split(/\s+/);
+    const tags=[],mentions=[],words=[],excludes=[];
+    parts.forEach(p=>{
+      if(p==='or')return; // skip stray OR
+      if(p.startsWith('#'))tags.push(p.slice(1));
+      else if(p.startsWith('@'))mentions.push(p.slice(1));
+      else if(p.startsWith('-')&&p.length>1)excludes.push(p.slice(1));
+      else words.push(p);
+    });
+    base.forEach(e=>{
+      if(matched.has(e.id))return;
+      const content=(e.content+' '+(e.noteTitle||'')).toLowerCase();
+      if(tags.length&&!tags.every(t=>(e.tags||[]).some(et=>et.toLowerCase()===t)))return;
+      if(mentions.length&&!mentions.every(m=>(e.mentions||[]).some(em=>em.toLowerCase()===m)))return;
+      if(words.length&&!words.every(w=>content.includes(w)))return;
+      if(excludes.length&&excludes.some(w=>content.includes(w)))return;
+      matched.add(e.id);
+    });
+  }
+  return base.filter(e=>matched.has(e.id)).sort((a,b)=>b.ts-a.ts);
 }
 
 function updateSection(id,field,val){const s=db.sections.find(x=>x.id===id);if(!s)return;s[field]=val;save();if(field==='query')renderAllSections();}
@@ -2106,57 +2378,129 @@ function stopResize(){
 
 /* ═══════════ CROSS-LINKING ═══════════ */
 function navCrosslink(inner){
-  const note=db.entries.find(e=>e.isNote&&(e.noteTitle||'').toLowerCase()===inner.toLowerCase());
-  if(note){openNoteTab(note.id);return;}
-  const match=db.entries.find(e=>e.isNote&&(e.noteTitle||'').toLowerCase().includes(inner.toLowerCase()));
-  if(match){openNoteTab(match.id);}
+  const q=inner.toLowerCase().trim();
+  const stripTags=s=>(s||'').replace(/#[a-zA-Z0-9_-]+/g,'').trim().toLowerCase();
+  // Exact match (with or without tags in title)
+  const exact=db.entries.find(e=>e.isNote&&(stripTags(e.noteTitle)===q||(e.noteTitle||'').toLowerCase()===q));
+  if(exact){openNoteTab(exact.id);return;}
+  // Partial match — title contains the search text
+  const partial=db.entries.find(e=>e.isNote&&stripTags(e.noteTitle).includes(q));
+  if(partial){openNoteTab(partial.id);return;}
+  // Content match — search inside note content
+  const content=db.entries.find(e=>e.isNote&&(e.content||'').toLowerCase().includes(q));
+  if(content){openNoteTab(content.id);}
 }
 
-/* ═══════════ SEARCH ═══════════ */
-function openSearch(){document.getElementById('search-overlay').classList.add('open');const i=document.getElementById('search-input');i.value='';i.focus();document.getElementById('search-results').innerHTML='<div class="sr-empty">Type to search...</div>';}
-function closeSearch(){document.getElementById('search-overlay').classList.remove('open');}
+/* ═══════════ SEARCH TABS ═══════════ */
+let searchTabs=[]; // {id, query, showCount}
 const SEARCH_PAGE=50;
-let searchResultsAll=[];
-let searchShown=SEARCH_PAGE;
 
-function doSearch(query){
-  const res=document.getElementById('search-results'),q=query.trim().toLowerCase();
-  if(!q){res.innerHTML='<div class="sr-empty">Type to search...</div>';searchResultsAll=[];return;}
-  searchShown=SEARCH_PAGE;
-
-  // Search ALL entries (no date restriction)
-  searchResultsAll=db.entries.filter(e=>!e.eventType&&(e.content+' '+(e.noteTitle||'')).toLowerCase().includes(q)).sort((a,b)=>b.ts-a.ts);
-  const mq=db.questions.filter(x=>(x.question+' '+x.answer).toLowerCase().includes(q)).slice(0,10);
-  const mo=db.openItems.filter(x=>x.text.toLowerCase().includes(q)).slice(0,10);
-
-  renderSearchResults(q,mq,mo);
+function openSearch(){
+  const id='search_'+Date.now();
+  searchTabs.push({id,query:'',showCount:SEARCH_PAGE});
+  if(!openTabs.includes(id))openTabs.push(id);
+  activeTab=id;
+  renderTabBar();renderActiveView();
+  // Focus the search input
+  setTimeout(()=>{const inp=document.getElementById('search-tab-input');if(inp)inp.focus();},50);
 }
-function renderSearchResults(q,mq,mo){
-  const res=document.getElementById('search-results');
-  let h='';
-  const visible=searchResultsAll.slice(0,searchShown);
-  const totalEntries=searchResultsAll.length;
+function closeSearch(){/* compat stub — closing search tab via closeTab */}
 
-  if(visible.length){
-    h+=`<div class="sr-group">Entries & Notes (${totalEntries} found)</div>`;
-    visible.forEach(e=>{
-      const label=e.isNote?'&#128196; '+escH((e.noteTitle||'Untitled').slice(0,40)):escH(e.content.slice(0,80));
-      h+=`<div class="sr-item" onclick="closeSearch();jumpToEntry('${e.id}')">${hlMatch(label,q)} <span style="color:var(--text3);font-size:9px">${e.date}</span></div>`;
-    });
-    if(totalEntries>searchShown){
-      h+=`<div class="rs-show-more" onclick="showMoreSearch('${escH(q)}')">Show more (${totalEntries-searchShown} remaining)</div>`;
+function renderSearchTab(area,tabId){
+  const st=searchTabs.find(s=>s.id===tabId);
+  if(!st)return;
+  const results=st.query?matchEntries(st.query):[];
+  const total=results.length;
+  const visible=results.slice(0,st.showCount);
+  const hasMore=total>st.showCount;
+
+  let h=`<div class="search-tab">
+    <div class="search-tab-bar">
+      <span style="color:var(--text3);font-size:16px">&#128269;</span>
+      <input id="search-tab-input" class="search-tab-input" placeholder="Search... (#tag @person keyword -exclude)"
+             value="${escH(st.query)}"
+             oninput="updateSearchTab('${tabId}',this.value)"
+             onkeydown="if(event.key==='Escape'){closeTab('${tabId}');event.preventDefault();}">
+      <span class="search-tab-count">${st.query?total+' results':''}</span>
+    </div>
+    <div class="search-tab-results">`;
+
+  if(!st.query){
+    h+=`<div class="sr-empty">Type to search across all entries, notes, and tags</div>`;
+  } else if(!total){
+    h+=`<div class="sr-empty">No results for "${escH(st.query)}"</div>`;
+  } else {
+    // Group by date
+    const byDate={};
+    visible.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e);});
+    for(const[date,entries]of Object.entries(byDate)){
+      const d=new Date(date+'T12:00:00');
+      const label=d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+      h+=`<div class="search-date-hdr">${label}</div>`;
+      entries.forEach(e=>{
+        const borderColor=getEntryBorderColor(e.tags);
+        const content=e.isNote?'<strong>'+escH((e.noteTitle||'Untitled').slice(0,50))+'</strong> — '+escH(e.content.replace(/#[a-zA-Z0-9_-]+/g,'').slice(0,80)):escH(e.content.slice(0,120));
+        const highlighted=hlMatch(content,st.query.split(/\s+/).filter(w=>!w.startsWith('#')&&!w.startsWith('@')&&!w.startsWith('-')).join('|')||'NOMATCH');
+        h+=`<div class="entry-card" data-id="${e.id}" onclick="jumpToEntry('${e.id}')" style="border-left-color:${borderColor}">
+          <span class="entry-time">${fmtTime(e.ts)}</span>
+          <span class="entry-content">${highlighted}</span>
+          ${(e.tags||[]).length?'<span class="entry-inline-tags">'+e.tags.map(t=>{const c=getTagColor(t);return`<span class="tag-pill" style="background:${c}12;color:${c}">#${escH(t)}</span>`;}).join('')+'</span>':''}
+        </div>`;
+      });
+    }
+    if(hasMore){
+      h+=`<div class="rs-show-more" onclick="showMoreSearchTab('${tabId}')">Show more (${total-st.showCount} remaining)</div>`;
     }
   }
-  if(mq&&mq.length){h+='<div class="sr-group">Questions</div>';mq.forEach(x=>{h+=`<div class="sr-item">${hlMatch(escH(x.question.slice(0,60)),q)} [${x.status}]</div>`;});}
-  if(mo&&mo.length){h+='<div class="sr-group">Pinned</div>';mo.forEach(x=>{h+=`<div class="sr-item">&#128204; ${hlMatch(escH(x.text.slice(0,60)),q)}</div>`;});}
-  if(!h)h=`<div class="sr-empty">No results</div>`;
-  res.innerHTML=h;
+  h+=`</div></div>`;
+  area.innerHTML=h;
 }
-function showMoreSearch(q){
-  searchShown+=SEARCH_PAGE;
-  renderSearchResults(q,null,null);
+
+function updateSearchTab(tabId,query){
+  const st=searchTabs.find(s=>s.id===tabId);
+  if(!st)return;
+  st.query=query;
+  st.showCount=SEARCH_PAGE;
+  renderTabBar(); // update tab label
+  // Re-render results only
+  const resultsEl=document.querySelector('.search-tab-results');
+  const countEl=document.querySelector('.search-tab-count');
+  if(!resultsEl)return;
+  const results=query?matchEntries(query):[];
+  const total=results.length;
+  const visible=results.slice(0,st.showCount);
+  if(countEl)countEl.textContent=query?total+' results':'';
+  if(!query){resultsEl.innerHTML='<div class="sr-empty">Type to search across all entries, notes, and tags</div>';return;}
+  if(!total){resultsEl.innerHTML=`<div class="sr-empty">No results for "${escH(query)}"</div>`;return;}
+  let h='';
+  const byDate={};
+  visible.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e);});
+  for(const[date,entries]of Object.entries(byDate)){
+    const d=new Date(date+'T12:00:00');
+    h+=`<div class="search-date-hdr">${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})}</div>`;
+    entries.forEach(e=>{
+      const borderColor=getEntryBorderColor(e.tags);
+      const content=e.isNote?'<strong>'+escH((e.noteTitle||'Untitled').slice(0,50))+'</strong> — '+escH(e.content.replace(/#[a-zA-Z0-9_-]+/g,'').slice(0,80)):escH(e.content.slice(0,120));
+      const qWords=query.split(/\s+/).filter(w=>!w.startsWith('#')&&!w.startsWith('@')&&!w.startsWith('-')).join('|')||'NOMATCH';
+      h+=`<div class="entry-card" data-id="${e.id}" onclick="jumpToEntry('${e.id}')" style="border-left-color:${borderColor}">
+        <span class="entry-time">${fmtTime(e.ts)}</span>
+        <span class="entry-content">${hlMatch(content,qWords)}</span>
+        ${(e.tags||[]).length?'<span class="entry-inline-tags">'+e.tags.map(t=>{const c=getTagColor(t);return`<span class="tag-pill" style="background:${c}12;color:${c}">#${escH(t)}</span>`;}).join('')+'</span>':''}
+      </div>`;
+    });
+  }
+  if(total>st.showCount)h+=`<div class="rs-show-more" onclick="showMoreSearchTab('${tabId}')">Show more (${total-st.showCount} remaining)</div>`;
+  resultsEl.innerHTML=h;
 }
-function hlMatch(html,q){return html.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');}
+
+function showMoreSearchTab(tabId){
+  const st=searchTabs.find(s=>s.id===tabId);
+  if(!st)return;
+  st.showCount+=SEARCH_PAGE;
+  renderActiveView();
+}
+
+function hlMatch(html,q){if(!q||q==='NOMATCH')return html;return html.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');}
 function jumpToEntry(id){
   const e=db.entries.find(x=>x.id===id);if(!e)return;
   if(e.isNote){openNoteTab(e.id);return;}
@@ -2186,25 +2530,148 @@ function toggleSb(hdr){hdr.classList.toggle('collapsed');}
 document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}
   if((e.metaKey||e.ctrlKey)&&e.key==='n'){e.preventDefault();createNote();}
-  if((e.metaKey||e.ctrlKey)&&e.key==='w'&&activeTab!=='feed'){e.preventDefault();closeTab(activeTab);}
+  if((e.metaKey||e.ctrlKey)&&e.key==='d'&&activeTab!=='feed'){e.preventDefault();closeTab(activeTab);}
   if(e.key==='Escape'){closeSearch();closeAC();}
 });
 document.addEventListener('click',e=>{
   // Close append if clicking outside an entry card
   if(appendingId){const card=document.querySelector(`.entry-card[data-id="${appendingId}"]`);if(card&&!card.contains(e.target))closeAppend();}
+  // Delegate: click on entry card to open as note
+  const entryCard=e.target.closest('.entry-card[data-action="open"]');
+  if(entryCard&&!e.target.closest('.entry-pin-toggle')&&!e.target.closest('.tag-pill')&&!e.target.closest('.entry-append')){
+    openAsNote(entryCard.dataset.id);
+  }
 });
 
 /* ═══════════ SETTINGS ═══════════ */
 function openSettings(){
-  document.getElementById('settings-page').style.display='block';
-  document.getElementById('settings-stats').textContent=
-    `${db.entries.filter(e=>!e.eventType).length} entries, ${db.openItems.length} pinned items, ${db.sections.length} sections, ${(db.people||[]).length} people`;
-  renderTagEditor();
-  renderPeopleEditor();
+  if(!openTabs.includes('settings'))openTabs.push('settings');
+  activeTab='settings';
+  renderTabBar();renderActiveView();
 }
 function closeSettings(){
-  document.getElementById('settings-page').style.display='none';
-  renderTagCloud();renderActiveView();renderAllSections();
+  closeTab('settings');
+  renderTagCloud();renderAllSections();
+}
+/* ═══════════ THEMES ═══════════ */
+const THEMES={
+  'Warm Notion':{
+    bg:'#faf8f5',surface:'#fff','surface-hover':'#f5f2ed','sidebar-bg':'#f5f2ed',
+    border:'#e8e0d4','border-light':'#f0ece6','border-strong':'#d4cbbf',
+    text:'#37352f',text2:'#787774',text3:'#9b9a97',
+    accent:'#cb912f','accent-light':'rgba(203,145,47,0.12)',
+    danger:'#e16259',green:'#4daa57',blue:'#5b9bd5',purple:'#9065b0',brown:'#8b7355',
+    'capture-bg':'#fdf9f3','note-bg':'#fdf9f3',
+    'shadow-sm':'0 1px 2px rgba(0,0,0,0.04)','shadow-md':'0 4px 12px rgba(0,0,0,0.06)',
+    _preview:['#faf8f5','#cb912f','#8b7355','#e8e0d4']
+  },
+  'T-Mobile':{
+    bg:'#f5f5f5',surface:'#ffffff','surface-hover':'#f0f0f0','sidebar-bg':'#f0f0f0',
+    border:'#e0e0e0','border-light':'#ebebeb','border-strong':'#cccccc',
+    text:'#000000',text2:'#6a6a6a',text3:'#9b9b9b',
+    accent:'#e20074','accent-light':'rgba(226,0,116,0.08)',
+    danger:'#e20074',green:'#00b33c',blue:'#0077c8',purple:'#9065b0',brown:'#444444',
+    'capture-bg':'#fafafa','note-bg':'#fafafa',
+    'shadow-sm':'0 1px 2px rgba(0,0,0,0.06)','shadow-md':'0 4px 12px rgba(0,0,0,0.1)',
+    _preview:['#f5f5f5','#e20074','#000000','#e0e0e0']
+  },
+  'Mint Pastel':{
+    bg:'#f0faf6',surface:'#ffffff','surface-hover':'#e8f5ef','sidebar-bg':'#e8f5ef',
+    border:'#c8e6d8','border-light':'#d8efe4','border-strong':'#a8d4be',
+    text:'#1a3a2a',text2:'#5a7a6a',text3:'#8aaa9a',
+    accent:'#2a9d6a','accent-light':'rgba(42,157,106,0.1)',
+    danger:'#e05555',green:'#2a9d6a',blue:'#4a90c4',purple:'#8a6aaa',brown:'#5a7a6a',
+    'capture-bg':'#f5fcf8','note-bg':'#f5fcf8',
+    'shadow-sm':'0 1px 2px rgba(0,60,30,0.04)','shadow-md':'0 4px 12px rgba(0,60,30,0.06)',
+    _preview:['#f0faf6','#2a9d6a','#1a3a2a','#c8e6d8']
+  },
+  'Dark':{
+    bg:'#1a1a1e',surface:'#242428','surface-hover':'#2e2e34','sidebar-bg':'#1e1e22',
+    border:'#3a3a40','border-light':'#2e2e34','border-strong':'#4a4a52',
+    text:'#e4e4e8',text2:'#9a9aa0',text3:'#6a6a72',
+    accent:'#f0a040','accent-light':'rgba(240,160,64,0.12)',
+    danger:'#f06060',green:'#50c878',blue:'#6ab0e8',purple:'#aa8acc',brown:'#b0a090',
+    'capture-bg':'#2a2a2e','note-bg':'#2a2a2e',
+    'shadow-sm':'0 1px 2px rgba(0,0,0,0.3)','shadow-md':'0 4px 12px rgba(0,0,0,0.4)',
+    _preview:['#1a1a1e','#f0a040','#e4e4e8','#3a3a40']
+  }
+};
+
+function applyTheme(name){
+  const t=THEMES[name];if(!t)return;
+  const root=document.documentElement;
+  Object.entries(t).forEach(([k,v])=>{
+    if(k.startsWith('_'))return; // skip metadata
+    root.style.setProperty('--'+k,v);
+  });
+  // Special: capture and note backgrounds
+  if(t['capture-bg'])root.style.setProperty('--capture-bg',t['capture-bg']);
+  if(t['note-bg'])root.style.setProperty('--note-bg',t['note-bg']);
+  db.theme=name;
+  save('settings');
+}
+
+function renderSettingsTab(area){
+  const stats=`${db.entries.filter(e=>!e.eventType&&!e.isHelp).length} entries, ${db.openItems.length} pinned items, ${db.sections.length} sections, ${(db.people||[]).length} people`;
+  area.innerHTML=`<div class="settings-tab">
+    <div class="settings-grid">
+      <div class="settings-col">
+        <div class="settings-section">
+          <h2>Storage</h2>
+          <p>Using <strong>IndexedDB</strong> — local, no server, no internet required</p>
+          <p style="color:var(--text3)">${stats}</p>
+        </div>
+        <div class="settings-section">
+          <h2>Data</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="modal-btn" onclick="exportData()">&#128229; Export JSON Backup</button>
+            <button class="modal-btn" onclick="document.getElementById('import-file').click()">&#128228; Import JSON Backup</button>
+            <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+          </div>
+        </div>
+        <div class="settings-section">
+          <h2>Tags</h2>
+          <p style="color:var(--text3);margin-bottom:8px">Drag a tag onto another to merge. Click color to change.</p>
+          <div id="tag-editor-list"></div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <input id="new-tag-input" placeholder="Add new tag..." style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')addNewTag()">
+            <button class="modal-btn" onclick="addNewTag()">Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-col">
+        <div class="settings-section">
+          <h2>People</h2>
+          <div id="people-editor-list"></div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <input id="new-person-input" placeholder="Add person..." style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')addNewPerson()">
+            <button class="modal-btn" onclick="addNewPerson()">Add</button>
+          </div>
+        </div>
+        <div class="settings-section" style="border:2px solid var(--danger);border-radius:var(--radius-md);padding:16px">
+          <h2 style="color:var(--danger)">Danger Zone</h2>
+          <button class="modal-btn danger" onclick="confirmPurge()">&#128465; Purge All Data</button>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section" style="margin-top:4px">
+      <h2>Theme</h2>
+      <div class="theme-grid">${Object.entries(THEMES).map(([name,t])=>{
+        const active=db.theme===name;
+        return`<div class="theme-card${active?' active':''}" onclick="applyTheme('${escH(name)}');renderActiveView()">
+          <div class="theme-preview">
+            <div class="theme-swatch" style="background:${t._preview[0]}"></div>
+            <div class="theme-swatch" style="background:${t._preview[1]}"></div>
+            <div class="theme-swatch" style="background:${t._preview[2]}"></div>
+            <div class="theme-swatch" style="background:${t._preview[3]}"></div>
+          </div>
+          <div class="theme-name">${escH(name)}</div>
+        </div>`;
+      }).join('')}</div>
+    </div>
+  </div>`;
+  renderTagEditor();
+  renderPeopleEditor();
 }
 
 /* Tag Editor */
@@ -2336,7 +2803,7 @@ async function doPurge(){
   await openIDB();
   closePurge();closeSettings();
   openTabs=['feed'];activeTab='feed';activeTagFilters=[];
-  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderTagCloud();renderAllSections();
+  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderHelpList();renderAllSections();
 }
 function exportData(){
   const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
@@ -2355,11 +2822,400 @@ function importData(e){
         await saveAll();
         closeSettings();
         openTabs=['feed'];activeTab='feed';
-        updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderTagCloud();renderAllSections();
+        updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderHelpList();renderAllSections();
       } else {alert('Invalid backup file');}
     }catch(err){alert('Failed to parse file: '+err.message);}
   };
   reader.readAsText(file);e.target.value='';
+}
+
+/* ═══════════ HELP NOTES ═══════════ */
+const HELP_NOTES=[
+{id:'help_welcome',noteTitle:'Welcome to DailyDispatch',content:`# Welcome to DailyDispatch
+
+DailyDispatch is your personal daily work journal — a fast, local, offline-first tool for capturing what you work on, tracking open items, and finding things later.
+
+Everything lives in your browser's IndexedDB. No server, no internet, no account needed.
+
+## Quick Start
+
+- Type in the capture box at the top of the Feed and press **Cmd+Enter** to log an entry
+- Use **#tags** to categorize: #meeting, #api, #question — anything you want
+- Use **@mentions** to reference people: @Sarah, @Dave
+- Click any entry to open it as a full note with the markdown editor
+- Pin important items by hovering and clicking the 📌 icon
+
+## Key Shortcuts
+
+- **Cmd+K** — Open a search tab
+- **Cmd+N** — Create a new note
+- **Cmd+D** — Close the current tab
+- **Cmd+Enter** — Submit a quick entry
+
+## Help Topics
+
+See these guides for more detail:
+- [[Quick Entries & Feed]]
+- [[Notes & Markdown Editor]]
+- [[Tags & Filtering]]
+- [[Sections & Custom Views]]
+- [[Search Tabs & Boolean Queries]]
+- [[Pinned Items]]
+- [[People & Mentions]]
+- [[Import, Export & Backup]]
+- [[Themes & Settings]]
+- [[Keyboard Shortcuts]]`},
+
+{id:'help_entries',noteTitle:'Quick Entries & Feed',content:`# Quick Entries & Feed
+
+## Adding Entries
+
+The capture box at the top of the Feed tab is your quick-entry point. Type anything and press **Cmd+Enter** or click **Add**.
+
+Entries are timestamped and appear in the feed sorted by time, newest first, grouped by hour.
+
+## Markdown in Entries
+
+Your entries support inline markdown:
+- **Bold** with \`**text**\`
+- *Italic* with \`*text*\`
+- \`inline code\` with backticks
+- Links: \`[text](url)\` or just paste a URL
+- #tags and @mentions are auto-detected
+
+## Opening as Notes
+
+Click any entry in the feed to open it as a full note in a new tab. This converts it to a note with the markdown editor where you can expand on it.
+
+## Date Navigation
+
+- Use the **◀ ▶** arrows in the topbar to navigate days
+- Click the date to open the calendar
+- Adding entries while viewing a past/future date timestamps them at 12:01 AM on that day
+
+## Daily Summary
+
+A "Generate daily summary" banner appears at the top of the feed. Click it to create a markdown note summarizing all entries for that day, grouped by tag.
+
+See also: [[Notes & Markdown Editor]], [[Tags & Filtering]]`},
+
+{id:'help_notes',noteTitle:'Notes & Markdown Editor',content:`# Notes & Markdown Editor
+
+## Creating Notes
+
+- Click the **+** button in the tab bar, or press **Cmd+N**
+- Click any feed entry to open it as a note
+
+Notes are full entries with a rich markdown editor powered by CodeMirror 6.
+
+## Live Preview
+
+The editor shows **rendered markdown on lines you're not editing** and **raw markdown on the line your cursor is on** — just like Obsidian.
+
+## Supported Markdown
+
+- \`# Heading 1\`, \`## Heading 2\`, \`### Heading 3\`
+- \`**bold**\` and \`*italic*\`
+- \`\\\`inline code\\\`\`
+- \`- bullet\` or \`* bullet\` (auto-continues on Enter, double-Enter to exit)
+- \`1. numbered\` lists (auto-increments)
+- \`> blockquote\` (auto-continues on Enter)
+- \`---\` horizontal divider
+- \`[ ] unchecked\` and \`[x] checked\` checkboxes (clickable!)
+- \`[link text](url)\` links
+- \`[[Note Title]]\` cross-links to other notes
+
+## Cross-Links
+
+Type \`[[\` to get autocomplete for existing note titles. Click a rendered cross-link to jump to that note.
+
+## Checkboxes
+
+Type \`[ ] \` for an unchecked item or \`[x] \` for checked. In the rendered view, these show as clickable checkboxes. Checked items get strikethrough styling.
+
+## Note Title
+
+The first line of your note becomes the tab title automatically.
+
+## Pin & Date
+
+Use the toolbar above the editor to:
+- **Pin/Unpin** the note
+- Change the **date** and **time**
+- **Copy** the raw markdown
+- **Delete** the note
+
+See also: [[Tags & Filtering]], [[Quick Entries & Feed]]`},
+
+{id:'help_tags',noteTitle:'Tags & Filtering',content:`# Tags & Filtering
+
+## Using Tags
+
+Type \`#\` followed by a name anywhere in an entry or note. Tags are auto-detected and shown as colored pills.
+
+Examples: #meeting, #api, #question, #todo, #decision
+
+## Tag Autocomplete
+
+When you type \`#\`, an autocomplete dropdown appears showing existing tags with their usage counts. Select with **Tab** or **Enter**, navigate with arrow keys.
+
+## Tag Colors
+
+Each tag gets an automatic color. You can change colors in **Settings > Tags** by clicking the color swatch.
+
+## Filtering the Feed
+
+Click any tag in the **Tags** section of the left sidebar to filter the feed. Multiple tags = AND logic (entries must have all selected tags). Click again to remove the filter.
+
+## Tag Management (Settings)
+
+In the Settings tab under **Tags**:
+- **Rename** a tag — all entries are updated
+- **Change color** — click the color swatch
+- **Delete** a tag — the # prefix is removed from entries, the word stays
+- **Merge** tags — drag one tag onto another to combine them
+
+See also: [[Sections & Custom Views]], [[Search Tabs & Boolean Queries]]`},
+
+{id:'help_sections',noteTitle:'Sections & Custom Views',content:`# Sections & Custom Views
+
+## What Are Sections?
+
+Sections are **saved filter views** that appear in the right sidebar. They let you create custom dashboards showing entries matching specific criteria.
+
+## Creating a Section
+
+1. Click the **+** button in the right sidebar header
+2. Name your section (click the title to edit)
+3. Click the filter row to set your query
+
+## Filter Query Syntax
+
+Sections use the same query syntax as search:
+- \`#meeting\` — entries with the meeting tag
+- \`#api -draft\` — entries with #api but NOT containing "draft"
+- \`@Dave\` — entries mentioning Dave
+- \`#api #review\` — entries with BOTH tags (AND)
+- \`#meeting OR #standup\` — entries with EITHER tag (OR)
+- \`deploy Friday\` — entries containing both words
+
+## Managing Sections
+
+- **Resize** — drag the bottom edge of a section
+- **Reorder** — drag sections by the ☰ handle to reorder
+- **Move between columns** — drag a section to the left sidebar drop zone
+- **Delete** — click the × button
+
+## Section Results
+
+Each section shows matching entries with timestamp and preview. Click an entry to open it. "Show more" loads additional results.
+
+See also: [[Search Tabs & Boolean Queries]], [[Tags & Filtering]]`},
+
+{id:'help_search',noteTitle:'Search Tabs & Boolean Queries',content:`# Search Tabs & Boolean Queries
+
+## Opening Search
+
+Click the 🔍 icon in the tab bar or press **Cmd+K**. This opens a new search tab.
+
+## Search Syntax
+
+Search uses the same powerful query syntax as sections:
+
+### Basic
+- \`keyword\` — full-text search across all entries and notes
+- \`#tag\` — entries with a specific tag
+- \`@person\` — entries mentioning someone
+
+### AND (default)
+- \`#api #review\` — must have BOTH tags
+- \`#meeting @Dave\` — must have #meeting tag AND mention @Dave
+- \`deploy server\` — must contain both words
+
+### OR
+- \`#meeting OR #standup\` — entries with EITHER tag
+- \`#api #review OR #frontend\` — (api AND review) OR (frontend)
+
+### Exclude
+- \`#api -draft\` — has #api but does NOT contain "draft"
+- \`#meeting -standup -1on1\` — meetings except standups and 1-on-1s
+
+### Combined
+- \`#api @Dave OR #frontend @Sarah\` — Dave's API work OR Sarah's frontend work
+
+## Multiple Search Tabs
+
+You can have multiple search tabs open simultaneously — useful for comparing different filtered views.
+
+## Results
+
+Results are grouped by date, showing the entry with its tags. Click any result to jump to it (opens as a note or scrolls to it in the feed).
+
+See also: [[Sections & Custom Views]], [[Tags & Filtering]]`},
+
+{id:'help_pins',noteTitle:'Pinned Items',content:`# Pinned Items
+
+## What Are Pinned Items?
+
+Pinned items are entries you want to keep visible in the left sidebar for quick access. Think of them as bookmarks for important notes or follow-ups.
+
+## Pinning an Entry
+
+Hover over any entry in the feed and click the 📌 icon on the left side. The pin icon is always visible on already-pinned entries.
+
+## Pinning from a Note
+
+In the note editor toolbar, click the **Pin** button to pin/unpin the current note.
+
+## The Pinned Section
+
+Pinned items appear in the left sidebar under **PINNED**. Click any pinned item to open it as a note. Click the × to unpin.
+
+## Pin Events
+
+Pinning and unpinning are logged as events in the feed, so you have a record of when items were pinned.
+
+See also: [[Quick Entries & Feed]], [[Notes & Markdown Editor]]`},
+
+{id:'help_people',noteTitle:'People & Mentions',content:`# People & Mentions
+
+## Mentioning People
+
+Type \`@\` followed by a name in any entry or note. An autocomplete dropdown shows existing people.
+
+Examples: @Sarah, @Dave, @Mike
+
+## Auto-Registration
+
+New names are automatically added to the people list when you submit an entry or save a note. You don't need to create people in advance.
+
+## People Management (Settings)
+
+In the Settings tab under **People**:
+- **Rename** — updates all entries containing that mention
+- **Delete** — removes the @ prefix from entries, the name stays as plain text
+- **Add** — manually add a person
+
+## Filtering by Person
+
+Use \`@person\` in search tabs or section filters to find all entries mentioning someone.
+
+See also: [[Tags & Filtering]], [[Search Tabs & Boolean Queries]]`},
+
+{id:'help_backup',noteTitle:'Import, Export & Backup',content:`# Import, Export & Backup
+
+## Data Storage
+
+DailyDispatch stores everything in your browser's **IndexedDB** — a local database with 1GB+ capacity. No server, no internet, no account.
+
+## Export
+
+Go to **Settings > Data** and click **Export JSON Backup**. This downloads a \`.json\` file containing all your entries, notes, tags, sections, and settings.
+
+## Import
+
+Click **Import JSON Backup** and select a previously exported \`.json\` file. This replaces all current data with the imported data.
+
+> **Warning:** Importing overwrites your current data. Export first if you want to keep it.
+
+## Purge
+
+The **Danger Zone** in Settings has a **Purge All Data** button. This permanently deletes everything. You must type PURGE to confirm.
+
+## Tips
+
+- Export regularly as a backup
+- The JSON file is human-readable — you can inspect it in any text editor
+- Data persists across browser restarts but NOT across different browsers or devices
+- Safari Private Browsing mode will lose data when the window closes
+
+See also: [[Themes & Settings]]`},
+
+{id:'help_themes',noteTitle:'Themes & Settings',content:`# Themes & Settings
+
+## Opening Settings
+
+Click the ⚙ gear icon at the right end of the tab bar. Settings opens as a tab you can work in alongside other notes.
+
+## Themes
+
+At the bottom of the Settings tab, choose from 4 built-in themes:
+- **Warm Notion** — cream/amber warm tones (default)
+- **T-Mobile** — clean white with magenta accents
+- **Mint Pastel** — soft green/mint tones
+- **Dark** — dark background with amber accents
+
+Your theme choice is saved and persists across sessions.
+
+## Tag Editor
+
+Manage your tags: rename, recolor, delete, or merge. Drag one tag onto another to merge them.
+
+## People Editor
+
+Manage your people list: rename, add, or remove.
+
+See also: [[Import, Export & Backup]]`},
+
+{id:'help_shortcuts',noteTitle:'Keyboard Shortcuts',content:`# Keyboard Shortcuts
+
+## Global Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| **Cmd+K** | Open a new search tab |
+| **Cmd+N** | Create a new note |
+| **Cmd+D** | Close the current tab |
+| **Escape** | Close autocomplete / cancel |
+
+## In the Capture Box
+
+| Shortcut | Action |
+|----------|--------|
+| **Cmd+Enter** | Submit the entry |
+| **Tab/Enter** | Accept autocomplete suggestion |
+| **Arrow keys** | Navigate autocomplete |
+
+## In the Note Editor
+
+| Shortcut | Action |
+|----------|--------|
+| **Enter** on a bullet line | Continue the bullet |
+| **Enter** on empty bullet | Exit bullet mode |
+| **Enter** on a \`> \` line | Continue blockquote |
+| **Cmd+Z** | Undo |
+| **Cmd+Shift+Z** | Redo |
+| **Tab/Enter** | Accept autocomplete |
+
+## Autocomplete Triggers
+
+| Trigger | What it does |
+|---------|-------------|
+| \`#\` | Tag autocomplete |
+| \`@\` | Person/mention autocomplete |
+| \`[[\` | Note cross-link autocomplete |
+
+See also: [[Welcome to DailyDispatch]], [[Notes & Markdown Editor]]`}
+];
+
+function ensureHelpNotes(){
+  let changed=false;
+  HELP_NOTES.forEach(h=>{
+    const existing=db.entries.find(e=>e.id===h.id);
+    if(!existing){
+      db.entries.push({
+        id:h.id, content:h.content, tags:[], mentions:[],
+        date:'2026-01-01', ts:new Date('2026-01-01T00:01:00').getTime(),
+        isNote:true, noteTitle:h.noteTitle, contextId:null, isHelp:true
+      });
+      changed=true;
+    } else if(existing.content!==h.content||existing.noteTitle!==h.noteTitle){
+      // Update content if it changed (e.g. after app update)
+      existing.content=h.content;existing.noteTitle=h.noteTitle;existing.tags=[];existing.isHelp=true;
+      changed=true;
+    }
+  });
+  if(changed)save();
 }
 
 /* ═══════════ INIT ═══════════ */
@@ -2370,7 +3226,9 @@ async function init(){
   if(!db.openItems)db.openItems=[];
   if(!db.tagColors)db.tagColors={};
   if(!db.people)db.people=[];
-  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderTagCloud();renderAllSections();
+  ensureHelpNotes();
+  if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
+  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderHelpList();renderAllSections();
 }
 init();
 </script>
