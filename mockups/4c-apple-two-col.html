@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DailyDispatch — Apple Two-Column</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f2f2f7;
+    --surface: #ffffff;
+    --text-primary: #1c1c1e;
+    --text-secondary: #8e8e93;
+    --text-tertiary: #aeaeb2;
+    --blue: #007aff;
+    --blue-light: #e8f0fe;
+    --orange: #ff9500;
+    --orange-light: #fff3e0;
+    --red: #ff3b30;
+    --green: #34c759;
+    --purple: #af52de;
+    --separator: #e5e5ea;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 270px 1fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Left Sidebar ── */
+  .sidebar {
+    background: var(--bg);
+    border-right: 1px solid var(--separator);
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--text-tertiary); border-radius: 3px; }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0 8px;
+  }
+
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--blue);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .brand-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  .sidebar-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .sidebar-card-header {
+    padding: 12px 14px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  /* Calendar */
+  .calendar-card { padding: 12px; }
+
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .cal-month {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .cal-arrows {
+    display: flex;
+    gap: 4px;
+  }
+
+  .cal-arrow {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    text-align: center;
+  }
+
+  .cal-day-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    padding: 4px 0;
+    text-transform: uppercase;
+  }
+
+  .cal-day {
+    font-size: 12px;
+    padding: 4px 0 2px;
+    border-radius: 50%;
+    position: relative;
+    color: var(--text-primary);
+    line-height: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .cal-day.empty { visibility: hidden; }
+  .cal-day.muted { color: var(--text-tertiary); }
+
+  .cal-day.today .cal-num {
+    background: var(--blue);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .cal-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+
+  .cal-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--blue);
+  }
+
+  .cal-dot.empty-dot { visibility: hidden; }
+
+  /* Pinned */
+  .pinned-list { padding: 4px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+
+  .pinned-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg);
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-primary);
+    border-left: 3px solid var(--orange);
+  }
+
+  .pinned-icon { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+
+  /* Tags */
+  .tags-area { padding: 4px 12px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+
+  .tag-pill:hover { transform: scale(1.03); }
+
+  .tag-count {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.7;
+  }
+
+  .tag-api { background: #dbeafe; color: #1d4ed8; }
+  .tag-meeting { background: #f3e8ff; color: #7c3aed; }
+  .tag-question { background: #fef3c7; color: #b45309; }
+  .tag-frontend { background: #d1fae5; color: #065f46; }
+  .tag-sprint { background: #ffe4e6; color: #be123c; }
+  .tag-review { background: #e0e7ff; color: #3730a3; }
+  .tag-fix { background: #fce7f3; color: #9d174d; }
+  .tag-backend { background: #f0fdf4; color: #166534; }
+  .tag-deploy { background: #ecfdf5; color: #047857; }
+  .tag-docs { background: #f0f9ff; color: #0369a1; }
+  .tag-design { background: #fdf4ff; color: #86198f; }
+
+  /* Sections (collapsible) */
+  .section-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .section-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .section-dot.red { background: var(--red); }
+  .section-dot.purple { background: var(--purple); }
+  .section-dot.green { background: var(--green); }
+
+  .section-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .section-count {
+    background: var(--bg);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .section-toggle {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    transition: transform 0.2s;
+  }
+
+  .section-filter {
+    padding: 0 14px 8px;
+    display: flex;
+    gap: 6px;
+  }
+
+  .filter-pill {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--bg);
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+
+  .section-entries { padding: 0 10px 6px; }
+
+  .section-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .section-entry:hover { background: var(--bg); }
+
+  .section-entry-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .section-entry-text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .section-footer {
+    padding: 6px 14px 10px;
+    text-align: center;
+  }
+
+  .show-all {
+    font-size: 12px;
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .show-all:hover { text-decoration: underline; }
+
+  /* ── Center Column ── */
+  .center {
+    overflow-y: auto;
+    padding: 24px 32px;
+    background: var(--bg);
+  }
+
+  .center::-webkit-scrollbar { width: 8px; }
+  .center::-webkit-scrollbar-track { background: transparent; }
+  .center::-webkit-scrollbar-thumb { background: var(--text-tertiary); border-radius: 4px; }
+
+  /* Tab bar */
+  .tab-bar {
+    display: inline-flex;
+    background: rgba(118,118,128,0.12);
+    border-radius: 8px;
+    padding: 2px;
+    margin-bottom: 20px;
+  }
+
+  .tab-item {
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+
+  .tab-item.active {
+    background: var(--surface);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    font-weight: 600;
+  }
+
+  /* Quick capture */
+  .quick-capture {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .capture-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #007aff, #5856d6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .capture-input-area { flex: 1; }
+
+  .capture-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text-primary);
+    padding: 8px 0;
+    background: transparent;
+    resize: none;
+  }
+
+  .capture-input::placeholder { color: var(--text-tertiary); }
+
+  .capture-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--separator);
+  }
+
+  .capture-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .capture-action-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    background: var(--bg);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .capture-submit {
+    padding: 7px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    background: var(--blue);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .capture-submit:hover { opacity: 0.88; }
+
+  /* Day divider */
+  .day-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 28px 0 16px;
+  }
+
+  .day-divider:first-child { margin-top: 0; }
+
+  .day-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    letter-spacing: -0.3px;
+  }
+
+  .day-emoji { font-size: 18px; }
+
+  .day-line {
+    flex: 1;
+    height: 1px;
+    background: var(--separator);
+  }
+
+  /* Feed cards */
+  .feed { display: flex; flex-direction: column; gap: 10px; }
+
+  .entry-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 22px;
+    transition: box-shadow 0.15s;
+    position: relative;
+  }
+
+  .entry-card:hover { box-shadow: var(--shadow-md); }
+
+  .entry-card.pinned {
+    border-left: 3px solid var(--orange);
+  }
+
+  .entry-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .entry-time {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .entry-pin-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--orange);
+    background: var(--orange-light);
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .entry-content {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+  }
+
+  .entry-content strong { font-weight: 600; }
+  .entry-content .mention { color: var(--blue); font-weight: 500; }
+
+  .entry-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .entry-tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 1fr;
+    }
+    .sidebar { display: none; }
+    .center { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── LEFT SIDEBAR ── -->
+  <aside class="sidebar">
+
+    <!-- Brand -->
+    <div class="brand">
+      <div class="brand-icon">D</div>
+      <div class="brand-name">DailyDispatch</div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="sidebar-card calendar-card">
+      <div class="cal-nav">
+        <span class="cal-month">March 2026</span>
+        <div class="cal-arrows">
+          <button class="cal-arrow">&lsaquo;</button>
+          <button class="cal-arrow">&rsaquo;</button>
+        </div>
+      </div>
+      <div class="cal-grid">
+        <span class="cal-day-label">Su</span>
+        <span class="cal-day-label">Mo</span>
+        <span class="cal-day-label">Tu</span>
+        <span class="cal-day-label">We</span>
+        <span class="cal-day-label">Th</span>
+        <span class="cal-day-label">Fr</span>
+        <span class="cal-day-label">Sa</span>
+
+        <span class="cal-day"><span class="cal-num">1</span><span class="cal-dot empty-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">2</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">3</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">4</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">5</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">6</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">7</span><span class="cal-dot empty-dot"></span></span>
+
+        <span class="cal-day"><span class="cal-num">8</span><span class="cal-dot empty-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">9</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">10</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">11</span><span class="cal-dot empty-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">12</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">13</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">14</span><span class="cal-dot empty-dot"></span></span>
+
+        <span class="cal-day"><span class="cal-num">15</span><span class="cal-dot empty-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">16</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">17</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">18</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">19</span><span class="cal-dot empty-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">20</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">21</span><span class="cal-dot empty-dot"></span></span>
+
+        <span class="cal-day"><span class="cal-num">22</span><span class="cal-dot empty-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">23</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">24</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">25</span><span class="cal-dot empty-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">26</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">27</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">28</span><span class="cal-dot empty-dot"></span></span>
+
+        <span class="cal-day"><span class="cal-num">29</span><span class="cal-dot"></span></span>
+        <span class="cal-day today"><span class="cal-num">30</span><span class="cal-dot"></span></span>
+        <span class="cal-day"><span class="cal-num">31</span><span class="cal-dot empty-dot"></span></span>
+        <span class="cal-day empty"><span class="cal-num"></span></span>
+        <span class="cal-day empty"><span class="cal-num"></span></span>
+        <span class="cal-day empty"><span class="cal-num"></span></span>
+        <span class="cal-day empty"><span class="cal-num"></span></span>
+      </div>
+    </div>
+
+    <!-- Pinned -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">Pinned</div>
+      <div class="pinned-list">
+        <div class="pinned-item">
+          <span class="pinned-icon">&#128204;</span>
+          <span>API spec review &mdash; finalize rate limits</span>
+        </div>
+        <div class="pinned-item">
+          <span class="pinned-icon">&#128204;</span>
+          <span>Follow up with Mike on Redis</span>
+        </div>
+        <div class="pinned-item">
+          <span class="pinned-icon">&#128204;</span>
+          <span>Auth refactor scope doc</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">Tags</div>
+      <div class="tags-area">
+        <span class="tag-pill tag-api">#api <span class="tag-count">5</span></span>
+        <span class="tag-pill tag-meeting">#meeting <span class="tag-count">4</span></span>
+        <span class="tag-pill tag-question">#question <span class="tag-count">2</span></span>
+        <span class="tag-pill tag-frontend">#frontend <span class="tag-count">2</span></span>
+        <span class="tag-pill tag-sprint">#sprint <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-review">#review <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-fix">#fix <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-backend">#backend <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-deploy">#deploy <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-docs">#docs <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-design">#design <span class="tag-count">1</span></span>
+      </div>
+    </div>
+
+    <!-- Section: Blockers -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-dot red"></span>
+        <span class="section-name">Blockers</span>
+        <span class="section-count">2</span>
+        <span class="section-toggle">&#9660;</span>
+      </div>
+      <div class="section-filter">
+        <span class="filter-pill">High priority</span>
+      </div>
+      <div class="section-entries">
+        <div class="section-entry">
+          <span class="section-entry-time">8:30 AM</span>
+          <span class="section-entry-text">Flaky CI blocking merges</span>
+        </div>
+        <div class="section-entry">
+          <span class="section-entry-time">10:42 AM</span>
+          <span class="section-entry-text">Rate limits not finalized for API spec</span>
+        </div>
+      </div>
+      <div class="section-footer">
+        <a class="show-all">show all</a>
+      </div>
+    </div>
+
+    <!-- Section: Meetings -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-dot purple"></span>
+        <span class="section-name">Meetings</span>
+        <span class="section-count">4</span>
+        <span class="section-toggle">&#9660;</span>
+      </div>
+      <div class="section-filter">
+        <span class="filter-pill">Tagged #meeting</span>
+      </div>
+      <div class="section-entries">
+        <div class="section-entry">
+          <span class="section-entry-time">8:30 AM</span>
+          <span class="section-entry-text">Morning standup</span>
+        </div>
+        <div class="section-entry">
+          <span class="section-entry-time">9:30 AM</span>
+          <span class="section-entry-text">Quick sync with @Mike</span>
+        </div>
+        <div class="section-entry">
+          <span class="section-entry-time">9:45 AM</span>
+          <span class="section-entry-text">Sprint planning</span>
+        </div>
+      </div>
+      <div class="section-footer">
+        <a class="show-all">show all</a>
+      </div>
+    </div>
+
+    <!-- Section: Deployments -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-dot green"></span>
+        <span class="section-name">Deployments</span>
+        <span class="section-count">2</span>
+        <span class="section-toggle">&#9660;</span>
+      </div>
+      <div class="section-filter">
+        <span class="filter-pill">Tagged #deploy</span>
+      </div>
+      <div class="section-entries">
+        <div class="section-entry">
+          <span class="section-entry-time">8:45 AM</span>
+          <span class="section-entry-text">Merged PR #247 &mdash; token refresh logic</span>
+        </div>
+        <div class="section-entry">
+          <span class="section-entry-time">9:05 AM</span>
+          <span class="section-entry-text">Fixed login CSS bug (Safari)</span>
+        </div>
+      </div>
+      <div class="section-footer">
+        <a class="show-all">show all</a>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── CENTER COLUMN ── -->
+  <main class="center">
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <span class="tab-item active">All Entries</span>
+      <span class="tab-item">Pinned</span>
+      <span class="tab-item">Today</span>
+      <span class="tab-item">This Week</span>
+    </div>
+
+    <!-- Quick capture -->
+    <div class="quick-capture">
+      <div class="capture-avatar">T</div>
+      <div class="capture-input-area">
+        <textarea class="capture-input" rows="1" placeholder="What's on your mind? Use #tags and @mentions..."></textarea>
+        <div class="capture-toolbar">
+          <div class="capture-actions">
+            <button class="capture-action-btn"># Tag</button>
+            <button class="capture-action-btn">@ Mention</button>
+            <button class="capture-action-btn">&#128204; Pin</button>
+          </div>
+          <button class="capture-submit">Add Entry</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day: Monday, March 30, 2026 -->
+    <div class="day-divider">
+      <span class="day-emoji">&#128197;</span>
+      <span class="day-label">Monday, March 30, 2026</span>
+      <span class="day-line"></span>
+    </div>
+
+    <div class="feed">
+
+      <!-- 10:42 AM — Pinned -->
+      <div class="entry-card pinned">
+        <div class="entry-top">
+          <span class="entry-time">10:42 AM</span>
+          <span class="entry-pin-badge">&#128204; Pinned</span>
+        </div>
+        <div class="entry-content">
+          Reviewed the <strong>API spec</strong> draft with <span class="mention">@Dave</span> &mdash; need to finalize rate limits before Thursday
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-api">#api</span>
+          <span class="entry-tag tag-review">#review</span>
+        </div>
+      </div>
+
+      <!-- 10:15 AM -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <span class="entry-time">10:15 AM</span>
+        </div>
+        <div class="entry-content">
+          Sarah asked about deployment timeline for Q2
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-question">#question</span>
+        </div>
+      </div>
+
+      <!-- 9:45 AM -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <span class="entry-time">9:45 AM</span>
+        </div>
+        <div class="entry-content">
+          Sprint planning &mdash; decided to prioritize auth refactor over search
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-meeting">#meeting</span>
+          <span class="entry-tag tag-sprint">#sprint</span>
+        </div>
+      </div>
+
+      <!-- 9:30 AM -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <span class="entry-time">9:30 AM</span>
+        </div>
+        <div class="entry-content">
+          Quick sync with <span class="mention">@Mike</span> on Redis caching approach
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-api">#api</span>
+        </div>
+      </div>
+
+      <!-- 9:05 AM -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <span class="entry-time">9:05 AM</span>
+        </div>
+        <div class="entry-content">
+          Fixed the login CSS bug that was breaking Safari
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-frontend">#frontend</span>
+          <span class="entry-tag tag-fix">#fix</span>
+        </div>
+      </div>
+
+      <!-- 8:45 AM -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <span class="entry-time">8:45 AM</span>
+        </div>
+        <div class="entry-content">
+          Merged PR #247 &mdash; token refresh logic
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-backend">#backend</span>
+          <span class="entry-tag tag-deploy">#deploy</span>
+        </div>
+      </div>
+
+      <!-- 8:30 AM -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <span class="entry-time">8:30 AM</span>
+        </div>
+        <div class="entry-content">
+          Morning standup &mdash; blockers: flaky CI
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-meeting">#meeting</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Day divider: Sunday -->
+    <div class="day-divider">
+      <span class="day-emoji">&#128197;</span>
+      <span class="day-label">Sunday, March 29th</span>
+      <span class="day-line"></span>
+    </div>
+
+    <div class="feed">
+
+      <!-- 4:30 PM -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <span class="entry-time">4:30 PM</span>
+        </div>
+        <div class="entry-content">
+          Wrapped up API documentation
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-api">#api</span>
+          <span class="entry-tag tag-docs">#docs</span>
+        </div>
+      </div>
+
+      <!-- 2:15 PM -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <span class="entry-time">2:15 PM</span>
+        </div>
+        <div class="entry-content">
+          1:1 with <span class="mention">@Sarah</span> &mdash; career growth discussion
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-meeting">#meeting</span>
+        </div>
+      </div>
+
+      <!-- 11:00 AM -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <span class="entry-time">11:00 AM</span>
+        </div>
+        <div class="entry-content">
+          Sketched wireframes for settings page
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-frontend">#frontend</span>
+          <span class="entry-tag tag-design">#design</span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DailyDispatch — Apple Compact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2f2f7;
+    --surface: #ffffff;
+    --text: #1c1c1e;
+    --text2: #8e8e93;
+    --text3: #aeaeb2;
+    --blue: #007aff;
+    --green: #34c759;
+    --orange: #ff9500;
+    --red: #ff3b30;
+    --purple: #af52de;
+    --teal: #5ac8fa;
+    --pink: #ff2d55;
+    --indigo: #5856d6;
+    --shadow: 0 1px 6px rgba(0,0,0,0.06);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-seg: 0 1px 3px rgba(0,0,0,0.12);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text);
+    background: var(--bg);
+    height: 100vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 220px 1fr 230px;
+    grid-template-areas: "left center right";
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.13); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar-left {
+    grid-area: left;
+    background: var(--bg);
+    overflow-y: auto;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .app-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 2px;
+  }
+  .app-title-icon {
+    width: 24px;
+    height: 24px;
+    background: var(--blue);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .app-title h1 {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text);
+  }
+
+  /* Calendar */
+  .calendar-card {
+    background: var(--surface);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 10px;
+  }
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .cal-header h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .cal-nav {
+    display: flex;
+    gap: 2px;
+  }
+  .cal-nav button {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: var(--bg);
+    border-radius: 50%;
+    color: var(--blue);
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    gap: 1px;
+  }
+  .cal-dow {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text3);
+    padding: 2px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .cal-day {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+    color: var(--text2);
+    margin: 0 auto;
+    position: relative;
+    cursor: default;
+  }
+  .cal-day.today {
+    background: var(--blue);
+    color: #fff;
+    font-weight: 600;
+  }
+  .cal-day.has-entries::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    width: 3px;
+    height: 3px;
+    background: var(--blue);
+    border-radius: 50%;
+  }
+  .cal-day.today.has-entries::after {
+    background: #fff;
+  }
+  .cal-day.other-month {
+    color: var(--text3);
+    opacity: 0.35;
+  }
+
+  /* Sidebar section headers */
+  .sb-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text2);
+    padding: 0 2px;
+  }
+
+  /* Pinned items — flat list with orange dot */
+  .pinned-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0 2px;
+  }
+  .pinned-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px 0;
+  }
+  .pinned-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .pinned-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Tags */
+  .tags-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 0 2px;
+  }
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 100px;
+    font-size: 9px;
+    font-weight: 500;
+    cursor: default;
+  }
+  .tag-pill .count {
+    font-size: 8px;
+    opacity: 0.65;
+    font-weight: 600;
+  }
+  .tag-blue { background: rgba(0,122,255,0.1); color: #005ec4; }
+  .tag-purple { background: rgba(175,82,222,0.1); color: #7b2db0; }
+  .tag-green { background: rgba(52,199,89,0.1); color: #1e8e3e; }
+  .tag-orange { background: rgba(255,149,0,0.1); color: #b36800; }
+  .tag-red { background: rgba(255,59,48,0.1); color: #c4261a; }
+  .tag-teal { background: rgba(90,200,250,0.1); color: #0077a8; }
+  .tag-pink { background: rgba(255,45,85,0.1); color: #c4163a; }
+  .tag-indigo { background: rgba(88,86,214,0.1); color: #3f3db0; }
+
+  /* ── CENTER ── */
+  .center {
+    grid-area: center;
+    overflow-y: auto;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* Segmented Control */
+  .seg-control {
+    display: inline-flex;
+    background: rgba(142,142,147,0.12);
+    border-radius: 7px;
+    padding: 2px;
+    align-self: flex-start;
+    margin-bottom: 4px;
+  }
+  .seg-item {
+    padding: 4px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: default;
+    white-space: nowrap;
+  }
+  .seg-item.active {
+    background: var(--surface);
+    box-shadow: var(--shadow-seg);
+    font-weight: 600;
+  }
+  .seg-item:not(.active) {
+    color: var(--text2);
+  }
+
+  /* Quick Capture */
+  .capture-card {
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 8px 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .capture-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--text);
+    background: transparent;
+    line-height: 1.4;
+  }
+  .capture-input::placeholder {
+    color: var(--text3);
+  }
+  .capture-btn {
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    padding: 4px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Day Divider */
+  .day-divider {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    padding: 10px 0 2px;
+    letter-spacing: -0.2px;
+    border-bottom: 1.5px solid var(--blue);
+    margin-bottom: 2px;
+  }
+
+  /* Feed Entry Card — compact inline */
+  .entry-card {
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    padding: 8px 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    flex-direction: column;
+    line-height: 1.5;
+  }
+  .entry-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0;
+    width: 100%;
+  }
+  .entry-time {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    flex-shrink: 0;
+    margin-right: 8px;
+    letter-spacing: -0.3px;
+  }
+  .entry-content {
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+    min-width: 0;
+  }
+  .entry-content .mention {
+    color: var(--blue);
+    font-weight: 500;
+  }
+  .entry-content .hashtag {
+    color: var(--purple);
+    font-weight: 500;
+  }
+  .entry-tags-inline {
+    display: inline;
+  }
+  .entry-tag {
+    font-size: 8px;
+    padding: 1px 6px;
+    border-radius: 100px;
+    font-weight: 500;
+    margin-left: 3px;
+    display: inline-block;
+    vertical-align: baseline;
+    position: relative;
+    top: -1px;
+  }
+  .pin-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+    margin-left: 5px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+
+  /* ── RIGHT SIDEBAR ── */
+  .sidebar-right {
+    grid-area: right;
+    overflow-y: auto;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sr-header {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    padding: 0 2px;
+    letter-spacing: -0.2px;
+  }
+  .section-card {
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .section-title .sec-icon {
+    font-size: 12px;
+  }
+  .section-filter {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    background: var(--bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    display: inline-block;
+    align-self: flex-start;
+  }
+  .section-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .section-entry {
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.4;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+  }
+  .section-entry:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .section-entry-time {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    margin-right: 5px;
+    flex-shrink: 0;
+  }
+  .section-entry-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- LEFT SIDEBAR -->
+<aside class="sidebar-left">
+
+  <div class="app-title">
+    <div class="app-title-icon">D</div>
+    <h1>DailyDispatch</h1>
+  </div>
+
+  <!-- Calendar -->
+  <div class="calendar-card">
+    <div class="cal-header">
+      <h3>March 2026</h3>
+      <div class="cal-nav">
+        <button>&lsaquo;</button>
+        <button>&rsaquo;</button>
+      </div>
+    </div>
+    <div class="cal-grid">
+      <span class="cal-dow">Su</span><span class="cal-dow">Mo</span><span class="cal-dow">Tu</span><span class="cal-dow">We</span><span class="cal-dow">Th</span><span class="cal-dow">Fr</span><span class="cal-dow">Sa</span>
+      <span class="cal-day has-entries">1</span>
+      <span class="cal-day">2</span>
+      <span class="cal-day">3</span>
+      <span class="cal-day">4</span>
+      <span class="cal-day has-entries">5</span>
+      <span class="cal-day has-entries">6</span>
+      <span class="cal-day">7</span>
+      <span class="cal-day">8</span>
+      <span class="cal-day has-entries">9</span>
+      <span class="cal-day has-entries">10</span>
+      <span class="cal-day">11</span>
+      <span class="cal-day has-entries">12</span>
+      <span class="cal-day has-entries">13</span>
+      <span class="cal-day">14</span>
+      <span class="cal-day">15</span>
+      <span class="cal-day has-entries">16</span>
+      <span class="cal-day">17</span>
+      <span class="cal-day has-entries">18</span>
+      <span class="cal-day">19</span>
+      <span class="cal-day has-entries">20</span>
+      <span class="cal-day">21</span>
+      <span class="cal-day">22</span>
+      <span class="cal-day has-entries">23</span>
+      <span class="cal-day has-entries">24</span>
+      <span class="cal-day has-entries">25</span>
+      <span class="cal-day has-entries">26</span>
+      <span class="cal-day has-entries">27</span>
+      <span class="cal-day">28</span>
+      <span class="cal-day">29</span>
+      <span class="cal-day today has-entries">30</span>
+      <span class="cal-day">31</span>
+      <span class="cal-day other-month">1</span>
+      <span class="cal-day other-month">2</span>
+      <span class="cal-day other-month">3</span>
+      <span class="cal-day other-month">4</span>
+    </div>
+  </div>
+
+  <!-- Pinned -->
+  <div>
+    <div class="sb-label" style="margin-bottom: 6px;">Pinned</div>
+    <div class="pinned-list">
+      <div class="pinned-item">
+        <span class="pinned-dot"></span>
+        <span class="pinned-text">Deploy auth service to staging by EOD</span>
+      </div>
+      <div class="pinned-item">
+        <span class="pinned-dot"></span>
+        <span class="pinned-text">Follow up with @sarah on design review</span>
+      </div>
+      <div class="pinned-item">
+        <span class="pinned-dot"></span>
+        <span class="pinned-text">Investigate flaky CI pipeline &mdash; 3rd failure</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tags -->
+  <div>
+    <div class="sb-label" style="margin-bottom: 6px;">Tags</div>
+    <div class="tags-wrap">
+      <span class="tag-pill tag-blue">#backend <span class="count">5</span></span>
+      <span class="tag-pill tag-purple">#frontend <span class="count">3</span></span>
+      <span class="tag-pill tag-green">#deploy <span class="count">4</span></span>
+      <span class="tag-pill tag-orange">#blocker <span class="count">2</span></span>
+      <span class="tag-pill tag-red">#bug <span class="count">3</span></span>
+      <span class="tag-pill tag-teal">#devops <span class="count">2</span></span>
+      <span class="tag-pill tag-pink">#design <span class="count">2</span></span>
+      <span class="tag-pill tag-indigo">#sprint <span class="count">4</span></span>
+    </div>
+  </div>
+
+</aside>
+
+<!-- CENTER -->
+<main class="center">
+
+  <!-- Segmented Control -->
+  <div class="seg-control">
+    <div class="seg-item active">Feed</div>
+    <div class="seg-item">Sprint Notes</div>
+    <div class="seg-item" style="color: var(--blue); font-weight: 600;">+</div>
+  </div>
+
+  <!-- Quick Capture -->
+  <div class="capture-card">
+    <input type="text" class="capture-input" placeholder="What are you working on? #tags @mentions..." readonly>
+    <button class="capture-btn">Add</button>
+  </div>
+
+  <!-- Day Divider: Today -->
+  <div class="day-divider">Monday, March 30th</div>
+
+  <!-- Entry 1: Pinned -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">9:12 AM</span>
+      <span class="entry-content">Investigate flaky CI pipeline &mdash; Docker layer cache invalidated every run. Check base image tags and devops config. <span class="entry-tags-inline"><span class="entry-tag tag-red">#bug</span><span class="entry-tag tag-teal">#devops</span><span class="entry-tag tag-orange">#blocker</span></span><span class="pin-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- Entry 2 -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">10:45 AM</span>
+      <span class="entry-content">Standup: sprint velocity with <span class="mention">@mike</span> &amp; <span class="mention">@sarah</span> &mdash; on track for release, finalize auth flow by Wed. <span class="entry-tags-inline"><span class="entry-tag tag-indigo">#sprint</span><span class="entry-tag tag-purple">#frontend</span></span></span>
+    </div>
+  </div>
+
+  <!-- Entry 3 -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">11:30 AM</span>
+      <span class="entry-content">Merged PR #247 &mdash; refactored token refresh logic, added retry with exponential backoff. Tests green. <span class="entry-tags-inline"><span class="entry-tag tag-blue">#backend</span><span class="entry-tag tag-green">#deploy</span></span></span>
+    </div>
+  </div>
+
+  <!-- Entry 4 -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">1:15 PM</span>
+      <span class="entry-content">API rate limiting worse than expected in prod. <span class="mention">@chen</span> suggested request queue with priority levels &mdash; prototyping this afternoon. <span class="entry-tags-inline"><span class="entry-tag tag-blue">#backend</span><span class="entry-tag tag-orange">#blocker</span></span></span>
+    </div>
+  </div>
+
+  <!-- Entry 5 -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">3:00 PM</span>
+      <span class="entry-content">Design review with <span class="mention">@sarah</span> &mdash; dashboard layout approved, component library additions good. Align on dark mode color tokens. <span class="entry-tags-inline"><span class="entry-tag tag-pink">#design</span><span class="entry-tag tag-purple">#frontend</span></span></span>
+    </div>
+  </div>
+
+  <!-- Entry 6 -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">4:22 PM</span>
+      <span class="entry-content">Deployed auth service v2.3.1 to staging. Integration tests passing. Monitor error rates overnight, promote to prod tomorrow. <span class="entry-tags-inline"><span class="entry-tag tag-green">#deploy</span><span class="entry-tag tag-blue">#backend</span></span></span>
+    </div>
+  </div>
+
+  <!-- Entry 7 -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">5:10 PM</span>
+      <span class="entry-content">EOD wrap-up: auth service deployed, CI issue documented, rate limiter prototype started. Tomorrow: prod deploy + queue impl. <span class="entry-tags-inline"><span class="entry-tag tag-indigo">#sprint</span></span></span>
+    </div>
+  </div>
+
+  <!-- Day Divider: Friday -->
+  <div class="day-divider">Friday, March 27th</div>
+
+  <!-- Entry: Pinned -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">9:30 AM</span>
+      <span class="entry-content">Deploy auth service to staging by EOD. <span class="mention">@mike</span> needs it Monday. Coordinate with <span class="mention">@chen</span> on DB migration. <span class="entry-tags-inline"><span class="entry-tag tag-green">#deploy</span><span class="entry-tag tag-blue">#backend</span><span class="entry-tag tag-indigo">#sprint</span></span><span class="pin-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- Entry -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">11:00 AM</span>
+      <span class="entry-content">Sprint retro: reduce WIP limit to 3/person, improve PR review turnaround to &lt;4hr response time. <span class="entry-tags-inline"><span class="entry-tag tag-indigo">#sprint</span></span></span>
+    </div>
+  </div>
+
+  <!-- Entry -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">2:45 PM</span>
+      <span class="entry-content">Fixed N+1 query on dashboard endpoint &mdash; response time 1.2s to 180ms. <span class="mention">@mike</span> confirmed improvement. <span class="entry-tags-inline"><span class="entry-tag tag-blue">#backend</span><span class="entry-tag tag-red">#bug</span></span></span>
+    </div>
+  </div>
+
+  <!-- Entry -->
+  <div class="entry-card">
+    <div class="entry-line">
+      <span class="entry-time">4:10 PM</span>
+      <span class="entry-content">Pushed Docker image updates for staging. New base image cuts build time ~40%. Verify cache on CI before prod rollout. <span class="entry-tags-inline"><span class="entry-tag tag-teal">#devops</span><span class="entry-tag tag-green">#deploy</span></span></span>
+    </div>
+  </div>
+
+</main>
+
+<!-- RIGHT SIDEBAR -->
+<aside class="sidebar-right">
+
+  <div class="sr-header">Sections</div>
+
+  <!-- Blockers -->
+  <div class="section-card">
+    <div class="section-title">
+      <span class="sec-icon">&#128721;</span> Blockers
+    </div>
+    <div class="section-filter">#blocker</div>
+    <div class="section-entries">
+      <div class="section-entry">
+        <span class="section-entry-time">9:12</span>
+        <span class="section-entry-text">Flaky CI &mdash; Docker cache invalidation</span>
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">1:15</span>
+        <span class="section-entry-text">API rate limiting in production</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deployments -->
+  <div class="section-card">
+    <div class="section-title">
+      <span class="sec-icon">&#128640;</span> Deployments
+    </div>
+    <div class="section-filter">#deploy</div>
+    <div class="section-entries">
+      <div class="section-entry">
+        <span class="section-entry-time">11:30</span>
+        <span class="section-entry-text">PR #247 &mdash; token refresh refactor</span>
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">4:22</span>
+        <span class="section-entry-text">Auth service v2.3.1 to staging</span>
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">4:10</span>
+        <span class="section-entry-text">Docker image updates for staging</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sprint -->
+  <div class="section-card">
+    <div class="section-title">
+      <span class="sec-icon">&#127939;</span> Sprint
+    </div>
+    <div class="section-filter">#sprint</div>
+    <div class="section-entries">
+      <div class="section-entry">
+        <span class="section-entry-time">10:45</span>
+        <span class="section-entry-text">Sprint velocity discussion with team</span>
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">9:30</span>
+        <span class="section-entry-text">Deploy auth for Monday integration</span>
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">11:00</span>
+        <span class="section-entry-text">Retro: WIP limits, faster PR reviews</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Design -->
+  <div class="section-card">
+    <div class="section-title">
+      <span class="sec-icon">&#127912;</span> Design
+    </div>
+    <div class="section-filter">#design</div>
+    <div class="section-entries">
+      <div class="section-entry">
+        <span class="section-entry-time">3:00</span>
+        <span class="section-entry-text">Dashboard layout review with @sarah</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bugs -->
+  <div class="section-card">
+    <div class="section-title">
+      <span class="sec-icon">&#128027;</span> Bugs
+    </div>
+    <div class="section-filter">#bug</div>
+    <div class="section-entries">
+      <div class="section-entry">
+        <span class="section-entry-time">9:12</span>
+        <span class="section-entry-text">CI pipeline Docker cache issue</span>
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">2:45</span>
+        <span class="section-entry-text">Fixed N+1 query on dashboard endpoint</span>
+      </div>
+    </div>
+  </div>
+
+</aside>
+
+</body>
+</html>

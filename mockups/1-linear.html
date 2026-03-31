@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DailyDispatch — Linear Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --sidebar-bg: #f5f5f5;
+    --border: #eee;
+    --text-primary: #111;
+    --text-secondary: #666;
+    --text-tertiary: #aaa;
+    --accent: #6366f1;
+    --accent-light: rgba(99, 102, 241, 0.06);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    --radius: 3px;
+  }
+
+  html { font-size: 13px; line-height: 1.45; }
+  body {
+    font-family: var(--font);
+    color: var(--text-primary);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar-left {
+    width: 240px;
+    min-width: 240px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .app-brand {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: -0.01em;
+    margin-bottom: 24px;
+    padding: 0 4px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+    padding: 0 4px;
+    margin-bottom: 8px;
+  }
+
+  /* ── Mini Calendar ── */
+  .mini-cal {
+    margin-bottom: 24px;
+  }
+
+  .mini-cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+    margin-bottom: 8px;
+  }
+
+  .mini-cal-header span {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .mini-cal-header .cal-nav {
+    display: flex;
+    gap: 8px;
+  }
+
+  .mini-cal-header .cal-nav button {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    text-align: center;
+  }
+
+  .cal-grid .day-label {
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 0;
+  }
+
+  .cal-grid .day {
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding: 3px 0;
+    position: relative;
+    cursor: default;
+    border-radius: var(--radius);
+    line-height: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding-top: 4px;
+    padding-bottom: 2px;
+  }
+
+  .cal-grid .day.today {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .cal-grid .day.has-entry::after {
+    content: '';
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+    display: block;
+  }
+
+  .cal-grid .day.today.has-entry::after {
+    background: var(--accent);
+  }
+
+  .cal-grid .day.empty {
+    visibility: hidden;
+  }
+
+  .cal-grid .day.other-month {
+    color: #ccc;
+  }
+
+  /* ── Sidebar Sections ── */
+  .sidebar-section {
+    margin-bottom: 24px;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.35;
+  }
+
+  .sidebar-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .sidebar-item .pin-icon {
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-item .item-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tag-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
+
+  .tag-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .tag-item .tag-name {
+    color: var(--text-secondary);
+  }
+
+  .tag-item .tag-count {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── CENTER PANEL ── */
+  .center {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+    height: 44px;
+    flex-shrink: 0;
+  }
+
+  .tab {
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    padding: 12px 12px;
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+    border: none;
+    background: none;
+  }
+
+  .tab:hover {
+    color: var(--text-secondary);
+  }
+
+  .tab.active {
+    color: var(--text-primary);
+  }
+
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 12px;
+    right: 12px;
+    height: 1.5px;
+    background: var(--text-primary);
+    border-radius: 1px;
+  }
+
+  .tab-add {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    padding: 8px 12px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+  }
+
+  .tab-add:hover { color: var(--text-secondary); }
+
+  /* Capture input */
+  .capture-area {
+    padding: 20px 32px 12px;
+    flex-shrink: 0;
+  }
+
+  .capture-input {
+    width: 100%;
+    border: none;
+    border-bottom: 1.5px solid transparent;
+    outline: none;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text-primary);
+    padding: 8px 0;
+    background: transparent;
+    transition: border-color 0.15s;
+  }
+
+  .capture-input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .capture-input:focus {
+    border-bottom-color: var(--accent);
+  }
+
+  /* Feed */
+  .feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 32px 40px;
+  }
+
+  .day-divider {
+    padding: 20px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .day-divider:first-child {
+    padding-top: 8px;
+  }
+
+  .day-divider-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
+
+  .day-divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .hour-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--text-tertiary);
+    padding: 12px 0 4px;
+    letter-spacing: 0.02em;
+  }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 0 12px;
+    align-items: start;
+    padding: 7px 8px;
+    margin: 0 -8px;
+    border-radius: var(--radius);
+    cursor: default;
+    position: relative;
+    transition: background 0.1s;
+  }
+
+  .entry:hover {
+    background: var(--accent-light);
+  }
+
+  .entry-time {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    padding-top: 1px;
+    text-align: right;
+  }
+
+  .entry-content {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  .entry-content strong {
+    font-weight: 600;
+  }
+
+  .entry-content .mention {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .entry-content .tag {
+    font-weight: 500;
+    font-size: 12px;
+  }
+
+  .tag-api { color: var(--accent); }
+  .tag-review { color: #7c3aed; }
+  .tag-question { color: #0891b2; }
+  .tag-meeting { color: #4b5563; }
+  .tag-sprint { color: #059669; }
+  .tag-frontend { color: #d97706; }
+  .tag-fix { color: #dc2626; }
+  .tag-docs { color: #6b7280; }
+
+  .entry-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.1s;
+    padding-top: 1px;
+  }
+
+  .entry:hover .entry-actions {
+    opacity: 1;
+  }
+
+  .entry-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    line-height: 1;
+  }
+
+  .entry-action-btn:hover {
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .pin-indicator {
+    font-size: 11px;
+    margin-right: 2px;
+  }
+
+  /* ── RIGHT SIDEBAR ── */
+  .sidebar-right {
+    width: 280px;
+    min-width: 280px;
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .right-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .right-header .section-label {
+    margin-bottom: 0;
+  }
+
+  .right-add-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+    line-height: 1;
+  }
+
+  .right-add-btn:hover { color: var(--text-secondary); }
+
+  .right-section {
+    margin-bottom: 8px;
+  }
+
+  .right-section-header {
+    padding: 8px 4px 2px;
+  }
+
+  .right-section-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .right-section-filter {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  .right-section-items {
+    margin-top: 6px;
+  }
+
+  .right-item {
+    display: flex;
+    gap: 8px;
+    padding: 5px 4px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    align-items: baseline;
+  }
+
+  .right-item:hover {
+    background: var(--accent-light);
+  }
+
+  .right-item-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .right-item-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .show-more {
+    font-size: 11px;
+    color: var(--accent);
+    padding: 4px 4px;
+    cursor: pointer;
+    display: inline-block;
+  }
+
+  .show-more:hover {
+    text-decoration: underline;
+  }
+
+  .resize-handle {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0;
+    cursor: row-resize;
+  }
+
+  .resize-dots {
+    display: flex;
+    gap: 3px;
+  }
+
+  .resize-dots span {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #ddd;
+  }
+
+  /* ── MOBILE PREVIEW SECTION ── */
+  .mobile-preview-section {
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--border);
+    padding: 48px 32px;
+  }
+
+  .mobile-preview-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .mobile-frame {
+    width: 400px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .mobile-inner {
+    padding: 0;
+  }
+
+  .mobile-header {
+    padding: 16px 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mobile-brand {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .mobile-menu-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .mobile-capture {
+    padding: 12px 16px;
+  }
+
+  .mobile-capture input {
+    width: 100%;
+    border: none;
+    border-bottom: 1.5px solid var(--border);
+    outline: none;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text-primary);
+    padding: 8px 0;
+    background: transparent;
+  }
+
+  .mobile-capture input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .mobile-feed {
+    padding: 0 16px 24px;
+  }
+
+  .mobile-entry {
+    padding: 8px 0;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  .mobile-entry-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-bottom: 2px;
+  }
+
+  .mobile-entry-content {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  .mobile-entry-content .tag { font-weight: 500; font-size: 12px; }
+  .mobile-entry-content .mention { color: var(--accent); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ════════════════ LEFT SIDEBAR ════════════════ -->
+  <aside class="sidebar-left">
+    <div class="app-brand">DailyDispatch</div>
+
+    <!-- Mini Calendar -->
+    <div class="mini-cal">
+      <div class="mini-cal-header">
+        <span>March 2026</span>
+        <div class="cal-nav">
+          <button>&larr;</button>
+          <button>&rarr;</button>
+        </div>
+      </div>
+      <div class="cal-grid">
+        <div class="day-label">Su</div><div class="day-label">Mo</div><div class="day-label">Tu</div><div class="day-label">We</div><div class="day-label">Th</div><div class="day-label">Fr</div><div class="day-label">Sa</div>
+        <!-- Week 1 -->
+        <div class="day other-month">1</div><div class="day has-entry">2</div><div class="day has-entry">3</div><div class="day has-entry">4</div><div class="day has-entry">5</div><div class="day has-entry">6</div><div class="day">7</div>
+        <!-- Week 2 -->
+        <div class="day">8</div><div class="day has-entry">9</div><div class="day has-entry">10</div><div class="day has-entry">11</div><div class="day has-entry">12</div><div class="day has-entry">13</div><div class="day">14</div>
+        <!-- Week 3 -->
+        <div class="day">15</div><div class="day has-entry">16</div><div class="day has-entry">17</div><div class="day has-entry">18</div><div class="day has-entry">19</div><div class="day has-entry">20</div><div class="day">21</div>
+        <!-- Week 4 -->
+        <div class="day">22</div><div class="day has-entry">23</div><div class="day has-entry">24</div><div class="day has-entry">25</div><div class="day has-entry">26</div><div class="day has-entry">27</div><div class="day">28</div>
+        <!-- Week 5 -->
+        <div class="day has-entry">29</div><div class="day today has-entry">30</div><div class="day">31</div><div class="day empty">1</div><div class="day empty">2</div><div class="day empty">3</div><div class="day empty">4</div>
+      </div>
+    </div>
+
+    <!-- Pinned -->
+    <div class="sidebar-section">
+      <div class="section-label">Pinned</div>
+      <div class="sidebar-item">
+        <span class="pin-icon">📌</span>
+        <span class="item-text">API spec review — finalize rate limits</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="pin-icon">📌</span>
+        <span class="item-text">Follow up with Mike on Redis</span>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="sidebar-section">
+      <div class="section-label">Tags</div>
+      <div class="tag-item"><span class="tag-name">#api</span><span class="tag-count">5</span></div>
+      <div class="tag-item"><span class="tag-name">#meeting</span><span class="tag-count">3</span></div>
+      <div class="tag-item"><span class="tag-name">#question</span><span class="tag-count">2</span></div>
+      <div class="tag-item"><span class="tag-name">#frontend</span><span class="tag-count">1</span></div>
+      <div class="tag-item"><span class="tag-name">#sprint</span><span class="tag-count">1</span></div>
+      <div class="tag-item"><span class="tag-name">#review</span><span class="tag-count">1</span></div>
+      <div class="tag-item"><span class="tag-name">#fix</span><span class="tag-count">1</span></div>
+      <div class="tag-item"><span class="tag-name">#docs</span><span class="tag-count">1</span></div>
+    </div>
+  </aside>
+
+  <!-- ════════════════ CENTER ════════════════ -->
+  <main class="center">
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab active">Feed</button>
+      <button class="tab">Sprint Planning Notes</button>
+      <button class="tab-add">+</button>
+    </div>
+
+    <!-- Capture -->
+    <div class="capture-area">
+      <input class="capture-input" type="text" placeholder="What's happening? (#tags supported)">
+    </div>
+
+    <!-- Feed -->
+    <div class="feed">
+
+      <!-- Today -->
+      <div class="day-divider">
+        <span class="day-divider-label">Monday, March 30, 2026</span>
+        <div class="day-divider-line"></div>
+      </div>
+
+      <div class="hour-label">10 AM</div>
+
+      <div class="entry">
+        <span class="entry-time">10:42 AM</span>
+        <span class="entry-content">
+          <span class="pin-indicator">📌</span>
+          Reviewed the <strong>API spec</strong> draft with <span class="mention">@Dave</span> — need to finalize rate limits before Thursday
+          <span class="tag tag-api">#api</span> <span class="tag tag-review">#review</span>
+        </span>
+        <span class="entry-actions">
+          <button class="entry-action-btn" title="Edit">✎</button>
+          <button class="entry-action-btn" title="Unpin">📌</button>
+          <button class="entry-action-btn" title="Open as note">↗</button>
+        </span>
+      </div>
+
+      <div class="entry">
+        <span class="entry-time">10:15 AM</span>
+        <span class="entry-content">
+          Sarah asked about deployment timeline for Q2
+          <span class="tag tag-question">#question</span>
+        </span>
+        <span class="entry-actions">
+          <button class="entry-action-btn" title="Edit">✎</button>
+          <button class="entry-action-btn" title="Pin">📌</button>
+          <button class="entry-action-btn" title="Open as note">↗</button>
+        </span>
+      </div>
+
+      <div class="hour-label">9 AM</div>
+
+      <div class="entry">
+        <span class="entry-time">9:45 AM</span>
+        <span class="entry-content">
+          Sprint planning — decided to prioritize auth refactor over search
+          <span class="tag tag-meeting">#meeting</span> <span class="tag tag-sprint">#sprint</span>
+        </span>
+        <span class="entry-actions">
+          <button class="entry-action-btn" title="Edit">✎</button>
+          <button class="entry-action-btn" title="Pin">📌</button>
+          <button class="entry-action-btn" title="Open as note">↗</button>
+        </span>
+      </div>
+
+      <div class="entry">
+        <span class="entry-time">9:30 AM</span>
+        <span class="entry-content">
+          Quick sync with <span class="mention">@Mike</span> on Redis caching approach
+          <span class="tag tag-api">#api</span>
+        </span>
+        <span class="entry-actions">
+          <button class="entry-action-btn" title="Edit">✎</button>
+          <button class="entry-action-btn" title="Pin">📌</button>
+          <button class="entry-action-btn" title="Open as note">↗</button>
+        </span>
+      </div>
+
+      <div class="entry">
+        <span class="entry-time">9:05 AM</span>
+        <span class="entry-content">
+          Fixed the login CSS bug that was breaking Safari
+          <span class="tag tag-frontend">#frontend</span> <span class="tag tag-fix">#fix</span>
+        </span>
+        <span class="entry-actions">
+          <button class="entry-action-btn" title="Edit">✎</button>
+          <button class="entry-action-btn" title="Pin">📌</button>
+          <button class="entry-action-btn" title="Open as note">↗</button>
+        </span>
+      </div>
+
+      <!-- Yesterday -->
+      <div class="day-divider">
+        <span class="day-divider-label">Sunday, March 29</span>
+        <div class="day-divider-line"></div>
+      </div>
+
+      <div class="hour-label">4 PM</div>
+
+      <div class="entry">
+        <span class="entry-time">4:30 PM</span>
+        <span class="entry-content">
+          Wrapped up API documentation, sent to team for review
+          <span class="tag tag-api">#api</span> <span class="tag tag-docs">#docs</span>
+        </span>
+        <span class="entry-actions">
+          <button class="entry-action-btn" title="Edit">✎</button>
+          <button class="entry-action-btn" title="Pin">📌</button>
+          <button class="entry-action-btn" title="Open as note">↗</button>
+        </span>
+      </div>
+
+      <div class="hour-label">2 PM</div>
+
+      <div class="entry">
+        <span class="entry-time">2:15 PM</span>
+        <span class="entry-content">
+          1:1 with <span class="mention">@Sarah</span> — discussed career growth plan
+          <span class="tag tag-meeting">#meeting</span>
+        </span>
+        <span class="entry-actions">
+          <button class="entry-action-btn" title="Edit">✎</button>
+          <button class="entry-action-btn" title="Pin">📌</button>
+          <button class="entry-action-btn" title="Open as note">↗</button>
+        </span>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ════════════════ RIGHT SIDEBAR ════════════════ -->
+  <aside class="sidebar-right">
+    <div class="right-header">
+      <span class="section-label">Sections</span>
+      <button class="right-add-btn">+</button>
+    </div>
+
+    <!-- Section: Meetings -->
+    <div class="right-section">
+      <div class="right-section-header">
+        <div class="right-section-name">Meetings</div>
+        <div class="right-section-filter">#meeting</div>
+      </div>
+      <div class="right-section-items">
+        <div class="right-item">
+          <span class="right-item-time">9:45 AM</span>
+          <span class="right-item-text">Sprint planning — decided to prioritize auth refactor</span>
+        </div>
+        <div class="right-item">
+          <span class="right-item-time">2:15 PM</span>
+          <span class="right-item-text">1:1 with @Sarah — discussed career growth plan</span>
+        </div>
+        <div class="right-item">
+          <span class="right-item-time">Mar 27</span>
+          <span class="right-item-text">Team retro — action items for next sprint</span>
+        </div>
+      </div>
+      <span class="show-more">show more</span>
+    </div>
+
+    <!-- Resize handle -->
+    <div class="resize-handle">
+      <div class="resize-dots"><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- Section: API Work -->
+    <div class="right-section">
+      <div class="right-section-header">
+        <div class="right-section-name">API Work</div>
+        <div class="right-section-filter">#api -docs</div>
+      </div>
+      <div class="right-section-items">
+        <div class="right-item">
+          <span class="right-item-time">10:42 AM</span>
+          <span class="right-item-text">Reviewed the API spec draft with @Dave</span>
+        </div>
+        <div class="right-item">
+          <span class="right-item-time">9:30 AM</span>
+          <span class="right-item-text">Quick sync with @Mike on Redis caching approach</span>
+        </div>
+      </div>
+      <span class="show-more">show more</span>
+    </div>
+
+    <!-- Resize handle -->
+    <div class="resize-handle">
+      <div class="resize-dots"><span></span><span></span><span></span></div>
+    </div>
+
+  </aside>
+
+</div>
+
+<!-- ════════════════ MOBILE PREVIEW ════════════════ -->
+<div class="mobile-preview-section">
+  <div class="mobile-preview-label">Small screen preview (400px)</div>
+  <div class="mobile-frame">
+    <div class="mobile-inner">
+      <div class="mobile-header">
+        <span class="mobile-brand">DailyDispatch</span>
+        <button class="mobile-menu-btn">☰</button>
+      </div>
+      <div class="mobile-capture">
+        <input type="text" placeholder="What's happening? (#tags supported)">
+      </div>
+      <div class="mobile-feed">
+        <div class="mobile-entry">
+          <div class="mobile-entry-time">10:42 AM · Mon, Mar 30</div>
+          <div class="mobile-entry-content">
+            📌 Reviewed the <strong>API spec</strong> draft with <span class="mention">@Dave</span> — need to finalize rate limits before Thursday
+            <span class="tag tag-api">#api</span> <span class="tag tag-review">#review</span>
+          </div>
+        </div>
+        <div class="mobile-entry">
+          <div class="mobile-entry-time">10:15 AM</div>
+          <div class="mobile-entry-content">
+            Sarah asked about deployment timeline for Q2
+            <span class="tag tag-question">#question</span>
+          </div>
+        </div>
+        <div class="mobile-entry">
+          <div class="mobile-entry-time">9:45 AM</div>
+          <div class="mobile-entry-content">
+            Sprint planning — decided to prioritize auth refactor over search
+            <span class="tag tag-meeting">#meeting</span> <span class="tag tag-sprint">#sprint</span>
+          </div>
+        </div>
+        <div class="mobile-entry">
+          <div class="mobile-entry-time">9:30 AM</div>
+          <div class="mobile-entry-content">
+            Quick sync with <span class="mention">@Mike</span> on Redis caching approach
+            <span class="tag tag-api">#api</span>
+          </div>
+        </div>
+        <div class="mobile-entry">
+          <div class="mobile-entry-time">9:05 AM</div>
+          <div class="mobile-entry-content">
+            Fixed the login CSS bug that was breaking Safari
+            <span class="tag tag-frontend">#frontend</span> <span class="tag tag-fix">#fix</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

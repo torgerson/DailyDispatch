@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DailyDispatch — Arc Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sidebar-w: 220px;
+    --sidebar-top: #e8eaff;
+    --sidebar-bottom: #f0e6ff;
+    --sidebar-text: #312e81;
+    --sidebar-text2: #5b56a0;
+    --content-bg: #fff;
+    --text: #1e1b4b;
+    --text2: #64608f;
+    --text3: #9994b8;
+    --accent: #7c3aed;
+    --accent-light: #ede9fe;
+    --accent-hover: #6d28d9;
+    --border: #e5e3f1;
+    --row-alt: #fafafc;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+    background: #f5f3ff;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ========== FULL LAYOUT ========== */
+  .app {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ========== SIDEBAR ========== */
+  .sidebar {
+    background: linear-gradient(180deg, var(--sidebar-top) 0%, var(--sidebar-bottom) 100%);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid #ddd8f0;
+    user-select: none;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: rgba(49,46,129,.15); border-radius: 2px; }
+
+  /* Logo */
+  .sb-logo {
+    padding: 14px 14px 10px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .sb-logo-icon {
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; font-weight: 700;
+  }
+  .sb-logo-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--sidebar-text);
+    letter-spacing: -0.4px;
+  }
+
+  /* Date nav */
+  .sb-date-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 14px 10px;
+  }
+  .sb-date-btn {
+    width: 22px; height: 22px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(49,46,129,.08);
+    color: var(--sidebar-text);
+    cursor: pointer;
+    font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sb-date-btn:hover { background: rgba(49,46,129,.15); }
+  .sb-date-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sidebar-text);
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Calendar */
+  .sb-cal {
+    padding: 0 10px 8px;
+  }
+  .sb-cal-hdr {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--sidebar-text2);
+    margin-bottom: 2px;
+  }
+  .sb-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 10px;
+    gap: 1px 0;
+  }
+  .sb-cal-day {
+    width: 26px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto;
+    border-radius: 12px;
+    color: var(--sidebar-text);
+    position: relative;
+    cursor: pointer;
+  }
+  .sb-cal-day:hover { background: rgba(124,58,237,.1); }
+  .sb-cal-day.today {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+  }
+  .sb-cal-day.other { color: var(--text3); }
+  .sb-cal-day.has-entries::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%; transform: translateX(-50%);
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--sidebar-text);
+  }
+  .sb-cal-day.today.has-entries::after { background: #fff; }
+
+  /* Sidebar sections */
+  .sb-section {
+    border-top: 1px solid rgba(49,46,129,.08);
+    padding: 8px 12px;
+  }
+  .sb-section-title {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--sidebar-text2);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sb-section-title .chevron {
+    font-size: 8px;
+    opacity: .6;
+  }
+
+  /* Pinned items */
+  .sb-pin-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--sidebar-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sb-pin-item:hover { background: rgba(124,58,237,.08); }
+  .sb-pin-item .pin-icon { font-size: 10px; flex-shrink: 0; }
+  .sb-pin-item .pin-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Tags */
+  .sb-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .sb-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: rgba(49,46,129,.07);
+    color: var(--sidebar-text);
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: background .15s;
+  }
+  .sb-tag:hover { background: rgba(124,58,237,.15); }
+  .sb-tag .cnt { font-size: 8px; opacity: .6; margin-left: 2px; }
+
+  /* Sidebar filter sections */
+  .sb-filter {
+    padding: 3px 0;
+  }
+  .sb-filter-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sidebar-text);
+    padding: 3px 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .sb-filter-title:hover { background: rgba(124,58,237,.06); }
+  .sb-filter-title .f-icon { font-size: 10px; }
+  .sb-filter-title .f-count {
+    margin-left: auto;
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--sidebar-text2);
+    background: rgba(49,46,129,.08);
+    padding: 0 5px;
+    border-radius: 8px;
+    min-width: 16px;
+    text-align: center;
+  }
+  .sb-filter-item {
+    font-size: 10px;
+    color: var(--sidebar-text2);
+    padding: 2px 4px 2px 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .sb-filter-item:hover { background: rgba(124,58,237,.06); color: var(--sidebar-text); }
+  .sb-filter-item .fi-time {
+    font-size: 9px;
+    color: var(--text3);
+    margin-right: 4px;
+  }
+
+  /* ========== CONTENT AREA ========== */
+  .content {
+    background: var(--content-bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px 6px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tab {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 16px;
+    cursor: pointer;
+    color: var(--text2);
+    border: none;
+    background: none;
+    transition: all .15s;
+  }
+  .tab:hover { background: var(--accent-light); color: var(--accent); }
+  .tab.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .tab-add {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--border);
+    background: none;
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: 2px;
+  }
+  .tab-add:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Quick capture */
+  .quick-capture {
+    padding: 10px 16px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .capture-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    background: #fafafc;
+    transition: border-color .15s, background .15s;
+  }
+  .capture-input::placeholder { color: var(--text3); }
+  .capture-input:focus {
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(124,58,237,.08);
+  }
+
+  /* Feed */
+  .feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+  .feed::-webkit-scrollbar { width: 6px; }
+  .feed::-webkit-scrollbar-thumb { background: #ddd8f0; border-radius: 3px; }
+
+  /* Day divider */
+  .day-divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px 4px;
+  }
+  .day-divider-text {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .day-divider-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+    border-radius: 1px;
+  }
+
+  /* Entry rows */
+  .entry-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px 16px;
+    border-bottom: 1px solid #f0eef6;
+    position: relative;
+    cursor: pointer;
+    transition: background .1s;
+    min-height: 32px;
+    gap: 10px;
+  }
+  .entry-row:nth-child(odd) { background: #fff; }
+  .entry-row:nth-child(even) { background: var(--row-alt); }
+  .entry-row:hover {
+    background: #f5f3ff;
+  }
+  .entry-row:hover::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .entry-time {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    min-width: 38px;
+    flex-shrink: 0;
+    padding-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .entry-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .entry-text .mention {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .entry-text .crosslink {
+    color: var(--accent);
+    text-decoration: underline dotted;
+    cursor: pointer;
+  }
+  .entry-text code {
+    font-size: 11px;
+    background: #f0eef6;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .entry-text ul {
+    padding-left: 16px;
+    margin: 2px 0;
+  }
+  .entry-text li {
+    font-size: 12px;
+  }
+
+  .entry-tags {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-top: 1px;
+  }
+  .entry-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .entry-tag.t-api { background: #dbeafe; color: #1e40af; }
+  .entry-tag.t-review { background: #fef3c7; color: #92400e; }
+  .entry-tag.t-question { background: #fce7f3; color: #9d174d; }
+  .entry-tag.t-meeting { background: #ede9fe; color: #5b21b6; }
+  .entry-tag.t-sprint { background: #d1fae5; color: #065f46; }
+  .entry-tag.t-deploy { background: #fee2e2; color: #991b1b; }
+  .entry-tag.t-infra { background: #ffedd5; color: #9a3412; }
+  .entry-tag.t-bug { background: #fee2e2; color: #991b1b; }
+  .entry-tag.t-auth { background: #e0e7ff; color: #3730a3; }
+  .entry-tag.t-planning { background: #d1fae5; color: #065f46; }
+  .entry-tag.t-design { background: #fae8ff; color: #86198f; }
+  .entry-tag.t-docs { background: #f0fdf4; color: #166534; }
+  .entry-tag.t-perf { background: #fff7ed; color: #9a3412; }
+  .entry-tag.t-1on1 { background: #ecfdf5; color: #047857; }
+  .entry-tag.t-search { background: #dbeafe; color: #1e40af; }
+
+  .entry-pin {
+    flex-shrink: 0;
+    font-size: 11px;
+    padding-top: 1px;
+  }
+
+  /* Hover actions */
+  .entry-actions {
+    display: none;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    gap: 2px;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .entry-row:hover .entry-actions { display: flex; }
+  .eact {
+    width: 22px; height: 22px;
+    border: none; background: none;
+    cursor: pointer; border-radius: 4px;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text2);
+  }
+  .eact:hover { background: var(--accent-light); color: var(--accent); }
+
+  /* Context / multi-line entries */
+  .entry-row.multi .entry-text {
+    line-height: 1.5;
+  }
+
+  /* ========== SMALL WINDOW PREVIEW ========== */
+  .small-preview {
+    margin-top: 40px;
+    padding: 20px;
+    background: #f5f3ff;
+  }
+  .small-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+  .small-window {
+    width: 400px;
+    height: 520px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,.12);
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    background: var(--content-bg);
+  }
+  .small-sidebar {
+    background: linear-gradient(180deg, var(--sidebar-top) 0%, var(--sidebar-bottom) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    gap: 12px;
+    border-right: 1px solid #ddd8f0;
+  }
+  .small-sb-icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--sidebar-text);
+    transition: background .15s;
+  }
+  .small-sb-icon:hover { background: rgba(124,58,237,.1); }
+  .small-sb-icon.logo-icon {
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .small-sb-icon.active {
+    background: rgba(124,58,237,.12);
+  }
+  .small-sb-divider {
+    width: 20px;
+    height: 1px;
+    background: rgba(49,46,129,.12);
+  }
+  .small-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .small-content .tab-bar { padding: 6px 10px 5px; }
+  .small-content .quick-capture { padding: 6px 10px; }
+  .small-content .capture-input { padding: 5px 8px; font-size: 11px; }
+  .small-content .entry-row { padding: 4px 10px; gap: 6px; }
+  .small-content .entry-time { font-size: 10px; min-width: 32px; }
+  .small-content .entry-text { font-size: 12px; }
+  .small-content .entry-tag { font-size: 9px; padding: 1px 5px; }
+  .small-content .day-divider { padding: 8px 10px 3px; }
+  .small-content .day-divider-text { font-size: 10px; }
+
+  /* Full page scroll wrapper */
+  .page-wrapper {
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .main-app {
+    height: 100vh;
+    min-height: 600px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+<!-- ===== MAIN APP (FULL SIZE) ===== -->
+<div class="main-app">
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <!-- Logo -->
+    <div class="sb-logo">
+      <div class="sb-logo-icon">&#9889;</div>
+      <div class="sb-logo-text">DailyDispatch</div>
+    </div>
+
+    <!-- Date nav -->
+    <div class="sb-date-nav">
+      <button class="sb-date-btn">&#9664;</button>
+      <span class="sb-date-label">Mon, Mar 30</span>
+      <button class="sb-date-btn">&#9654;</button>
+    </div>
+
+    <!-- Calendar -->
+    <div class="sb-cal">
+      <div class="sb-cal-hdr">
+        <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+      </div>
+      <div class="sb-cal-grid">
+        <div class="sb-cal-day other">23</div>
+        <div class="sb-cal-day other">24</div>
+        <div class="sb-cal-day other">25</div>
+        <div class="sb-cal-day other">26</div>
+        <div class="sb-cal-day other">27</div>
+        <div class="sb-cal-day other">28</div>
+        <div class="sb-cal-day">1</div>
+        <div class="sb-cal-day has-entries">2</div>
+        <div class="sb-cal-day has-entries">3</div>
+        <div class="sb-cal-day has-entries">4</div>
+        <div class="sb-cal-day has-entries">5</div>
+        <div class="sb-cal-day has-entries">6</div>
+        <div class="sb-cal-day">7</div>
+        <div class="sb-cal-day">8</div>
+        <div class="sb-cal-day has-entries">9</div>
+        <div class="sb-cal-day has-entries">10</div>
+        <div class="sb-cal-day has-entries">11</div>
+        <div class="sb-cal-day has-entries">12</div>
+        <div class="sb-cal-day has-entries">13</div>
+        <div class="sb-cal-day">14</div>
+        <div class="sb-cal-day">15</div>
+        <div class="sb-cal-day has-entries">16</div>
+        <div class="sb-cal-day has-entries">17</div>
+        <div class="sb-cal-day has-entries">18</div>
+        <div class="sb-cal-day has-entries">19</div>
+        <div class="sb-cal-day has-entries">20</div>
+        <div class="sb-cal-day">21</div>
+        <div class="sb-cal-day">22</div>
+        <div class="sb-cal-day has-entries">23</div>
+        <div class="sb-cal-day has-entries">24</div>
+        <div class="sb-cal-day has-entries">25</div>
+        <div class="sb-cal-day has-entries">26</div>
+        <div class="sb-cal-day has-entries">27</div>
+        <div class="sb-cal-day">28</div>
+        <div class="sb-cal-day">29</div>
+        <div class="sb-cal-day today has-entries">30</div>
+        <div class="sb-cal-day">31</div>
+        <div class="sb-cal-day other">1</div>
+        <div class="sb-cal-day other">2</div>
+        <div class="sb-cal-day other">3</div>
+        <div class="sb-cal-day other">4</div>
+        <div class="sb-cal-day other">5</div>
+      </div>
+    </div>
+
+    <!-- Pinned -->
+    <div class="sb-section">
+      <div class="sb-section-title"><span class="chevron">&#9662;</span> Pinned</div>
+      <div class="sb-pin-item"><span class="pin-icon">&#128204;</span><span class="pin-text">API rate limit decision needed</span></div>
+      <div class="sb-pin-item"><span class="pin-icon">&#128204;</span><span class="pin-text">Q2 deployment timeline for Sarah</span></div>
+      <div class="sb-pin-item"><span class="pin-icon">&#128204;</span><span class="pin-text">Auth refactor spec — draft by Wed</span></div>
+    </div>
+
+    <!-- Tags -->
+    <div class="sb-section">
+      <div class="sb-section-title"><span class="chevron">&#9662;</span> Tags</div>
+      <div class="sb-tags">
+        <span class="sb-tag">#api<span class="cnt">5</span></span>
+        <span class="sb-tag">#meeting<span class="cnt">4</span></span>
+        <span class="sb-tag">#sprint<span class="cnt">3</span></span>
+        <span class="sb-tag">#deploy<span class="cnt">3</span></span>
+        <span class="sb-tag">#review<span class="cnt">3</span></span>
+        <span class="sb-tag">#bug<span class="cnt">2</span></span>
+        <span class="sb-tag">#auth<span class="cnt">2</span></span>
+        <span class="sb-tag">#design<span class="cnt">2</span></span>
+        <span class="sb-tag">#question<span class="cnt">2</span></span>
+        <span class="sb-tag">#infra<span class="cnt">1</span></span>
+        <span class="sb-tag">#perf<span class="cnt">1</span></span>
+        <span class="sb-tag">#docs<span class="cnt">1</span></span>
+      </div>
+    </div>
+
+    <!-- Sections (filter groups in sidebar) -->
+    <div class="sb-section">
+      <div class="sb-section-title"><span class="chevron">&#9662;</span> Sections</div>
+
+      <div class="sb-filter">
+        <div class="sb-filter-title">
+          <span class="f-icon">&#128269;</span> Blockers &amp; Questions
+          <span class="f-count">3</span>
+        </div>
+        <div class="sb-filter-item"><span class="fi-time">10:42</span> API rate limits — need decision from team</div>
+        <div class="sb-filter-item"><span class="fi-time">10:15</span> Sarah asked about Q2 deploy timeline</div>
+        <div class="sb-filter-item"><span class="fi-time">9:03</span> CI flake — investigate <code>test_auth_flow</code></div>
+      </div>
+
+      <div class="sb-filter">
+        <div class="sb-filter-title">
+          <span class="f-icon">&#128640;</span> Deploys &amp; Releases
+          <span class="f-count">2</span>
+        </div>
+        <div class="sb-filter-item"><span class="fi-time">11:30</span> Staging deploy green, prod at 2pm</div>
+        <div class="sb-filter-item"><span class="fi-time">14:05</span> v2.4.1 pushed to prod, monitoring</div>
+      </div>
+
+      <div class="sb-filter">
+        <div class="sb-filter-title">
+          <span class="f-icon">&#128101;</span> People Mentions
+          <span class="f-count">4</span>
+        </div>
+        <div class="sb-filter-item"><span class="fi-time">10:42</span> @Dave — API spec review</div>
+        <div class="sb-filter-item"><span class="fi-time">10:15</span> @Sarah — Q2 timeline question</div>
+        <div class="sb-filter-item"><span class="fi-time">13:20</span> @Mike — search perf regression</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab active">Feed</button>
+      <button class="tab">Sprint Planning</button>
+      <button class="tab">API Notes</button>
+      <button class="tab-add">+</button>
+    </div>
+
+    <!-- Quick capture -->
+    <div class="quick-capture">
+      <input type="text" class="capture-input" placeholder="Quick capture... (#tags, @mentions, [[links]])">
+    </div>
+
+    <!-- Feed -->
+    <div class="feed">
+      <!-- Day divider: Today -->
+      <div class="day-divider">
+        <span class="day-divider-text">Today &mdash; Monday, March 30</span>
+        <div class="day-divider-line"></div>
+      </div>
+
+      <!-- Entry rows -->
+      <div class="entry-row">
+        <span class="entry-time">14:05</span>
+        <span class="entry-text">v2.4.1 pushed to prod &mdash; monitoring dashboards, no alerts so far</span>
+        <span class="entry-tags">
+          <span class="entry-tag t-deploy">#deploy</span>
+          <span class="entry-tag t-infra">#infra</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">13:20</span>
+        <span class="entry-text"><span class="mention">@Mike</span> flagged search perf regression &mdash; p95 latency up 40% since Thursday. Investigating index config.</span>
+        <span class="entry-tags">
+          <span class="entry-tag t-bug">#bug</span>
+          <span class="entry-tag t-search">#search</span>
+          <span class="entry-tag t-perf">#perf</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">12:00</span>
+        <span class="entry-text">Lunch break. Grabbed ramen with the infra team &mdash; talked about k8s migration timeline.</span>
+        <span class="entry-tags"></span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">11:30</span>
+        <span class="entry-text">Staging deploy is green. Prod deploy scheduled for 2pm. Notified <span class="mention">@channel</span>.</span>
+        <span class="entry-tags">
+          <span class="entry-tag t-deploy">#deploy</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">10:42</span>
+        <span class="entry-text">Reviewed the API spec draft with <span class="mention">@Dave</span> &mdash; need to finalize rate limits before Wednesday. <span class="crosslink">[[API Notes]]</span></span>
+        <span class="entry-tags">
+          <span class="entry-tag t-api">#api</span>
+          <span class="entry-tag t-review">#review</span>
+        </span>
+        <span class="entry-pin">&#128204;</span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Unpin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">10:15</span>
+        <span class="entry-text"><span class="mention">@Sarah</span> asked about deployment timeline for Q2 &mdash; told her end of April target</span>
+        <span class="entry-tags">
+          <span class="entry-tag t-question">#question</span>
+        </span>
+        <span class="entry-pin">&#128204;</span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Unpin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">9:45</span>
+        <span class="entry-text">Sprint planning done. Priorities: auth refactor &gt; search improvements &gt; dashboard polish. Two-week sprint.</span>
+        <span class="entry-tags">
+          <span class="entry-tag t-meeting">#meeting</span>
+          <span class="entry-tag t-sprint">#sprint</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row multi">
+        <span class="entry-time">9:15</span>
+        <span class="entry-text">
+          Standup notes:
+          <ul>
+            <li>Auth refactor PR ready for review</li>
+            <li>Search indexing job failing intermittently</li>
+            <li>Design handoff for settings page today</li>
+          </ul>
+        </span>
+        <span class="entry-tags">
+          <span class="entry-tag t-meeting">#meeting</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">9:03</span>
+        <span class="entry-text">CI flaky again &mdash; <code>test_auth_flow</code> timed out. Third time this week. Need to investigate.</span>
+        <span class="entry-tags">
+          <span class="entry-tag t-bug">#bug</span>
+          <span class="entry-tag t-auth">#auth</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">8:45</span>
+        <span class="entry-text">Morning review &mdash; 12 Slack threads, 3 PRs to review, 2 emails from product. Triaged into today's plan.</span>
+        <span class="entry-tags">
+          <span class="entry-tag t-planning">#planning</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <!-- Day divider: Friday -->
+      <div class="day-divider">
+        <span class="day-divider-text">Friday, March 27</span>
+        <div class="day-divider-line"></div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">17:10</span>
+        <span class="entry-text">EOD wrap-up &mdash; auth refactor at 80%, search index fix merged, dashboard designs received from <span class="mention">@Lisa</span></span>
+        <span class="entry-tags">
+          <span class="entry-tag t-review">#review</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">15:30</span>
+        <span class="entry-text">1:1 with <span class="mention">@Jamie</span> &mdash; discussed career growth, upcoming tech lead rotation, and conf talk prep</span>
+        <span class="entry-tags">
+          <span class="entry-tag t-1on1">#1on1</span>
+          <span class="entry-tag t-meeting">#meeting</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">14:00</span>
+        <span class="entry-text">Design review for settings page &mdash; good direction, needs tighter spacing and icon consistency. <span class="crosslink">[[Design Feedback]]</span></span>
+        <span class="entry-tags">
+          <span class="entry-tag t-design">#design</span>
+          <span class="entry-tag t-review">#review</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="entry-row">
+        <span class="entry-time">11:20</span>
+        <span class="entry-text">Updated API docs for the new <code>/v2/search</code> endpoint &mdash; added examples and error codes</span>
+        <span class="entry-tags">
+          <span class="entry-tag t-api">#api</span>
+          <span class="entry-tag t-docs">#docs</span>
+        </span>
+        <div class="entry-actions">
+          <button class="eact" title="Copy">&#128203;</button>
+          <button class="eact" title="Pin">&#128204;</button>
+          <button class="eact" title="Delete">&#10005;</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ===== SMALL WINDOW PREVIEW ===== -->
+<div class="small-preview">
+  <div class="small-label">Small Window (400px) &mdash; Collapsed Sidebar</div>
+  <div class="small-window">
+    <!-- Thin icon sidebar -->
+    <div class="small-sidebar">
+      <div class="small-sb-icon logo-icon">&#9889;</div>
+      <div class="small-sb-divider"></div>
+      <div class="small-sb-icon active" title="Calendar">&#128197;</div>
+      <div class="small-sb-icon" title="Pinned">&#128204;</div>
+      <div class="small-sb-icon" title="Tags">&#127991;</div>
+      <div class="small-sb-icon" title="Sections">&#128269;</div>
+      <div style="flex:1"></div>
+      <div class="small-sb-icon" title="Settings">&#9881;</div>
+    </div>
+    <!-- Compact content -->
+    <div class="small-content">
+      <div class="tab-bar">
+        <button class="tab active">Feed</button>
+        <button class="tab">Sprint</button>
+        <button class="tab-add">+</button>
+      </div>
+      <div class="quick-capture">
+        <input type="text" class="capture-input" placeholder="Quick capture...">
+      </div>
+      <div class="feed">
+        <div class="day-divider">
+          <span class="day-divider-text">Today</span>
+          <div class="day-divider-line"></div>
+        </div>
+        <div class="entry-row">
+          <span class="entry-time">14:05</span>
+          <span class="entry-text">v2.4.1 pushed to prod</span>
+          <span class="entry-tags"><span class="entry-tag t-deploy">#deploy</span></span>
+        </div>
+        <div class="entry-row">
+          <span class="entry-time">13:20</span>
+          <span class="entry-text">Search perf regression &mdash; p95 up 40%</span>
+          <span class="entry-tags"><span class="entry-tag t-bug">#bug</span></span>
+        </div>
+        <div class="entry-row">
+          <span class="entry-time">11:30</span>
+          <span class="entry-text">Staging deploy green, prod at 2pm</span>
+          <span class="entry-tags"><span class="entry-tag t-deploy">#deploy</span></span>
+        </div>
+        <div class="entry-row">
+          <span class="entry-time">10:42</span>
+          <span class="entry-text">API spec review with @Dave</span>
+          <span class="entry-tags"><span class="entry-tag t-api">#api</span></span>
+        </div>
+        <div class="entry-row">
+          <span class="entry-time">10:15</span>
+          <span class="entry-text">@Sarah &mdash; Q2 deploy timeline</span>
+          <span class="entry-tags"><span class="entry-tag t-question">#question</span></span>
+        </div>
+        <div class="entry-row">
+          <span class="entry-time">9:45</span>
+          <span class="entry-text">Sprint planning done</span>
+          <span class="entry-tags"><span class="entry-tag t-sprint">#sprint</span></span>
+        </div>
+        <div class="entry-row">
+          <span class="entry-time">9:15</span>
+          <span class="entry-text">Standup notes</span>
+          <span class="entry-tags"><span class="entry-tag t-meeting">#meeting</span></span>
+        </div>
+        <div class="entry-row">
+          <span class="entry-time">9:03</span>
+          <span class="entry-text">CI flaky &mdash; test_auth_flow</span>
+          <span class="entry-tags"><span class="entry-tag t-bug">#bug</span></span>
+        </div>
+        <div class="entry-row">
+          <span class="entry-time">8:45</span>
+          <span class="entry-text">Morning triage done</span>
+          <span class="entry-tags"><span class="entry-tag t-planning">#planning</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

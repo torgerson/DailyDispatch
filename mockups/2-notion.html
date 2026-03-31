@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DailyDispatch — Notion Style Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #faf8f5;
+    --surface: #fff;
+    --sidebar-bg: #f7f5f2;
+    --text: #37352f;
+    --text-secondary: #787774;
+    --text-light: #9b9a97;
+    --border: #e8e0d4;
+    --border-light: #f0ece6;
+    --amber: #cb912f;
+    --amber-bg: rgba(203,145,47,0.12);
+    --red: #e16259;
+    --red-bg: rgba(225,98,89,0.1);
+    --blue: #5b9bd5;
+    --blue-bg: rgba(91,155,213,0.1);
+    --green: #4daa57;
+    --green-bg: rgba(77,170,87,0.1);
+    --purple: #9065b0;
+    --purple-bg: rgba(144,101,176,0.1);
+    --shadow: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-hover: 0 2px 6px rgba(0,0,0,0.06);
+    --font-serif: Georgia, 'Times New Roman', serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  .app-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ===== LEFT SIDEBAR ===== */
+  .left-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 24px 20px;
+  }
+
+  .app-title {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: normal;
+    color: var(--text);
+    margin-bottom: 28px;
+    letter-spacing: -0.3px;
+  }
+
+  .app-title span {
+    color: var(--amber);
+  }
+
+  /* Calendar */
+  .sidebar-section { margin-bottom: 28px; }
+
+  .sidebar-section-title {
+    font-family: var(--font-serif);
+    font-size: 12px;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+
+  .calendar {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .calendar-month {
+    font-family: var(--font-serif);
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .calendar-nav {
+    display: flex;
+    gap: 4px;
+  }
+
+  .calendar-nav button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    text-align: center;
+    font-size: 11px;
+  }
+
+  .calendar-grid .day-label {
+    color: var(--text-light);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 0;
+  }
+
+  .calendar-grid .day {
+    padding: 4px 0;
+    color: var(--text-secondary);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    position: relative;
+    font-size: 12px;
+  }
+
+  .calendar-grid .day.today {
+    background: var(--amber);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .calendar-grid .day.has-entries::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+  }
+
+  .calendar-grid .day.today.has-entries::after {
+    background: rgba(255,255,255,0.7);
+  }
+
+  .calendar-grid .day.other-month {
+    color: var(--border);
+  }
+
+  /* Pinned */
+  .pinned-card {
+    background: #fdf9f3;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text);
+  }
+
+  .pin-icon {
+    color: var(--red);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Tags */
+  .tags-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .tag-pill .tag-count {
+    font-size: 11px;
+    opacity: 0.65;
+    font-weight: 400;
+  }
+
+  .tag-api { background: var(--amber-bg); color: #a07325; }
+  .tag-meeting { background: var(--purple-bg); color: #7050a0; }
+  .tag-question { background: var(--blue-bg); color: #4a80b0; }
+  .tag-frontend { background: var(--green-bg); color: #3a8f42; }
+  .tag-sprint { background: var(--red-bg); color: #c04e47; }
+  .tag-review { background: rgba(203,145,47,0.08); color: #a07325; }
+  .tag-fix { background: var(--green-bg); color: #3a8f42; }
+  .tag-docs { background: rgba(120,119,116,0.1); color: #5f5e5b; }
+
+  /* ===== CENTER ===== */
+  .center-panel {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    padding: 0 32px;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .tab {
+    padding: 14px 4px;
+    margin-right: 24px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: var(--font-sans);
+  }
+
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--amber);
+    font-weight: 500;
+  }
+
+  .tab.add-tab {
+    color: var(--text-light);
+    font-size: 16px;
+    margin-right: 0;
+  }
+
+  /* Quick capture */
+  .feed-area {
+    padding: 24px 32px;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .quick-capture {
+    background: #fdf9f3;
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 32px;
+    font-family: var(--font-serif);
+    font-size: 14px;
+    color: var(--text-light);
+    font-style: italic;
+    cursor: text;
+  }
+
+  /* Date headers */
+  .date-header {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    color: var(--text);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 16px;
+    margin-top: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  /* Feed entries */
+  .entry {
+    padding: 14px 16px;
+    padding-left: 19px;
+    border-left: 3px solid var(--amber);
+    margin-bottom: 8px;
+    border-radius: 0 6px 6px 0;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+
+  .entry.border-purple { border-left-color: var(--purple); }
+  .entry.border-blue { border-left-color: var(--blue); }
+  .entry.border-green { border-left-color: var(--green); }
+  .entry.border-red { border-left-color: var(--red); }
+  .entry.border-amber { border-left-color: var(--amber); }
+
+  .entry-time {
+    font-size: 11px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    font-family: var(--font-sans);
+  }
+
+  .entry-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .entry-content strong {
+    font-weight: 600;
+  }
+
+  .entry-content .mention {
+    color: var(--blue);
+    font-weight: 500;
+  }
+
+  .entry-tags {
+    margin-top: 8px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .entry-tag {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  .entry .pin-badge {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    color: var(--red);
+    font-size: 12px;
+  }
+
+  /* Day divider */
+  .day-divider {
+    margin-top: 36px;
+  }
+
+  /* ===== RIGHT SIDEBAR ===== */
+  .right-sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: var(--sidebar-bg);
+    border-left: 1px solid var(--border-light);
+    overflow-y: auto;
+    padding: 24px 18px;
+  }
+
+  .right-sidebar-title {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 18px;
+    letter-spacing: -0.2px;
+  }
+
+  .section-card {
+    background: #fdf9f3;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-light);
+  }
+
+  .section-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .section-card-name {
+    font-family: var(--font-serif);
+    font-size: 14px;
+    color: var(--text);
+    font-weight: normal;
+  }
+
+  .section-card-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--amber-bg);
+    color: #a07325;
+  }
+
+  .section-card-badge.purple-badge {
+    background: var(--purple-bg);
+    color: #7050a0;
+  }
+
+  .section-card-filter {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+    font-family: var(--font-sans);
+  }
+
+  .section-entry {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 4px 0;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .section-entry:first-of-type {
+    border-top: none;
+  }
+
+  .section-entry-time {
+    color: var(--text-light);
+    font-size: 10px;
+    margin-right: 4px;
+  }
+
+  /* ===== SMALL PREVIEW ===== */
+  .preview-section {
+    margin-top: 60px;
+    padding: 48px 32px;
+    background: #f0ece6;
+    text-align: center;
+  }
+
+  .preview-label {
+    font-family: var(--font-serif);
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+
+  .preview-frame {
+    width: 400px;
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    border: 1px solid var(--border);
+  }
+
+  .preview-frame .app-layout {
+    height: 320px;
+    font-size: 7px;
+  }
+
+  .preview-frame .left-sidebar {
+    width: 90px;
+    min-width: 90px;
+    padding: 8px 6px;
+  }
+
+  .preview-frame .app-title {
+    font-size: 8px;
+    margin-bottom: 8px;
+  }
+
+  .preview-frame .sidebar-section { margin-bottom: 8px; }
+  .preview-frame .sidebar-section-title { font-size: 6px; margin-bottom: 4px; }
+
+  .preview-frame .calendar {
+    padding: 4px;
+    border-radius: 4px;
+  }
+
+  .preview-frame .calendar-header { margin-bottom: 4px; }
+  .preview-frame .calendar-month { font-size: 6px; }
+  .preview-frame .calendar-nav { display: none; }
+  .preview-frame .calendar-grid { font-size: 5px; }
+  .preview-frame .calendar-grid .day { width: 10px; height: 10px; font-size: 5px; padding: 0; }
+  .preview-frame .calendar-grid .day-label { font-size: 4px; padding: 1px 0; }
+
+  .preview-frame .pinned-card {
+    padding: 4px 5px;
+    margin-bottom: 3px;
+    font-size: 6px;
+    gap: 3px;
+  }
+
+  .preview-frame .pin-icon { font-size: 5px; }
+
+  .preview-frame .tag-pill { padding: 1px 3px; font-size: 5px; border-radius: 2px; gap: 2px; }
+  .preview-frame .tag-pill .tag-count { font-size: 5px; }
+  .preview-frame .tags-wrap { gap: 2px; }
+
+  .preview-frame .tab-bar { padding: 0 8px; }
+  .preview-frame .tab { padding: 6px 2px; margin-right: 8px; font-size: 6px; }
+
+  .preview-frame .feed-area { padding: 8px 10px; }
+  .preview-frame .quick-capture { padding: 5px 7px; font-size: 6px; margin-bottom: 8px; border-radius: 4px; }
+  .preview-frame .date-header { font-size: 8px; padding-bottom: 3px; margin-bottom: 5px; }
+
+  .preview-frame .entry { padding: 5px 6px 5px 8px; margin-bottom: 3px; border-left-width: 2px; border-radius: 0 3px 3px 0; }
+  .preview-frame .entry-time { font-size: 5px; margin-bottom: 1px; }
+  .preview-frame .entry-content { font-size: 6px; line-height: 1.4; }
+  .preview-frame .entry-tags { margin-top: 3px; gap: 2px; }
+  .preview-frame .entry-tag { font-size: 5px; padding: 1px 3px; border-radius: 2px; }
+  .preview-frame .entry .pin-badge { font-size: 5px; top: 3px; right: 4px; }
+
+  .preview-frame .day-divider { margin-top: 8px; }
+
+  .preview-frame .right-sidebar {
+    width: 95px;
+    min-width: 95px;
+    padding: 8px 6px;
+  }
+
+  .preview-frame .right-sidebar-title { font-size: 7px; margin-bottom: 6px; }
+  .preview-frame .section-card { padding: 5px 6px; margin-bottom: 4px; border-radius: 4px; }
+  .preview-frame .section-card-header { margin-bottom: 4px; }
+  .preview-frame .section-card-name { font-size: 6px; }
+  .preview-frame .section-card-badge { font-size: 5px; padding: 1px 4px; }
+  .preview-frame .section-card-filter { font-size: 5px; margin-bottom: 4px; }
+  .preview-frame .section-entry { font-size: 5px; padding: 2px 0; }
+  .preview-frame .section-entry-time { font-size: 4px; }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
+</style>
+</head>
+<body>
+
+<!-- ===== FULL-SIZE APP ===== -->
+<div class="app-layout">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="left-sidebar">
+    <div class="app-title">Daily<span>Dispatch</span></div>
+
+    <!-- Calendar -->
+    <div class="sidebar-section">
+      <div class="calendar">
+        <div class="calendar-header">
+          <span class="calendar-month">March 2026</span>
+          <div class="calendar-nav">
+            <button>&lsaquo;</button>
+            <button>&rsaquo;</button>
+          </div>
+        </div>
+        <div class="calendar-grid">
+          <span class="day-label">Su</span><span class="day-label">Mo</span><span class="day-label">Tu</span><span class="day-label">We</span><span class="day-label">Th</span><span class="day-label">Fr</span><span class="day-label">Sa</span>
+          <span class="day other-month">1</span><span class="day other-month">2</span><span class="day other-month">3</span><span class="day other-month">4</span><span class="day other-month">5</span><span class="day other-month">6</span><span class="day other-month">7</span>
+          <span class="day">8</span><span class="day">9</span><span class="day has-entries">10</span><span class="day has-entries">11</span><span class="day">12</span><span class="day has-entries">13</span><span class="day">14</span>
+          <span class="day">15</span><span class="day has-entries">16</span><span class="day">17</span><span class="day has-entries">18</span><span class="day">19</span><span class="day has-entries">20</span><span class="day">21</span>
+          <span class="day">22</span><span class="day has-entries">23</span><span class="day">24</span><span class="day has-entries">25</span><span class="day">26</span><span class="day has-entries">27</span><span class="day">28</span>
+          <span class="day has-entries">29</span><span class="day today has-entries">30</span><span class="day">31</span><span class="day other-month">1</span><span class="day other-month">2</span><span class="day other-month">3</span><span class="day other-month">4</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pinned -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Pinned</div>
+      <div class="pinned-card">
+        <span class="pin-icon">&#128204;</span>
+        <span>API spec review — finalize rate limits</span>
+      </div>
+      <div class="pinned-card">
+        <span class="pin-icon">&#128204;</span>
+        <span>Follow up with Mike on Redis</span>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Tags</div>
+      <div class="tags-wrap">
+        <span class="tag-pill tag-api">#api <span class="tag-count">5</span></span>
+        <span class="tag-pill tag-meeting">#meeting <span class="tag-count">3</span></span>
+        <span class="tag-pill tag-question">#question <span class="tag-count">2</span></span>
+        <span class="tag-pill tag-frontend">#frontend <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-sprint">#sprint <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-review">#review <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-fix">#fix <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-docs">#docs <span class="tag-count">1</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER PANEL -->
+  <div class="center-panel">
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <div class="tab active">Feed</div>
+      <div class="tab">Sprint Planning</div>
+      <div class="tab add-tab">+</div>
+    </div>
+
+    <div class="feed-area">
+      <!-- Quick capture -->
+      <div class="quick-capture">Write something&hellip; capture a thought, note, or update</div>
+
+      <!-- Today -->
+      <div class="date-header">Monday, March 30th</div>
+
+      <!-- 10:42 AM — pinned -->
+      <div class="entry border-amber">
+        <span class="pin-badge">&#128204;</span>
+        <div class="entry-time">10:42 AM</div>
+        <div class="entry-content">
+          Reviewed the <strong>API spec</strong> draft with <span class="mention">@Dave</span> — need to finalize rate limits before Thursday
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-api">#api</span>
+          <span class="entry-tag tag-review">#review</span>
+        </div>
+      </div>
+
+      <!-- 10:15 AM -->
+      <div class="entry border-blue">
+        <div class="entry-time">10:15 AM</div>
+        <div class="entry-content">
+          Sarah asked about deployment timeline for Q2
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-question">#question</span>
+        </div>
+      </div>
+
+      <!-- 9:45 AM -->
+      <div class="entry border-purple">
+        <div class="entry-time">9:45 AM</div>
+        <div class="entry-content">
+          Sprint planning — decided to prioritize auth refactor over search
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-meeting">#meeting</span>
+          <span class="entry-tag tag-sprint">#sprint</span>
+        </div>
+      </div>
+
+      <!-- 9:30 AM -->
+      <div class="entry border-amber">
+        <div class="entry-time">9:30 AM</div>
+        <div class="entry-content">
+          Quick sync with <span class="mention">@Mike</span> on Redis caching approach
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-api">#api</span>
+        </div>
+      </div>
+
+      <!-- 9:05 AM -->
+      <div class="entry border-green">
+        <div class="entry-time">9:05 AM</div>
+        <div class="entry-content">
+          Fixed the login CSS bug that was breaking Safari
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-frontend">#frontend</span>
+          <span class="entry-tag tag-fix">#fix</span>
+        </div>
+      </div>
+
+      <!-- Day divider: Sunday -->
+      <div class="day-divider">
+        <div class="date-header">Sunday, March 29th</div>
+      </div>
+
+      <!-- 4:30 PM -->
+      <div class="entry border-amber">
+        <div class="entry-time">4:30 PM</div>
+        <div class="entry-content">
+          Wrapped up API documentation
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-api">#api</span>
+          <span class="entry-tag tag-docs">#docs</span>
+        </div>
+      </div>
+
+      <!-- 2:15 PM -->
+      <div class="entry border-purple">
+        <div class="entry-time">2:15 PM</div>
+        <div class="entry-content">
+          1:1 with <span class="mention">@Sarah</span> — career growth discussion
+        </div>
+        <div class="entry-tags">
+          <span class="entry-tag tag-meeting">#meeting</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="right-sidebar">
+    <div class="right-sidebar-title">Sections</div>
+
+    <!-- Meetings section -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-name">Meetings</span>
+        <span class="section-card-badge purple-badge">3</span>
+      </div>
+      <div class="section-card-filter">#meeting</div>
+      <div class="section-entry">
+        <span class="section-entry-time">9:45 AM</span> Sprint planning — auth refactor
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">2:15 PM</span> 1:1 with @Sarah — career growth
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">Thu</span> Standup — API blockers
+      </div>
+    </div>
+
+    <!-- API Work section -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-name">API Work</span>
+        <span class="section-card-badge">4</span>
+      </div>
+      <div class="section-card-filter">#api -docs</div>
+      <div class="section-entry">
+        <span class="section-entry-time">10:42 AM</span> API spec draft with @Dave
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">9:30 AM</span> Redis caching with @Mike
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">Wed</span> Rate limit design review
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">Tue</span> Auth endpoint refactor
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SMALL WINDOW PREVIEW ===== -->
+<div class="preview-section">
+  <div class="preview-label">Small window preview (400px)</div>
+  <div class="preview-frame">
+    <div class="app-layout">
+
+      <!-- LEFT SIDEBAR (mini) -->
+      <div class="left-sidebar">
+        <div class="app-title">Daily<span>Dispatch</span></div>
+
+        <div class="sidebar-section">
+          <div class="calendar">
+            <div class="calendar-header">
+              <span class="calendar-month">March 2026</span>
+            </div>
+            <div class="calendar-grid">
+              <span class="day-label">S</span><span class="day-label">M</span><span class="day-label">T</span><span class="day-label">W</span><span class="day-label">T</span><span class="day-label">F</span><span class="day-label">S</span>
+              <span class="day other-month">1</span><span class="day other-month">2</span><span class="day other-month">3</span><span class="day other-month">4</span><span class="day other-month">5</span><span class="day other-month">6</span><span class="day other-month">7</span>
+              <span class="day">8</span><span class="day">9</span><span class="day">10</span><span class="day">11</span><span class="day">12</span><span class="day">13</span><span class="day">14</span>
+              <span class="day">15</span><span class="day">16</span><span class="day">17</span><span class="day">18</span><span class="day">19</span><span class="day">20</span><span class="day">21</span>
+              <span class="day">22</span><span class="day">23</span><span class="day">24</span><span class="day">25</span><span class="day">26</span><span class="day">27</span><span class="day">28</span>
+              <span class="day">29</span><span class="day today">30</span><span class="day">31</span><span class="day other-month">1</span><span class="day other-month">2</span><span class="day other-month">3</span><span class="day other-month">4</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Pinned</div>
+          <div class="pinned-card">
+            <span class="pin-icon">&#128204;</span>
+            <span>API spec review</span>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Tags</div>
+          <div class="tags-wrap">
+            <span class="tag-pill tag-api">#api <span class="tag-count">5</span></span>
+            <span class="tag-pill tag-meeting">#meeting <span class="tag-count">3</span></span>
+            <span class="tag-pill tag-question">#question <span class="tag-count">2</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER (mini) -->
+      <div class="center-panel">
+        <div class="tab-bar">
+          <div class="tab active">Feed</div>
+          <div class="tab">Sprint Planning</div>
+          <div class="tab add-tab">+</div>
+        </div>
+        <div class="feed-area">
+          <div class="quick-capture">Write something&hellip;</div>
+          <div class="date-header">Monday, March 30th</div>
+          <div class="entry border-amber">
+            <span class="pin-badge">&#128204;</span>
+            <div class="entry-time">10:42 AM</div>
+            <div class="entry-content">Reviewed the <strong>API spec</strong> draft with <span class="mention">@Dave</span></div>
+            <div class="entry-tags">
+              <span class="entry-tag tag-api">#api</span>
+              <span class="entry-tag tag-review">#review</span>
+            </div>
+          </div>
+          <div class="entry border-blue">
+            <div class="entry-time">10:15 AM</div>
+            <div class="entry-content">Sarah asked about deployment timeline</div>
+            <div class="entry-tags"><span class="entry-tag tag-question">#question</span></div>
+          </div>
+          <div class="entry border-purple">
+            <div class="entry-time">9:45 AM</div>
+            <div class="entry-content">Sprint planning — auth refactor</div>
+            <div class="entry-tags">
+              <span class="entry-tag tag-meeting">#meeting</span>
+              <span class="entry-tag tag-sprint">#sprint</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR (mini) -->
+      <div class="right-sidebar">
+        <div class="right-sidebar-title">Sections</div>
+        <div class="section-card">
+          <div class="section-card-header">
+            <span class="section-card-name">Meetings</span>
+            <span class="section-card-badge purple-badge">3</span>
+          </div>
+          <div class="section-card-filter">#meeting</div>
+          <div class="section-entry"><span class="section-entry-time">9:45</span> Sprint planning</div>
+          <div class="section-entry"><span class="section-entry-time">2:15</span> 1:1 with @Sarah</div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-header">
+            <span class="section-card-name">API Work</span>
+            <span class="section-card-badge">4</span>
+          </div>
+          <div class="section-card-filter">#api -docs</div>
+          <div class="section-entry"><span class="section-entry-time">10:42</span> API spec with @Dave</div>
+          <div class="section-entry"><span class="section-entry-time">9:30</span> Redis caching</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DailyDispatch — Notion Tight Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #faf8f5;
+    --surface: #fff;
+    --sidebar-bg: #f5f2ed;
+    --text: #37352f;
+    --text-secondary: #787774;
+    --text-light: #9b9a97;
+    --border: #e8e0d4;
+    --border-light: #f0ece6;
+    --amber: #cb912f;
+    --amber-bg: rgba(203,145,47,0.12);
+    --red: #e16259;
+    --red-bg: rgba(225,98,89,0.1);
+    --blue: #5b9bd5;
+    --blue-bg: rgba(91,155,213,0.1);
+    --green: #4daa57;
+    --green-bg: rgba(77,170,87,0.1);
+    --purple: #9065b0;
+    --purple-bg: rgba(144,101,176,0.1);
+    --brown: #8b7355;
+    --brown-bg: rgba(139,115,85,0.1);
+    --gray-bg: rgba(120,119,116,0.08);
+    --shadow: 0 1px 2px rgba(0,0,0,0.04);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  .app-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ===== LEFT SIDEBAR ===== */
+  .left-sidebar {
+    width: 230px;
+    min-width: 230px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 16px 14px;
+  }
+
+  .app-title {
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--brown);
+    margin-bottom: 16px;
+    letter-spacing: -0.2px;
+  }
+
+  .app-title span {
+    color: var(--amber);
+  }
+
+  /* Calendar */
+  .sidebar-section { margin-bottom: 16px; }
+
+  .sidebar-section-title {
+    font-family: var(--font);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--brown);
+    margin-bottom: 8px;
+  }
+
+  .calendar {
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .calendar-month {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .calendar-nav {
+    display: flex;
+    gap: 2px;
+  }
+
+  .calendar-nav button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 11px;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    text-align: center;
+    font-size: 11px;
+  }
+
+  .calendar-grid .day-label {
+    color: var(--text-light);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 2px 0;
+    font-weight: 500;
+  }
+
+  .calendar-grid .day {
+    padding: 0;
+    color: var(--text-secondary);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    position: relative;
+    font-size: 11px;
+  }
+
+  .calendar-grid .day.today {
+    background: var(--amber);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .calendar-grid .day.has-entries::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-light);
+  }
+
+  .calendar-grid .day.today.has-entries::after {
+    background: rgba(255,255,255,0.7);
+  }
+
+  .calendar-grid .day.other-month {
+    color: var(--border);
+  }
+
+  /* Pinned */
+  .pinned-item {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text);
+    padding: 3px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pinned-item .pin-icon {
+    font-size: 10px;
+    margin-right: 4px;
+  }
+
+  /* Tags */
+  .tags-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .tag-pill .tag-count {
+    font-size: 9px;
+    opacity: 0.6;
+    font-weight: 400;
+  }
+
+  .tag-api { background: var(--amber-bg); color: #a07325; }
+  .tag-meeting { background: var(--purple-bg); color: #7050a0; }
+  .tag-question { background: var(--blue-bg); color: #4a80b0; }
+  .tag-frontend { background: var(--green-bg); color: #3a8f42; }
+  .tag-sprint { background: var(--red-bg); color: #c04e47; }
+  .tag-review { background: rgba(203,145,47,0.08); color: #a07325; }
+  .tag-fix { background: var(--green-bg); color: #3a8f42; }
+  .tag-docs { background: var(--gray-bg); color: #5f5e5b; }
+  .tag-backend { background: var(--brown-bg); color: #7a6545; }
+  .tag-deploy { background: var(--red-bg); color: #c04e47; }
+  .tag-design { background: var(--blue-bg); color: #4a80b0; }
+
+  /* ===== CENTER ===== */
+  .center-panel {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    padding: 0 24px;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .tab {
+    padding: 10px 2px;
+    margin-right: 20px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--amber);
+  }
+
+  .tab.add-tab {
+    color: var(--text-light);
+    font-size: 14px;
+    margin-right: 0;
+  }
+
+  /* Quick capture */
+  .feed-area {
+    padding: 12px 24px 24px;
+    flex: 1;
+  }
+
+  .quick-capture {
+    background: #fdf9f3;
+    border-bottom: 1.5px solid var(--border);
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--text-light);
+    cursor: text;
+  }
+
+  /* Date headers */
+  .date-header {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--brown);
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid var(--amber-bg);
+    margin-bottom: 2px;
+    margin-top: 4px;
+    letter-spacing: -0.2px;
+  }
+
+  /* Hour group labels */
+  .hour-group {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    padding: 8px 0 2px 0;
+  }
+
+  /* Feed entries — tight rows, no cards */
+  .entry-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 5px 0 5px 0;
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+    padding-left: 6px;
+    border-left: 2px solid transparent;
+  }
+
+  .entry-row.border-amber { border-left-color: var(--amber); }
+  .entry-row.border-purple { border-left-color: var(--purple); }
+  .entry-row.border-blue { border-left-color: var(--blue); }
+  .entry-row.border-green { border-left-color: var(--green); }
+  .entry-row.border-red { border-left-color: var(--red); }
+  .entry-row.border-brown { border-left-color: var(--brown); }
+
+  .entry-time {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text-light);
+    flex-shrink: 0;
+    width: 40px;
+    text-align: right;
+    font-weight: 400;
+  }
+
+  .entry-content {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .entry-content strong {
+    font-weight: 600;
+  }
+
+  .entry-content .mention {
+    color: var(--blue);
+    font-weight: 500;
+  }
+
+  .entry-inline-tags {
+    display: inline-flex;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  .entry-tag {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .entry-pin {
+    color: var(--red);
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-left: -2px;
+  }
+
+  /* Day divider */
+  .day-divider {
+    margin-top: 20px;
+  }
+
+  /* ===== RIGHT SIDEBAR ===== */
+  .right-sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--sidebar-bg);
+    border-left: 1px solid var(--border-light);
+    overflow-y: auto;
+    padding: 16px 14px;
+  }
+
+  .right-sidebar-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--brown);
+    margin-bottom: 12px;
+  }
+
+  .section-card {
+    background: #fdf9f3;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-light);
+  }
+
+  .section-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .section-card-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .section-card-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: var(--amber-bg);
+    color: #a07325;
+  }
+
+  .section-card-badge.purple-badge {
+    background: var(--purple-bg);
+    color: #7050a0;
+  }
+
+  .section-card-badge.red-badge {
+    background: var(--red-bg);
+    color: #c04e47;
+  }
+
+  .section-card-filter {
+    font-size: 10px;
+    color: var(--text-light);
+    margin-bottom: 6px;
+    font-family: var(--mono);
+  }
+
+  .section-entry {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    padding: 3px 0;
+    border-top: 1px solid var(--border-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .section-entry:first-of-type {
+    border-top: none;
+  }
+
+  .section-entry-time {
+    color: var(--text-light);
+    font-size: 10px;
+    font-family: var(--mono);
+    margin-right: 4px;
+  }
+
+  /* Resize handle between sections */
+  .resize-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 12px;
+    cursor: row-resize;
+    color: var(--text-light);
+    font-size: 8px;
+    letter-spacing: 3px;
+    user-select: none;
+    opacity: 0.5;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="left-sidebar">
+    <div class="app-title">Daily<span>Dispatch</span></div>
+
+    <!-- Calendar -->
+    <div class="sidebar-section">
+      <div class="calendar">
+        <div class="calendar-header">
+          <span class="calendar-month">March 2026</span>
+          <div class="calendar-nav">
+            <button>&lsaquo;</button>
+            <button>&rsaquo;</button>
+          </div>
+        </div>
+        <div class="calendar-grid">
+          <span class="day-label">Su</span><span class="day-label">Mo</span><span class="day-label">Tu</span><span class="day-label">We</span><span class="day-label">Th</span><span class="day-label">Fr</span><span class="day-label">Sa</span>
+          <span class="day">1</span><span class="day">2</span><span class="day">3</span><span class="day">4</span><span class="day">5</span><span class="day">6</span><span class="day">7</span>
+          <span class="day">8</span><span class="day">9</span><span class="day has-entries">10</span><span class="day has-entries">11</span><span class="day">12</span><span class="day has-entries">13</span><span class="day">14</span>
+          <span class="day">15</span><span class="day has-entries">16</span><span class="day">17</span><span class="day has-entries">18</span><span class="day">19</span><span class="day has-entries">20</span><span class="day">21</span>
+          <span class="day">22</span><span class="day has-entries">23</span><span class="day">24</span><span class="day has-entries">25</span><span class="day">26</span><span class="day has-entries">27</span><span class="day">28</span>
+          <span class="day has-entries">29</span><span class="day today has-entries">30</span><span class="day">31</span><span class="day other-month">1</span><span class="day other-month">2</span><span class="day other-month">3</span><span class="day other-month">4</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pinned -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Pinned</div>
+      <div class="pinned-item"><span class="pin-icon">&#128204;</span>API spec review — finalize rate limits</div>
+      <div class="pinned-item"><span class="pin-icon">&#128204;</span>Follow up with Mike on Redis</div>
+      <div class="pinned-item"><span class="pin-icon">&#128204;</span>Auth refactor scope doc</div>
+    </div>
+
+    <!-- Tags -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Tags</div>
+      <div class="tags-wrap">
+        <span class="tag-pill tag-api">#api <span class="tag-count">5</span></span>
+        <span class="tag-pill tag-meeting">#meeting <span class="tag-count">4</span></span>
+        <span class="tag-pill tag-question">#question <span class="tag-count">2</span></span>
+        <span class="tag-pill tag-frontend">#frontend <span class="tag-count">2</span></span>
+        <span class="tag-pill tag-sprint">#sprint <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-review">#review <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-fix">#fix <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-docs">#docs <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-backend">#backend <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-deploy">#deploy <span class="tag-count">1</span></span>
+        <span class="tag-pill tag-design">#design <span class="tag-count">1</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER PANEL -->
+  <div class="center-panel">
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <div class="tab active">Feed</div>
+      <div class="tab">Sprint Planning</div>
+      <div class="tab add-tab">+</div>
+    </div>
+
+    <div class="feed-area">
+      <!-- Quick capture -->
+      <div class="quick-capture">Capture a thought, note, or update&hellip;</div>
+
+      <!-- Today -->
+      <div class="date-header">Monday, March 30th</div>
+
+      <!-- 10 AM group -->
+      <div class="hour-group">10 AM</div>
+
+      <!-- 10:42 AM — pinned -->
+      <div class="entry-row border-amber">
+        <span class="entry-time">10:42</span>
+        <span class="entry-content">Reviewed the <strong>API spec</strong> draft with <span class="mention">@Dave</span> — need to finalize rate limits before Thursday</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-api">#api</span>
+          <span class="entry-tag tag-review">#review</span>
+        </span>
+        <span class="entry-pin">&#128204;</span>
+      </div>
+
+      <!-- 10:15 AM -->
+      <div class="entry-row border-blue">
+        <span class="entry-time">10:15</span>
+        <span class="entry-content">Sarah asked about deployment timeline for Q2</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-question">#question</span>
+        </span>
+      </div>
+
+      <!-- 9 AM group -->
+      <div class="hour-group">9 AM</div>
+
+      <!-- 9:45 AM -->
+      <div class="entry-row border-purple">
+        <span class="entry-time">9:45</span>
+        <span class="entry-content">Sprint planning — decided to prioritize auth refactor over search</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-meeting">#meeting</span>
+          <span class="entry-tag tag-sprint">#sprint</span>
+        </span>
+      </div>
+
+      <!-- 9:30 AM -->
+      <div class="entry-row border-amber">
+        <span class="entry-time">9:30</span>
+        <span class="entry-content">Quick sync with <span class="mention">@Mike</span> on Redis caching approach</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-api">#api</span>
+        </span>
+      </div>
+
+      <!-- 9:05 AM -->
+      <div class="entry-row border-green">
+        <span class="entry-time">9:05</span>
+        <span class="entry-content">Fixed the login CSS bug that was breaking Safari</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-frontend">#frontend</span>
+          <span class="entry-tag tag-fix">#fix</span>
+        </span>
+      </div>
+
+      <!-- 8 AM group -->
+      <div class="hour-group">8 AM</div>
+
+      <!-- 8:45 AM -->
+      <div class="entry-row border-brown">
+        <span class="entry-time">8:45</span>
+        <span class="entry-content">Merged PR #247 — token refresh logic for expired sessions</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-backend">#backend</span>
+          <span class="entry-tag tag-deploy">#deploy</span>
+        </span>
+      </div>
+
+      <!-- 8:30 AM -->
+      <div class="entry-row border-purple">
+        <span class="entry-time">8:30</span>
+        <span class="entry-content">Morning standup — blockers: flaky CI, auth flow dependency</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-meeting">#meeting</span>
+        </span>
+      </div>
+
+      <!-- Day divider: Sunday -->
+      <div class="day-divider">
+        <div class="date-header">Sunday, March 29th</div>
+      </div>
+
+      <div class="hour-group">4 PM</div>
+
+      <!-- 4:30 PM -->
+      <div class="entry-row border-amber">
+        <span class="entry-time">4:30</span>
+        <span class="entry-content">Wrapped up API documentation</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-api">#api</span>
+          <span class="entry-tag tag-docs">#docs</span>
+        </span>
+      </div>
+
+      <div class="hour-group">2 PM</div>
+
+      <!-- 2:15 PM -->
+      <div class="entry-row border-purple">
+        <span class="entry-time">2:15</span>
+        <span class="entry-content">1:1 with <span class="mention">@Sarah</span> — career growth discussion</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-meeting">#meeting</span>
+        </span>
+      </div>
+
+      <div class="hour-group">11 AM</div>
+
+      <!-- 11:00 AM -->
+      <div class="entry-row border-blue">
+        <span class="entry-time">11:00</span>
+        <span class="entry-content">Sketched wireframes for settings page redesign</span>
+        <span class="entry-inline-tags">
+          <span class="entry-tag tag-frontend">#frontend</span>
+          <span class="entry-tag tag-design">#design</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="right-sidebar">
+    <div class="right-sidebar-title">Sections</div>
+
+    <!-- Meetings section -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-name">Meetings</span>
+        <span class="section-card-badge purple-badge">4</span>
+      </div>
+      <div class="section-card-filter">#meeting</div>
+      <div class="section-entry">
+        <span class="section-entry-time">9:45</span> Sprint planning — auth refactor
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">8:30</span> Morning standup — blockers
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">2:15</span> 1:1 with @Sarah — career growth
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">Sun</span> 1:1 with @Sarah (yesterday)
+      </div>
+    </div>
+
+    <div class="resize-handle">&middot;&middot;&middot;</div>
+
+    <!-- API Work section -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-name">API Work</span>
+        <span class="section-card-badge">3</span>
+      </div>
+      <div class="section-card-filter">#api -docs</div>
+      <div class="section-entry">
+        <span class="section-entry-time">10:42</span> API spec draft with @Dave
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">9:30</span> Redis caching with @Mike
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">Sun</span> Wrapped up API documentation
+      </div>
+    </div>
+
+    <div class="resize-handle">&middot;&middot;&middot;</div>
+
+    <!-- Blockers section -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-name">Blockers</span>
+        <span class="section-card-badge red-badge">2</span>
+      </div>
+      <div class="section-card-filter">#blocker OR "blocked"</div>
+      <div class="section-entry">
+        <span class="section-entry-time">8:30</span> Flaky CI blocking deploys
+      </div>
+      <div class="section-entry">
+        <span class="section-entry-time">8:30</span> Auth flow dependency unresolved
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
