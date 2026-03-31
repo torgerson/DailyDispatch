@@ -1396,7 +1396,7 @@ function closeAppend(){
 function openAsNote(id){
   closeAppend();
   const entry=db.entries.find(e=>e.id===id);
-  if(!entry){console.error('openAsNote: entry not found',id);return;}
+  if(!entry)return;
   // Convert to note if not already
   if(!entry.isNote){
     entry.isNote=true;
@@ -2538,7 +2538,7 @@ document.addEventListener('click',e=>{
   if(appendingId){const card=document.querySelector(`.entry-card[data-id="${appendingId}"]`);if(card&&!card.contains(e.target))closeAppend();}
   // Delegate: click on entry card to open as note
   const entryCard=e.target.closest('.entry-card[data-action="open"]');
-  if(entryCard&&!e.target.closest('.entry-pin-toggle')&&!e.target.closest('.tag-pill')&&!e.target.closest('.entry-append')){
+  if(entryCard&&!e.target.closest('.tag-pill')&&!e.target.closest('.entry-append')){
     openAsNote(entryCard.dataset.id);
   }
 });
@@ -3220,7 +3220,9 @@ function ensureHelpNotes(){
 
 /* ═══════════ INIT ═══════════ */
 async function init(){
+  console.log('[DD-INIT] DailyDispatch loading... version 2025-03-30-v3');
   await loadDB();
+  console.log('[DD-INIT] DB loaded:', db.entries.length, 'entries');
   if(!db.sections)db.sections=[];
   if(!db.entries)db.entries=[];
   if(!db.openItems)db.openItems=[];
