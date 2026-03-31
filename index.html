@@ -1195,10 +1195,7 @@ function renderFeed(area){
   let h=`<div id="capture"><textarea id="capture-input" placeholder="What's happening? (#tags supported)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)"></textarea><div id="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button id="submit-btn" onclick="submitEntry()">Add</button></div></div>`;
 
   // Daily summary banner — show if viewing today (or selected date) and no summary exists yet
-  const hasSummary=db.entries.some(e=>e.date===selectedDate&&e.isNote&&(e.tags||[]).includes('daily-summary'));
-  if(!hasSummary){
-    h+=`<div class="summary-banner" onclick="generateWrapUp()"><span>&#128203;</span> Generate daily summary for ${selectedDate===todayStr()?'today':fmtDateLabel(selectedDate)}</div>`;
-  }
+  h+=`<div class="summary-banner" onclick="generateWrapUp()"><span>&#128203;</span> Generate daily summary for ${selectedDate===todayStr()?'today':fmtDateLabel(selectedDate)}</div>`;
 
   let hasAny=false;
   for(const ds of dates){
@@ -1342,6 +1339,8 @@ function submitEntry(){
   db.entries.push({id:genId('e'),content,tags:extractTags(content),mentions,date:selectedDate,ts,isNote:false,noteTitle:'',contextId:null});
   registerMentions(mentions);
   save();inp.value='';inp.style.height='auto';renderActiveView();renderTagCloud();renderAllSections();
+  // Re-focus capture input so user can keep typing
+  setTimeout(()=>{const el=document.getElementById('capture-input');if(el)el.focus();},10);
 }
 let pendingDeleteId=null;
 function confirmDelete(id){
@@ -2531,14 +2530,84 @@ function getCtxLabel(){return null;}
 
 /* ═══════════ DAILY WRAP-UP ═══════════ */
 function generateWrapUp(){
-  const d=selectedDate,entries=db.entries.filter(e=>e.date===d&&!e.isNote).sort((a,b)=>a.ts-b.ts);
-  const ois=db.openItems.filter(o=>o.createdDate===d);
-  let md=`# Daily Summary — ${fmtDateLabel(d)}\n\n## Entries (${entries.length})\n`;
-  const byTag={};entries.forEach(e=>{if(!e.tags.length)(byTag['untagged']=byTag['untagged']||[]).push(e);else e.tags.forEach(t=>(byTag[t]=byTag[t]||[]).push(e));});
-  for(const[tag,es]of Object.entries(byTag)){md+=`\n### #${tag} (${es.length})\n`;es.forEach(e=>md+=`- ${fmtTime(e.ts)}: ${e.content.slice(0,100)}\n`);}
-  if(ois.length){md+=`\n## Pinned Items\n`;ois.forEach(o=>md+=`- ${o.text}\n`);}
+  const d=selectedDate;
+  const allEntries=db.entries.filter(e=>e.date===d&&!e.eventType&&!e.isHelp).sort((a,b)=>a.ts-b.ts);
+  const quickEntries=allEntries.filter(e=>!e.isNote);
+  const notes=allEntries.filter(e=>e.isNote);
+  const notesEdited=db.entries.filter(e=>e.isNote&&!e.isHelp&&e.updatedTs&&dateStr(new Date(e.updatedTs))===d&&e.date!==d);
+  const pins=db.openItems;
+  const allTags=new Set();allEntries.forEach(e=>(e.tags||[]).forEach(t=>allTags.add(t)));
+  const allPeople=new Set();allEntries.forEach(e=>(e.mentions||[]).forEach(m=>allPeople.add(m)));
+
+  let md=`# Daily Summary — ${fmtDateLabel(d)}\n\n`;
+
+  // Stats
+  md+=`## Stats\n`;
+  md+=`- **${allEntries.length}** total entries (${quickEntries.length} quick, ${notes.length} notes)\n`;
+  if(allTags.size)md+=`- **${allTags.size}** tags used: ${[...allTags].map(t=>'#'+t).join(', ')}\n`;
+  if(allPeople.size)md+=`- **${allPeople.size}** people mentioned: ${[...allPeople].map(p=>'@'+p).join(', ')}\n`;
+  if(pins.length)md+=`- **${pins.length}** pinned items\n`;
+  md+='\n';
+
+  // Timeline
+  if(quickEntries.length){
+    md+=`## Timeline\n\n`;
+    quickEntries.forEach(e=>{
+      const tags=(e.tags||[]).length?' '+e.tags.map(t=>'#'+t).join(' '):'';
+      md+=`- **${fmtTime(e.ts)}** ${e.content.slice(0,150)}${e.content.length>150?'...':''}${tags}\n`;
+    });
+    md+='\n';
+  }
+
+  // Notes created today
+  if(notes.length){
+    md+=`## Notes Created\n\n`;
+    notes.forEach(e=>{
+      const title=(e.noteTitle||'Untitled').replace(/#[a-zA-Z0-9_-]+/g,'').trim();
+      const preview=e.content.replace(/^#+ .+\n?/,'').replace(/#[a-zA-Z0-9_-]+/g,'').replace(/[*`_~\[\]]/g,'').trim().slice(0,100);
+      md+=`- **${title}**${preview?' — '+preview:''}\n`;
+    });
+    md+='\n';
+  }
+
+  // Notes edited today (created on other days)
+  if(notesEdited.length){
+    md+=`## Notes Edited\n\n`;
+    notesEdited.forEach(e=>{
+      const title=(e.noteTitle||'Untitled').replace(/#[a-zA-Z0-9_-]+/g,'').trim();
+      md+=`- **${title}** (created ${e.date})\n`;
+    });
+    md+='\n';
+  }
+
+  // By tag
+  if(allTags.size){
+    md+=`## By Tag\n\n`;
+    const byTag={};
+    allEntries.forEach(e=>{
+      if(!(e.tags||[]).length)(byTag['untagged']=byTag['untagged']||[]).push(e);
+      else e.tags.forEach(t=>(byTag[t]=byTag[t]||[]).push(e));
+    });
+    const sorted=Object.entries(byTag).sort((a,b)=>b[1].length-a[1].length);
+    sorted.forEach(([tag,es])=>{
+      md+=`### #${tag} (${es.length})\n`;
+      es.forEach(e=>{
+        const text=e.isNote?(e.noteTitle||'Untitled'):e.content.slice(0,100);
+        md+=`- ${fmtTime(e.ts)}: ${text}\n`;
+      });
+      md+='\n';
+    });
+  }
+
+  // Pinned items
+  if(pins.length){
+    md+=`## Pinned Items\n\n`;
+    pins.forEach(o=>md+=`- ${o.text}\n`);
+    md+='\n';
+  }
+
   const entry={id:genId('e'),content:md,tags:['daily-summary'],date:d,ts:Date.now(),isNote:true,noteTitle:`Summary — ${fmtDateLabel(d)}`,contextId:null};
-  db.entries.push(entry);save();openNoteTab(entry.id);renderTagCloud();renderAllSections();
+  db.entries.push(entry);save();openNoteTab(entry.id);renderTagCloud();renderAllSections();renderRecent();
 }
 
 /* ═══════════ SIDEBAR TOGGLE ═══════════ */
