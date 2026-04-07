@@ -408,6 +408,24 @@
   .copy-btn:hover { opacity: .8; }
   .copy-btn.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, transparent); background: color-mix(in srgb, var(--danger) 8%, transparent); }
 
+  /* Toast */
+  #dd-toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(8px);
+    background: var(--text); color: #fff; padding: 6px 14px; border-radius: 3px;
+    font-size: 11px; font-weight: 500; z-index: 9999; pointer-events: none;
+    opacity: 0; transition: opacity 0.2s, transform 0.2s; white-space: nowrap;
+  }
+  #dd-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #dd-toast.error { background: var(--danger); }
+
+  /* Note image strip */
+  .note-images { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0 2px; min-height: 0; }
+  .note-images img { max-height: 140px; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; object-fit: cover; }
+
+  /* Drag-over highlight */
+  .cm-wrap.drag-over { border-color: var(--accent) !important; background: var(--accent-light); }
+  #capture.drag-over { outline: 2px dashed var(--accent); outline-offset: -2px; border-radius: var(--radius-md); }
+
   /* Pin toggle in note editor */
   .pin-toggle {
     font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 3px;
@@ -846,7 +864,7 @@
 <script>
 /* ═══════════ DATA — IndexedDB ═══════════ */
 const DB_NAME='dailydispatch';
-const DB_VERSION=1;
+const DB_VERSION=2;
 const COLLECTIONS=['entries','openItems','questions','contexts','sections','settings'];
 const genId=p=>p+'_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -891,7 +909,7 @@ function getAllPeople(){
 }
 
 // In-memory db object — same shape as before
-let db={entries:[],questions:[],openItems:[],contexts:[],tagColors:{},sections:[],people:[]};
+let db={entries:[],questions:[],openItems:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map()};
 let idb=null; // IndexedDB handle
 
 function openIDB(){
@@ -900,6 +918,7 @@ function openIDB(){
     req.onupgradeneeded=e=>{
       const d=e.target.result;
       COLLECTIONS.forEach(name=>{if(!d.objectStoreNames.contains(name))d.createObjectStore(name,{keyPath:'id'});});
+      if(!d.objectStoreNames.contains('images'))d.createObjectStore('images',{keyPath:'id'});
     };
     req.onsuccess=e=>{idb=e.target.result;resolve(idb);};
     req.onerror=e=>reject(e.target.error);
@@ -947,6 +966,12 @@ async function loadDB(){
   db.tagColors=s.tagColors||{};
   db.people=s.people||[];
   db.theme=s.theme||'Warm Notion';
+
+  // Load images into fast in-memory map
+  const imgRows=await idbGetAll('images');
+  db.images=new Map(imgRows.map(r=>[r.id,{data:r.data,mimeType:r.mimeType}]));
+  // Request persistent storage to protect against Safari 7-day eviction
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 
   // Migrate from localStorage if IndexedDB was empty
   if(db.entries.length===0){
@@ -1019,6 +1044,116 @@ async function flushSave(){
   }
 }
 
+/* ═══════════ IMAGES ═══════════ */
+const IMG_MAX_BYTES=5*1024*1024; // 5 MB
+const IMG_ALLOWED=['image/jpeg','image/png','image/gif'];
+let _toastTimer=null;
+
+function showToast(msg,type='error'){
+  const el=document.getElementById('dd-toast');
+  if(!el)return;
+  el.textContent=msg;
+  el.className='show'+(type==='error'?' error':'');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{el.className='';},2800);
+}
+
+async function handleImageFile(file,insertFn){
+  if(!IMG_ALLOWED.includes(file.type)){
+    showToast('Only JPG, PNG, and GIF images are supported');
+    return;
+  }
+  if(file.size>IMG_MAX_BYTES){
+    showToast(`Image too large — max 5 MB (this file is ${(file.size/1024/1024).toFixed(1)} MB)`);
+    return;
+  }
+  const id=genId('img');
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try{
+      await saveImage(id,ev.target.result,file.type,file.size);
+      insertFn(`\n![](${id})\n`);
+    }catch(err){
+      showToast('Failed to save image — storage may be full');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveImage(id,data,mimeType,size){
+  db.images.set(id,{data,mimeType});
+  await idbPutAll('images',[{id,data,mimeType,ts:Date.now(),size}]);
+}
+
+function insertAtCursor(el,text){
+  const s=el.selectionStart,e2=el.selectionEnd;
+  el.value=el.value.slice(0,s)+text+el.value.slice(e2);
+  el.selectionStart=el.selectionEnd=s+text.length;
+  autoGrow(el);
+}
+
+function insertIntoCM6(text){
+  if(!cmEditorView)return;
+  const{from,to}=cmEditorView.state.selection.main;
+  cmEditorView.dispatch({changes:{from,to,insert:text},selection:{anchor:from+text.length}});
+  noteContentChanged(cmNoteId,cmEditorView.state.doc.toString());
+}
+
+function setupCaptureImageHandlers(){
+  const wrap=document.getElementById('capture');
+  const inp=document.getElementById('capture-input');
+  if(!wrap||!inp)return;
+  wrap.addEventListener('dragover',e=>{
+    if(e.dataTransfer.types.includes('Files')){e.preventDefault();wrap.classList.add('drag-over');}
+  });
+  wrap.addEventListener('dragleave',e=>{if(!wrap.contains(e.relatedTarget))wrap.classList.remove('drag-over');});
+  wrap.addEventListener('drop',e=>{
+    e.preventDefault();wrap.classList.remove('drag-over');
+    const file=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));
+    if(file)handleImageFile(file,text=>{insertAtCursor(inp,text);checkAC(inp);});
+    else if(e.dataTransfer.files.length)showToast('Only JPG, PNG, and GIF images are supported');
+  });
+  inp.addEventListener('paste',e=>{
+    const item=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));
+    if(!item)return;
+    e.preventDefault();
+    handleImageFile(item.getAsFile(),text=>{insertAtCursor(inp,text);checkAC(inp);});
+  });
+}
+
+function setupCMImageHandlers(){
+  const wrap=document.getElementById('cm-wrap');
+  if(!wrap)return;
+  wrap.addEventListener('dragover',e=>{
+    if(e.dataTransfer.types.includes('Files')){e.preventDefault();e.stopPropagation();wrap.classList.add('drag-over');}
+  });
+  wrap.addEventListener('dragleave',e=>{if(!wrap.contains(e.relatedTarget))wrap.classList.remove('drag-over');});
+  wrap.addEventListener('drop',e=>{
+    const file=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));
+    if(!file){if(e.dataTransfer.files.length)showToast('Only JPG, PNG, and GIF images are supported');return;}
+    e.preventDefault();e.stopPropagation();wrap.classList.remove('drag-over');
+    handleImageFile(file,text=>insertIntoCM6(text));
+  });
+  wrap.addEventListener('paste',e=>{
+    const item=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));
+    if(!item)return;
+    e.preventDefault();
+    handleImageFile(item.getAsFile(),text=>insertIntoCM6(text));
+  },true); // capture phase — beats CM6's own paste handler
+}
+
+function renderNoteImages(content){
+  const strip=document.getElementById('note-images');
+  if(!strip)return;
+  const ids=[...content.matchAll(/!\[\]\((img_[a-z0-9_]+)\)/g)].map(m=>m[1]);
+  if(!ids.length){strip.innerHTML='';return;}
+  strip.innerHTML=ids.map(id=>{
+    const img=db.images.get(id);
+    if(!img)return'';
+    return`<img src="${img.data}" title="Click to open full size" onclick="window.open(this.src)" loading="lazy">`;
+  }).filter(Boolean).join('');
+}
+
 /* ═══════════ STATE ═══════════ */
 let selectedDate=todayStr(), activeTab='feed', openTabs=['feed'], activeTagFilters=[], calViewDate=new Date(), acState=null, saveTimeout=null;
 // saveTimeout is still used by noteChanged for debounced saves
@@ -1026,6 +1161,12 @@ let selectedDate=todayStr(), activeTab='feed', openTabs=['feed'], activeTagFilte
 /* ═══════════ MARKDOWN ═══════════ */
 function renderMd(raw){
   let t=escH(raw);
+  // Substitute image tokens before any other transforms
+  t=t.replace(/!\[\]\((img_[a-z0-9_]+)\)/g,(m,id)=>{
+    const img=db.images.get(id);
+    if(!img)return'';
+    return`<img src="${img.data}" style="max-width:100%;border-radius:3px;margin:4px 0;display:block;cursor:pointer" loading="lazy" onclick="window.open(this.src)" title="Click to open">`;
+  });
   t=t.replace(/```([\s\S]*?)```/g,(_,c)=>'<pre><code>'+c.trim()+'</code></pre>');
   t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
   t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
@@ -1227,6 +1368,7 @@ function renderFeed(area){
     h+=`<div id="feed-scroll-sentinel" style="height:1px"></div>`;
   }
   area.innerHTML=h;
+  setupCaptureImageHandlers();
   setTimeout(setupFeedScrollObserver,50);
 }
 function showMoreDay(ds){feedDayShowMore[ds]=(feedDayShowMore[ds]||FEED_DAY_CAP)+FEED_DAY_CAP;renderActiveView();}
@@ -1276,6 +1418,12 @@ function renderEntryCard(e){
 // Inline markdown — no tag/mention rendering (those are shown as pills)
 function renderMdInline(raw){
   let t=escH(raw);
+  // Substitute image tokens inline (feed cards)
+  t=t.replace(/!\[\]\((img_[a-z0-9_]+)\)/g,(m,id)=>{
+    const img=db.images.get(id);
+    if(!img)return'';
+    return`<img src="${img.data}" style="max-height:80px;border-radius:3px;margin:2px 0;display:block;cursor:pointer" loading="lazy" onclick="event.stopPropagation();window.open(this.src)" title="Click to open">`;
+  });
   t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
   t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   t=t.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g,'<em>$1</em>');
@@ -1518,7 +1666,8 @@ function renderNoteEditor(area,noteId){
       ${e.isHelp?'':'<button class="copy-btn danger" onclick="confirmDelete(\''+noteId+'\')">&#10005; Delete</button>'}
     </div>
     <div class="cm-wrap" id="cm-wrap"></div>
-    <div class="note-bar"><span class="cap-hint">Tip: #tags, @mentions, [[links]], - for bullets</span></div>
+    <div class="note-images" id="note-images"></div>
+    <div class="note-bar"><span class="cap-hint">Tip: #tags, @mentions, [[links]], - for bullets — drag or paste images here</span></div>
   </div>`;
   // Create CM6 EditorView
   const {EditorState,Prec}=CM6;
@@ -1553,6 +1702,8 @@ function renderNoteEditor(area,noteId){
   });
   cmEditorView=new EditorView({state,parent:document.getElementById('cm-wrap')});
   cmEditorView.focus();
+  setupCMImageHandlers();
+  renderNoteImages(e.content||'');
   // Handle clicks on crosslinks — must capture before CM6 moves cursor
   cmEditorView.dom.addEventListener('mousedown',e=>{
     const el=e.target.closest('.cm-dd-crosslink');
@@ -1897,6 +2048,7 @@ function noteContentChanged(id,val){
   const firstLine=(val.split('\n')[0]||'').trim().slice(0,80);
   e.noteTitle=firstLine||'Untitled';
   renderTabBar();
+  renderNoteImages(val);
   clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{registerMentions(e.mentions);save();renderTagCloud();renderAllSections();renderRecent();},300);
 }
 function noteKey(e,noteId){
@@ -2883,7 +3035,7 @@ async function doPurge(){
   localStorage.removeItem('dailydispatch_v1');
   localStorage.removeItem('dailydispatch_v2');
   // Reset in-memory state
-  db={entries:[],questions:[],openItems:[],contexts:[],tagColors:{},sections:[],people:[]};
+  db={entries:[],questions:[],openItems:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map()};
   // Reopen fresh database
   await openIDB();
   closePurge();closeSettings();
@@ -2891,7 +3043,8 @@ async function doPurge(){
   updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderHelpList();renderAllSections();
 }
 function exportData(){
-  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const out={...db,images:[...db.images.entries()].map(([id,v])=>({id,data:v.data,mimeType:v.mimeType}))};
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='dailydispatch-backup-'+todayStr()+'.json';a.click();URL.revokeObjectURL(a.href);
 }
@@ -2904,6 +3057,14 @@ function importData(e){
       if(data.entries){
         db.entries=data.entries||[];db.openItems=data.openItems||[];db.questions=data.questions||[];
         db.contexts=data.contexts||[];db.sections=data.sections||[];db.tagColors=data.tagColors||{};
+        // Restore images
+        if(data.images&&data.images.length){
+          await idbClearStore('images');
+          await idbPutAll('images',data.images.map(i=>({id:i.id,data:i.data,mimeType:i.mimeType,ts:Date.now(),size:0})));
+          db.images=new Map(data.images.map(i=>[i.id,{data:i.data,mimeType:i.mimeType}]));
+        } else {
+          db.images=new Map();
+        }
         await saveAll();
         closeSettings();
         openTabs=['feed'];activeTab='feed';
@@ -3319,5 +3480,6 @@ async function init(){
 }
 init();
 </script>
+<div id="dd-toast"></div>
 </body>
 </html>
