@@ -419,7 +419,7 @@
   #dd-toast.error { background: var(--danger); }
 
   /* Inline image widget inside CM6 editor */
-  .cm-dd-image { margin: 6px 0; }
+  .cm-dd-image { display: block; margin: 6px 0; }
   .cm-dd-image img { max-width: 100%; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; display: block; }
   .cm-dd-image-missing { font-size: 10px; color: var(--text3); font-style: italic; }
 
@@ -1758,7 +1758,7 @@ function cmDecorateLine(builder,line,Decoration){
   // Inline image: ![](img_xxx) — replace entire line with image widget
   {const im=text.match(/^!\[\]\((img_[a-z0-9_]+)\)$/);
   if(im&&claim(0,text.length)){
-    builder.push(Decoration.replace({widget:new CmImageWidget(im[1]),block:true}).range(from,from+text.length));
+    builder.push(Decoration.replace({widget:new CmImageWidget(im[1])}).range(from,from+text.length));
     return;
   }}
 
@@ -1897,7 +1897,7 @@ class CmCheckboxWidget extends CM6.WidgetType{
 class CmImageWidget extends CM6.WidgetType{
   constructor(id){super();this.id=id;}
   toDOM(){
-    const wrap=document.createElement('div');
+    const wrap=document.createElement('span');
     wrap.className='cm-dd-image';
     const img=db.images.get(this.id);
     if(img){
