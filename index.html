@@ -401,26 +401,24 @@
   /* ═══ CM6 EDITOR STYLES — END ═══ */
   .note-bar { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
   .copy-btn {
-    padding: 2px 8px; border-radius: 3px; border: 1px solid var(--border);
-    background: var(--surface); cursor: pointer; font-size: 10px; color: var(--text2);
+    font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 3px;
+    white-space: nowrap; cursor: pointer; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text2);
   }
-  .copy-btn:hover { background: var(--bg); color: var(--text); }
+  .copy-btn:hover { opacity: .8; }
+  .copy-btn.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, transparent); background: color-mix(in srgb, var(--danger) 8%, transparent); }
 
   /* Pin toggle in note editor */
   .pin-toggle {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 10px; border-radius: 14px; font-size: 11px; font-weight: 500;
-    cursor: pointer; transition: all 0.15s; border: 1px solid var(--border);
+    font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 3px;
+    white-space: nowrap; cursor: pointer; border: 1px solid var(--border);
     background: var(--surface); color: var(--text2);
   }
-  .pin-toggle:hover { border-color: var(--border-strong); color: var(--text); }
+  .pin-toggle:hover { opacity: .8; }
   .pin-toggle.pinned {
-    background: #fef3c7; border-color: #fbbf24; color: #92400e;
+    background: #fef3c712; border-color: #fbbf2430; color: #92400e;
   }
-  .pin-toggle.pinned:hover {
-    background: #fde68a; border-color: #f59e0b;
-  }
-  .pin-toggle .pin-icon { font-size: 13px; }
+  .pin-toggle .pin-icon { font-size: 9px; }
 
   /* Settings tab */
   .settings-tab { padding: 0; }
@@ -1517,7 +1515,7 @@ function renderNoteEditor(area,noteId){
         <span class="pin-icon">${pinned?'&#128204;':'&#128204;'}</span>${pinned?'Pinned':'Pin'}
       </button>
       <button class="copy-btn" onclick="navigator.clipboard.writeText(db.entries.find(x=>x.id==='${cmNoteId}').content||'')">&#128203; Copy</button>
-      ${e.isHelp?'':'<button class="copy-btn danger" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDelete(\''+noteId+'\')">&#10005; Delete</button>'}
+      ${e.isHelp?'':'<button class="copy-btn danger" onclick="confirmDelete(\''+noteId+'\')">&#10005; Delete</button>'}
     </div>
     <div class="cm-wrap" id="cm-wrap"></div>
     <div class="note-bar"><span class="cap-hint">Tip: #tags, @mentions, [[links]], - for bullets</span></div>
