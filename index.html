@@ -418,9 +418,10 @@
   #dd-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   #dd-toast.error { background: var(--danger); }
 
-  /* Note image strip */
-  .note-images { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0 2px; min-height: 0; }
-  .note-images img { max-height: 140px; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; object-fit: cover; }
+  /* Inline image widget inside CM6 editor */
+  .cm-dd-image { margin: 6px 0; }
+  .cm-dd-image img { max-width: 100%; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; display: block; }
+  .cm-dd-image-missing { font-size: 10px; color: var(--text3); font-style: italic; }
 
   /* Drag-over highlight */
   .cm-wrap.drag-over { border-color: var(--accent) !important; background: var(--accent-light); }
@@ -1666,8 +1667,7 @@ function renderNoteEditor(area,noteId){
       ${e.isHelp?'':'<button class="copy-btn danger" onclick="confirmDelete(\''+noteId+'\')">&#10005; Delete</button>'}
     </div>
     <div class="cm-wrap" id="cm-wrap"></div>
-    <div class="note-images" id="note-images"></div>
-    <div class="note-bar"><span class="cap-hint">Tip: #tags, @mentions, [[links]], - for bullets — drag or paste images here</span></div>
+    <div class="note-bar"><span class="cap-hint">Tip: #tags, @mentions, [[links]], - for bullets — drag or paste images</span></div>
   </div>`;
   // Create CM6 EditorView
   const {EditorState,Prec}=CM6;
@@ -1703,7 +1703,6 @@ function renderNoteEditor(area,noteId){
   cmEditorView=new EditorView({state,parent:document.getElementById('cm-wrap')});
   cmEditorView.focus();
   setupCMImageHandlers();
-  renderNoteImages(e.content||'');
   // Handle clicks on crosslinks — must capture before CM6 moves cursor
   cmEditorView.dom.addEventListener('mousedown',e=>{
     const el=e.target.closest('.cm-dd-crosslink');
@@ -1755,6 +1754,13 @@ function cmDecorateLine(builder,line,Decoration){
   // Track claimed ranges to prevent overlaps
   const claimed=[];
   function claim(f,t){if(claimed.some(([a,b])=>f<b&&t>a))return false;claimed.push([f,t]);return true;}
+
+  // Inline image: ![](img_xxx) — replace entire line with image widget
+  {const im=text.match(/^!\[\]\((img_[a-z0-9_]+)\)$/);
+  if(im&&claim(0,text.length)){
+    builder.push(Decoration.replace({widget:new CmImageWidget(im[1]),block:true}).range(from,from+text.length));
+    return;
+  }}
 
   // Line-level: headings
   let hm;
@@ -1886,6 +1892,30 @@ class CmCheckboxWidget extends CM6.WidgetType{
     return cb;
   }
   eq(other){return other.checked===this.checked&&other.lineNum===this.lineNum;}
+}
+// Widget for inline image ![](img_xxx)
+class CmImageWidget extends CM6.WidgetType{
+  constructor(id){super();this.id=id;}
+  toDOM(){
+    const wrap=document.createElement('div');
+    wrap.className='cm-dd-image';
+    const img=db.images.get(this.id);
+    if(img){
+      const el=document.createElement('img');
+      el.src=img.data;
+      el.title='Click to open full size';
+      el.addEventListener('click',()=>window.open(img.data));
+      wrap.appendChild(el);
+    } else {
+      const sp=document.createElement('span');
+      sp.className='cm-dd-image-missing';
+      sp.textContent='⚠ Image not found';
+      wrap.appendChild(sp);
+    }
+    return wrap;
+  }
+  eq(other){return other.id===this.id;}
+  ignoreEvent(){return false;}
 }
 // Widget for horizontal rule
 class CmHRWidget extends CM6.WidgetType{
@@ -2048,7 +2078,6 @@ function noteContentChanged(id,val){
   const firstLine=(val.split('\n')[0]||'').trim().slice(0,80);
   e.noteTitle=firstLine||'Untitled';
   renderTabBar();
-  renderNoteImages(val);
   clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{registerMentions(e.mentions);save();renderTagCloud();renderAllSections();renderRecent();},300);
 }
 function noteKey(e,noteId){
