@@ -971,6 +971,14 @@ async function loadDB(){
   db.tagColors=s.tagColors||{};
   db.people=s.people||[];
   db.theme=s.theme||'Warm Notion';
+  // Restore tab session
+  if(s.openTabs&&s.openTabs.length){
+    const validId=id=>id==='feed'||id==='settings'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
+    openTabs=s.openTabs.filter(validId);
+    if(!openTabs.includes('feed'))openTabs.unshift('feed');
+    activeTab=validId(s.activeTab)&&openTabs.includes(s.activeTab)?s.activeTab:openTabs[openTabs.length-1];
+    if(s.searchTabs)searchTabs=s.searchTabs;
+  }
 
   // Load images into fast in-memory map
   const imgRows=await idbGetAll('images');
@@ -1040,7 +1048,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion'}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',openTabs,activeTab,searchTabs}]);
     } else if(db[store]){
       // Clear and re-put (simple, handles deletions)
       await idbClearStore(store);
@@ -1224,7 +1232,7 @@ function renderTabBar(){
   h+=`<button class="tab-icon-btn" onclick="openSearch()" title="Search (Cmd+K)">&#128269;</button>`;
   h+=`<button class="tab-icon-btn" onclick="openSettings()" title="Settings">&#9881;</button>`;
   document.getElementById('tab-bar').innerHTML=h;
-  saveTabState();
+  save('settings');
 }
 /* Tab drag-to-reorder */
 let tabDragId=null;
@@ -1293,9 +1301,7 @@ function tabGetId(tabEl){
   const m=oc.match(/switchTab\('([^']+)'\)/);
   return m?m[1]:null;
 }
-function saveTabState(){
-  try{localStorage.setItem('dd_tabs',JSON.stringify({openTabs,activeTab}));}catch(e){}
-}
+
 function switchTab(t){activeTab=t;renderTabBar();renderActiveView();}
 function closeTab(t){
   openTabs=openTabs.filter(x=>x!==t);
@@ -3076,7 +3082,6 @@ async function doPurge(){
   // Clear any legacy localStorage keys
   localStorage.removeItem('dailydispatch_v1');
   localStorage.removeItem('dailydispatch_v2');
-  localStorage.removeItem('dd_tabs');
   // Reset in-memory state
   db={entries:[],questions:[],openItems:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map()};
   // Reopen fresh database
@@ -3524,17 +3529,6 @@ async function init(){
   if(!db.people)db.people=[];
   ensureHelpNotes();
   if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
-  // Restore open tabs from previous session
-  try{
-    const saved=localStorage.getItem('dd_tabs');
-    if(saved){
-      const{openTabs:ot,activeTab:at}=JSON.parse(saved);
-      const valid=id=>id==='feed'||id==='settings'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
-      openTabs=(ot||['feed']).filter(valid);
-      if(!openTabs.includes('feed'))openTabs.unshift('feed');
-      activeTab=valid(at)?at:'feed';
-    }
-  }catch(e){}
   updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderHelpList();renderAllSections();
   // Deep link: open note from URL hash (takes priority, adds on top of restored tabs)
   const hash=window.location.hash.slice(1);
