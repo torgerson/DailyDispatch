@@ -716,15 +716,40 @@
   .modal-btn.danger:hover { background: #dc2626; }
 
   /* Date/time editor in note view */
-  .note-datetime {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;
+  /* Note meta bar — created / modified footer */
+  .note-meta-bar {
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding: 7px 0 2px; border-top: 1px solid var(--border-light); margin-top: 4px;
   }
-  .note-datetime label { font-size: 10px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
-  .note-datetime input {
-    padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-    font-family: var(--mono); font-size: 11px; color: var(--text); background: var(--surface); outline: none;
+  .note-meta-item { display: flex; align-items: center; gap: 6px; }
+  .note-meta-label { font-size: 10px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: .6px; }
+  .note-meta-value { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+  .note-meta-value.editable { cursor: pointer; }
+  .note-meta-value.editable:hover { color: var(--text); text-decoration: underline; text-decoration-style: dotted; }
+
+  /* Floating note date picker */
+  #note-date-picker {
+    position: fixed; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+    padding: 12px; z-index: 300; display: none; width: 216px;
   }
-  .note-datetime input:focus { border-color: var(--accent); }
+  #note-date-picker.open { display: block; }
+  .ndp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .ndp-header span { font-size: 12px; font-weight: 600; color: var(--text); }
+  .ndp-nav { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 16px; padding: 1px 6px; border-radius: 3px; line-height: 1; }
+  .ndp-nav:hover { background: var(--surface-hover); color: var(--text); }
+  .ndp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; margin-bottom: 8px; }
+  .ndp-dow { font-size: 9px; color: var(--text3); text-align: center; font-weight: 500; padding: 3px 0; }
+  .ndp-day { font-size: 11px; text-align: center; padding: 4px 2px; border-radius: 3px; cursor: pointer; color: var(--text2); }
+  .ndp-day:hover { background: var(--surface-hover); color: var(--text); }
+  .ndp-day.ndp-sel { background: var(--accent); color: #fff; }
+  .ndp-day.ndp-other { color: var(--border-strong); pointer-events: none; }
+  .ndp-time-row { display: flex; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid var(--border-light); margin-bottom: 10px; }
+  .ndp-time-row label { font-size: 10px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: .4px; }
+  .ndp-time-row input { flex: 1; padding: 3px 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: var(--mono); font-size: 11px; color: var(--text); background: var(--surface); outline: none; }
+  .ndp-time-row input:focus { border-color: var(--accent); }
+  .ndp-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .ndp-save { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
 
   /* Load more button */
   .load-more {
@@ -1671,12 +1696,6 @@ function renderNoteEditor(area,noteId){
   if(cmEditorView){cmEditorView.destroy();cmEditorView=null;}
   area.innerHTML=`<div class="note-editor">
     <div class="note-toolbar">
-      <div class="note-datetime">
-        <label>Date</label>
-        <input type="date" value="${entryDate}" onchange="changEntryDate('${noteId}',this.value)">
-        <label>Time</label>
-        <input type="time" value="${entryTime}" onchange="changEntryTime('${noteId}',this.value)">
-      </div>
       <div class="spacer"></div>
       <button class="pin-toggle${pinned?' pinned':''}" onclick="toggleNotePin('${noteId}')" title="${pinned?'Unpin this item':'Pin this item'}">
         <span class="pin-icon">${pinned?'&#128204;':'&#128204;'}</span>${pinned?'Pinned':'Pin'}
@@ -1686,7 +1705,7 @@ function renderNoteEditor(area,noteId){
       ${e.isHelp?'':'<button class="copy-btn danger" onclick="confirmDelete(\''+noteId+'\')">&#10005; Delete</button>'}
     </div>
     <div class="cm-wrap" id="cm-wrap"></div>
-    <div class="note-bar"><span class="cap-hint">Tip: #tags, @mentions, [[links]], - for bullets — drag or paste images</span></div>
+    <div class="note-meta-bar" id="note-meta-bar"></div>
   </div>`;
   // Create CM6 EditorView
   const {EditorState,Prec}=CM6;
@@ -1722,6 +1741,7 @@ function renderNoteEditor(area,noteId){
   cmEditorView=new EditorView({state,parent:document.getElementById('cm-wrap')});
   cmEditorView.focus();
   setupCMImageHandlers();
+  renderNoteMetaBar(noteId);
   // Handle clicks on crosslinks — must capture before CM6 moves cursor
   cmEditorView.dom.addEventListener('mousedown',e=>{
     const el=e.target.closest('.cm-dd-crosslink');
@@ -2093,6 +2113,7 @@ function noteContentChanged(id,val){
   e.tags=extractTags(val);
   e.mentions=extractMentions(val);
   e.updatedTs=Date.now();
+  renderNoteMetaBar(id);
   // Derive title from first line (including hashtags)
   const firstLine=(val.split('\n')[0]||'').trim().slice(0,80);
   e.noteTitle=firstLine||'Untitled';
@@ -2816,9 +2837,12 @@ document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}
   if((e.metaKey||e.ctrlKey)&&e.key==='n'){e.preventDefault();createNote();}
   if((e.metaKey||e.ctrlKey)&&e.key==='d'&&activeTab!=='feed'){e.preventDefault();closeTab(activeTab);}
-  if(e.key==='Escape'){closeSearch();closeAC();}
+  if(e.key==='Escape'){closeSearch();closeAC();closeNoteDatePicker();}
 });
 document.addEventListener('click',e=>{
+  // Close date picker if clicking outside
+  const picker=document.getElementById('note-date-picker');
+  if(picker&&picker.classList.contains('open')&&!picker.contains(e.target)&&!e.target.closest('.note-meta-value'))closeNoteDatePicker();
   // Close append if clicking outside an entry card
   if(appendingId){const card=document.querySelector(`.entry-card[data-id="${appendingId}"]`);if(card&&!card.contains(e.target))closeAppend();}
   // Delegate: click on entry card to open as note
@@ -3513,6 +3537,121 @@ function ensureHelpNotes(){
 }
 
 /* ═══════════ INIT ═══════════ */
+/* ═══════════ NOTE META BAR & DATE PICKER ═══════════ */
+const NDP_MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const NDP_DAYS=['Su','Mo','Tu','We','Th','Fr','Sa'];
+let _ndpNoteId=null,_ndpYear=null,_ndpMonth=null,_ndpSelDate=null;
+
+function fmtMetaDate(ts){
+  const d=new Date(ts);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+
+    '\u00a0\u00a0'+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+
+function renderNoteMetaBar(noteId){
+  const bar=document.getElementById('note-meta-bar');
+  if(!bar)return;
+  const e=db.entries.find(x=>x.id===noteId);
+  if(!e)return;
+  const modTs=e.updatedTs||e.ts;
+  bar.innerHTML=
+    `<div class="note-meta-item">
+      <span class="note-meta-label">Created</span>
+      <span class="note-meta-value editable" onclick="openNoteDatePicker('${noteId}',this)" title="Click to edit created date">${fmtMetaDate(e.ts)}</span>
+    </div>
+    <div style="flex:1"></div>
+    <div class="note-meta-item">
+      <span class="note-meta-label">Modified</span>
+      <span class="note-meta-value">${fmtMetaDate(modTs)}</span>
+    </div>`;
+}
+
+function openNoteDatePicker(noteId,anchorEl){
+  const e=db.entries.find(x=>x.id===noteId);if(!e)return;
+  _ndpNoteId=noteId;
+  const dt=new Date(e.ts);
+  _ndpYear=dt.getFullYear();_ndpMonth=dt.getMonth();
+  _ndpSelDate=e.date;
+  const timeStr=String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+  _ndpRender(timeStr);
+  const picker=document.getElementById('note-date-picker');
+  picker.classList.add('open');
+  const rect=anchorEl.getBoundingClientRect();
+  const ph=picker.offsetHeight||260;
+  const top=rect.bottom+6;
+  picker.style.top=(top+ph>window.innerHeight?rect.top-ph-6:top)+'px';
+  picker.style.left=Math.min(rect.left,window.innerWidth-228)+'px';
+}
+
+function _ndpRender(timeVal){
+  const picker=document.getElementById('note-date-picker');
+  if(!picker)return;
+  const firstDay=new Date(_ndpYear,_ndpMonth,1).getDay();
+  const daysInMonth=new Date(_ndpYear,_ndpMonth+1,0).getDate();
+  const daysInPrev=new Date(_ndpYear,_ndpMonth,0).getDate();
+  const totalCells=firstDay+daysInMonth<=35?35:42;
+  let grid=NDP_DAYS.map(d=>`<div class="ndp-dow">${d}</div>`).join('');
+  let day=1,nextDay=1;
+  for(let i=0;i<totalCells;i++){
+    if(i<firstDay){
+      grid+=`<div class="ndp-day ndp-other">${daysInPrev-firstDay+i+1}</div>`;
+    } else if(day>daysInMonth){
+      grid+=`<div class="ndp-day ndp-other">${nextDay++}</div>`;
+    } else {
+      const ds=`${_ndpYear}-${String(_ndpMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      grid+=`<div class="ndp-day${ds===_ndpSelDate?' ndp-sel':''}" onclick="ndpSelectDay('${ds}')">${day}</div>`;
+      day++;
+    }
+  }
+  const tv=timeVal!==undefined?timeVal:(document.getElementById('ndp-time')?.value||'00:00');
+  picker.innerHTML=
+    `<div class="ndp-header">
+      <button class="ndp-nav" onclick="ndpMonth(-1)">&#8249;</button>
+      <span>${NDP_MONTHS[_ndpMonth]} ${_ndpYear}</span>
+      <button class="ndp-nav" onclick="ndpMonth(1)">&#8250;</button>
+    </div>
+    <div class="ndp-grid">${grid}</div>
+    <div class="ndp-time-row">
+      <label>Time</label>
+      <input type="time" id="ndp-time" value="${tv}">
+    </div>
+    <div class="ndp-actions">
+      <button class="copy-btn" onclick="closeNoteDatePicker()">Cancel</button>
+      <button class="copy-btn ndp-save" onclick="saveNoteDatePicker()">Save</button>
+    </div>`;
+}
+
+function ndpMonth(dir){
+  const tv=document.getElementById('ndp-time')?.value||'00:00';
+  _ndpMonth+=dir;
+  if(_ndpMonth<0){_ndpMonth=11;_ndpYear--;}
+  if(_ndpMonth>11){_ndpMonth=0;_ndpYear++;}
+  _ndpRender(tv);
+}
+
+function ndpSelectDay(ds){
+  _ndpSelDate=ds;
+  const p=ds.split('-');_ndpYear=+p[0];_ndpMonth=+p[1]-1;
+  _ndpRender(document.getElementById('ndp-time')?.value||'00:00');
+}
+
+function saveNoteDatePicker(){
+  if(!_ndpNoteId||!_ndpSelDate)return;
+  const tv=document.getElementById('ndp-time')?.value||'00:00';
+  const e=db.entries.find(x=>x.id===_ndpNoteId);if(!e)return;
+  const p=_ndpSelDate.split('-'),tp=tv.split(':');
+  e.date=_ndpSelDate;
+  e.ts=new Date(+p[0],+p[1]-1,+p[2],+tp[0],+tp[1],0,0).getTime();
+  save();renderAllSections();renderTabBar();
+  renderNoteMetaBar(_ndpNoteId);
+  closeNoteDatePicker();
+}
+
+function closeNoteDatePicker(){
+  document.getElementById('note-date-picker')?.classList.remove('open');
+  _ndpNoteId=null;
+}
+
 function copyNoteLink(noteId){
   const url=window.location.href.split('#')[0]+'#'+noteId;
   navigator.clipboard.writeText(url).then(()=>showToast('Link copied','info'));
@@ -3542,5 +3681,6 @@ window.addEventListener('hashchange',()=>{
 init();
 </script>
 <div id="dd-toast"></div>
+<div id="note-date-picker"></div>
 </body>
 </html>
