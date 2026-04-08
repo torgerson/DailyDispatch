@@ -1672,6 +1672,7 @@ function renderNoteEditor(area,noteId){
         <span class="pin-icon">${pinned?'&#128204;':'&#128204;'}</span>${pinned?'Pinned':'Pin'}
       </button>
       <button class="copy-btn" onclick="navigator.clipboard.writeText(db.entries.find(x=>x.id==='${cmNoteId}').content||'')">&#128203; Copy</button>
+      <button class="copy-btn" onclick="copyNoteLink('${noteId}')">&#128279; Link</button>
       ${e.isHelp?'':'<button class="copy-btn danger" onclick="confirmDelete(\''+noteId+'\')">&#10005; Delete</button>'}
     </div>
     <div class="cm-wrap" id="cm-wrap"></div>
@@ -3502,6 +3503,11 @@ function ensureHelpNotes(){
 }
 
 /* ═══════════ INIT ═══════════ */
+function copyNoteLink(noteId){
+  const url=window.location.href.split('#')[0]+'#'+noteId;
+  navigator.clipboard.writeText(url).then(()=>showToast('Link copied','info'));
+}
+
 async function init(){
   console.log('[DD-INIT] DailyDispatch loading... version 2025-03-30-v4');
   await loadDB();
@@ -3514,6 +3520,9 @@ async function init(){
   ensureHelpNotes();
   if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
   updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderHelpList();renderAllSections();
+  // Deep link: open note from URL hash
+  const hash=window.location.hash.slice(1);
+  if(hash){const e=db.entries.find(x=>x.id===hash&&x.isNote);if(e)openAsNote(hash);}
 }
 init();
 </script>
