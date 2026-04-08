@@ -247,6 +247,72 @@
   }
   #submit-btn:hover { background: #b37e25; }
 
+  /* Ghost input mode — barely-visible trigger that expands on click */
+  #ghost-trigger {
+    display: flex; align-items: center; gap: 8px;
+    height: 32px; margin-bottom: 10px; padding: 0 2px;
+    border-bottom: 1.5px dashed var(--border);
+    cursor: text; color: var(--text3); font-size: 13px; font-style: italic;
+    transition: border-color 0.15s;
+    user-select: none;
+  }
+  #ghost-trigger:hover { border-bottom-color: var(--accent); color: var(--text2); }
+  #ghost-trigger .ghost-plus {
+    width: 18px; height: 18px; border-radius: 3px; flex-shrink: 0;
+    border: 1px solid var(--border); display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-style: normal; color: var(--text3);
+    background: var(--surface); margin-left: auto; line-height: 1;
+  }
+  #ghost-trigger:hover .ghost-plus { border-color: var(--accent); color: var(--accent); }
+  #capture.ghost-composer {
+    background: var(--capture-bg, #fdf9f3);
+    border: 1.5px solid var(--accent) !important;
+    border-radius: var(--radius-sm);
+    margin-bottom: 14px;
+    box-shadow: 0 4px 16px rgba(203,145,47,0.1);
+  }
+  #capture.ghost-composer #capture-bar { border-top: 1px solid rgba(203,145,47,0.2); }
+
+  /* Rail mode — fixed top panel, feed scrolls under it */
+  #capture-top {
+    display: none;
+    flex-shrink: 0;
+    background: var(--capture-bg, #fdf9f3);
+    border-bottom: 1.5px solid var(--border);
+    border-left: 3px solid var(--accent);
+  }
+  #capture-top.visible { display: block; }
+  #capture-top #capture {
+    border-bottom: none;
+    border-left: none;
+    margin-bottom: 0;
+    background: transparent;
+  }
+  #capture-top #capture:focus-within { border-bottom: none; }
+  #capture-top:focus-within { border-bottom-color: var(--accent); }
+
+  /* Dock mode — fixed bottom panel, feed scrolls above */
+  #capture-dock {
+    display: none;
+    flex-shrink: 0;
+    flex-direction: column;
+    border-top: 2px solid var(--border-strong);
+    background: var(--surface);
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
+  }
+  #capture-dock.visible { display: flex; }
+  #capture-dock #capture {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding: 10px 20px 4px;
+    background: var(--surface);
+    border-left: none;
+  }
+  #capture-dock #capture:focus-within { border-bottom: none; }
+  #capture-dock #capture-bar { padding: 0 20px 8px; border-top: 1px solid var(--border-light); margin-top: 6px; padding-top: 6px; }
+  #capture-dock.visible ~ #content-area,
+  body.capture-dock-active #content-area { padding-bottom: 12px; }
+
   /* Feed entries — tight rows, no cards */
   .hour-group { margin-bottom: 2px; }
   .hour-label {
@@ -826,7 +892,9 @@
 <!-- CENTER -->
 <div id="center">
   <div id="tab-bar"></div>
+  <div id="capture-top"></div>
   <div id="content-area"></div>
+  <div id="capture-dock"></div>
 </div>
 
 <!-- RIGHT SIDEBAR -->
@@ -939,7 +1007,7 @@ function getAllPeople(){
 }
 
 // In-memory db object — same shape as before
-let db={entries:[],questions:[],openItems:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map()};
+let db={entries:[],questions:[],openItems:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map(),captureMode:'rail',defaultSectionsSeeded:false};
 let idb=null; // IndexedDB handle
 
 function openIDB(){
@@ -1005,6 +1073,8 @@ async function loadDB(){
   db.tagColors=s.tagColors||{};
   db.people=s.people||[];
   db.theme=s.theme||'Warm Notion';
+  db.captureMode=s.captureMode||'rail';
+  db.defaultSectionsSeeded=s.defaultSectionsSeeded||false;
   // Restore tab session
   if(s.openTabs&&s.openTabs.length){
     const validId=id=>id==='feed'||id==='settings'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
@@ -1082,7 +1152,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',openTabs,activeTab,searchTabs}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',captureMode:db.captureMode||'rail',defaultSectionsSeeded:db.defaultSectionsSeeded||false,openTabs,activeTab,searchTabs}]);
     } else if(db[store]){
       // Clear and re-put (simple, handles deletions)
       await idbClearStore(store);
@@ -1241,8 +1311,8 @@ function fmtDateLabel(ds){
 }
 function hourLabel(ts){const h=new Date(ts).getHours();if(h===0)return'12 AM';if(h<12)return h+' AM';if(h===12)return'12 PM';return(h-12)+' PM';}
 function updateDateBar(){document.getElementById('date-label').textContent=fmtDateLabel(selectedDate);document.getElementById('today-btn').style.display=selectedDate===todayStr()?'none':'inline-block';}
-function navDay(d){const dt=new Date(selectedDate+'T12:00:00');dt.setDate(dt.getDate()+d);selectedDate=dateStr(dt);feedDaysLoaded=7;feedDayShowMore={};updateDateBar();renderActiveView();renderCalendar();}
-function goToday(){selectedDate=todayStr();calViewDate=new Date();feedDaysLoaded=7;feedDayShowMore={};updateDateBar();renderActiveView();renderCalendar();}
+function navDay(d){const dt=new Date(selectedDate+'T12:00:00');dt.setDate(dt.getDate()+d);selectedDate=dateStr(dt);feedTopDate=selectedDate>=todayStr()?null:selectedDate;feedDaysLoaded=7;feedDayShowMore={};updateDateBar();renderActiveView();renderCalendar();}
+function goToday(){selectedDate=todayStr();feedTopDate=null;calViewDate=new Date();feedDaysLoaded=7;feedDayShowMore={};updateDateBar();renderActiveView();renderCalendar();}
 
 /* ═══════════ TAB BAR ═══════════ */
 function renderTabBar(){
@@ -1348,6 +1418,11 @@ function closeTab(t){
 function renderActiveView(){
   const a=document.getElementById('content-area');
   if(cmEditorView&&activeTab!==cmNoteId){cmEditorView.destroy();cmEditorView=null;cmNoteId=null;}
+  // Hide capture panels when not on feed
+  if(activeTab!=='feed'){
+    const d=document.getElementById('capture-dock');if(d){d.classList.remove('visible');d.innerHTML='';}
+    const t=document.getElementById('capture-top');if(t){t.classList.remove('visible');t.innerHTML='';}
+  }
   if(activeTab==='feed')renderFeed(a);
   else if(activeTab==='settings')renderSettingsTab(a);
   else if(activeTab.startsWith('search_'))renderSearchTab(a,activeTab);
@@ -1356,11 +1431,18 @@ function renderActiveView(){
 
 /* ═══════════ FEED ═══════════ */
 let feedDaysLoaded=7;
+let feedTopDate=null; // newest day shown in feed; null = today
 const FEED_DAY_CAP=50; // max entries rendered per day
 let feedDayShowMore={}; // track expanded days
 
+function getFeedTopDate(){
+  const t=todayStr();
+  if(!feedTopDate||feedTopDate>t)return t;
+  return feedTopDate;
+}
+
 function renderFeed(area){
-  const selD=new Date(selectedDate+'T12:00:00');
+  const selD=new Date(getFeedTopDate()+'T12:00:00');
   const dates=[];
   for(let i=0;i<feedDaysLoaded;i++){
     const d=new Date(selD);d.setDate(d.getDate()-i);
@@ -1380,17 +1462,41 @@ function renderFeed(area){
   const byDate={};
   allEntries.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e);});
 
-  let h=`<div id="capture"><textarea id="capture-input" placeholder="What's happening? (#tags supported)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)"></textarea><div id="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button id="submit-btn" onclick="submitEntry()">Add</button></div></div>`;
+  const isDock=db.captureMode==='dock';
+  const isGhost=db.captureMode==='ghost';
+  const captureHTML=`<div id="capture"${isGhost?' class="ghost-composer"':''} onclick="if(event.target===this||event.target.id==='capture-bar'||event.target.classList.contains('spacer')){const i=document.getElementById('capture-input');if(i)i.focus();}"><textarea id="capture-input" placeholder="What's happening? (#tags supported)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)" onblur="closeGhost()"></textarea><div id="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button id="submit-btn" onclick="submitEntry()">Add</button></div></div>`;
+  const topEl=document.getElementById('capture-top');
+  const dockEl=document.getElementById('capture-dock');
+  let h='';
+  if(isDock){
+    if(topEl){topEl.classList.remove('visible');topEl.innerHTML='';}
+    if(dockEl){dockEl.classList.add('visible');dockEl.innerHTML=captureHTML;}
+  } else if(isGhost){
+    if(topEl){topEl.classList.remove('visible');topEl.innerHTML='';}
+    if(dockEl){dockEl.classList.remove('visible');dockEl.innerHTML='';}
+    h=`<div id="ghost-trigger" onclick="openGhost()"><span>Write something\u2026</span><span class="ghost-plus">+</span></div><div id="capture" class="ghost-composer" style="display:none"><textarea id="capture-input" placeholder="What's happening? (#tags supported)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)" onblur="closeGhost()"></textarea><div id="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button id="submit-btn" onclick="submitEntry()">Add</button></div></div>`;
+  } else {
+    if(topEl){topEl.classList.add('visible');topEl.innerHTML=captureHTML;}
+    if(dockEl){dockEl.classList.remove('visible');dockEl.innerHTML='';}
+  }
+
+  // Top sentinel — loads newer days when scrolled to top (only if anchor is in the past)
+  if(getFeedTopDate()<todayStr()){
+    h+=`<div id="feed-scroll-sentinel-top" style="height:1px"></div>`;
+  }
 
   // Daily summary banner — show if viewing today (or selected date) and no summary exists yet
   h+=`<div class="summary-banner" onclick="generateWrapUp()"><span>&#128203;</span> Generate daily summary for ${selectedDate===todayStr()?'today':fmtDateLabel(selectedDate)}</div>`;
 
   let hasAny=false;
   for(const ds of dates){
-    const dayEntries=byDate[ds];
-    if(!dayEntries||dayEntries.length===0)continue;
-    hasAny=true;
+    const dayEntries=byDate[ds]||[];
     h+=renderDayDivider(ds);
+    if(dayEntries.length===0){
+      h+=`<div class="empty" style="padding:12px 20px;font-size:12px;color:var(--text3)">No entries</div>`;
+      continue;
+    }
+    hasAny=true;
 
     // Cap per-day rendering
     const dayLimit=feedDayShowMore[ds]||FEED_DAY_CAP;
@@ -1488,35 +1594,93 @@ function renderMdInline(raw){
 }
 function renderEventEntry(e){
   const et=EVENT_TYPES[e.eventType]||{icon:'•',verb:e.eventType};
-  const refLink=e.refId?` <span class="event-ref" onclick="openAsNote('${e.refId}')">view</span>`:'';
-  return`<div class="event-entry"><span class="event-time">${fmtTime(e.ts)}</span><span class="event-icon">${et.icon}</span><span class="event-text">${et.verb}: ${escH(e.content.slice(0,60))}${e.content.length>60?'...':''}</span>${refLink}</div>`;
+  let refLink='';
+  if(e.eventType==='search_create'){
+    refLink=` <span class="event-ref" onclick="reopenSearchEvent('${e.id}')">reopen</span>`;
+  } else if(e.eventType&&e.eventType.startsWith('section_')){
+    refLink='';
+  } else if(e.refId){
+    refLink=` <span class="event-ref" onclick="openAsNote('${e.refId}')">view</span>`;
+  }
+  return`<div class="event-entry"><span class="event-time">${fmtTime(e.ts)}</span><span class="event-icon">${et.icon}</span><span class="event-text">${et.verb}: ${escH(e.content.slice(0,120))}${e.content.length>120?'...':''}</span>${refLink}</div>`;
+}
+function reopenSearchEvent(eventId){
+  const ev=db.entries.find(x=>x.id===eventId);
+  if(!ev)return;
+  const query=ev.content.replace(/^Search:\s*/,'');
+  const id='search_'+Date.now();
+  searchTabs.push({id,query,showCount:SEARCH_PAGE});
+  if(!openTabs.includes(id))openTabs.push(id);
+  activeTab=id;
+  renderTabBar();renderActiveView();
+  setTimeout(()=>{const inp=document.getElementById('search-tab-input');if(inp)inp.focus();},50);
 }
 let feedScrollObserver=null;
+let feedScrollObserverTop=null;
 function loadMoreDays(){feedDaysLoaded+=7;renderActiveView();}
+function loadMoreNewerDays(){
+  const t=todayStr();
+  const top=getFeedTopDate();
+  if(top>=t)return;
+  // Move feedTopDate forward by 7 days, capped at today
+  const d=new Date(top+'T12:00:00');
+  d.setDate(d.getDate()+7);
+  const newTop=dateStr(d);
+  feedTopDate=newTop>t?t:newTop;
+  // Preserve scroll position when prepending content
+  const container=document.getElementById('content-area');
+  const oldHeight=container?container.scrollHeight:0;
+  const oldScroll=container?container.scrollTop:0;
+  renderActiveView();
+  if(container){
+    requestAnimationFrame(()=>{
+      const delta=container.scrollHeight-oldHeight;
+      container.scrollTop=oldScroll+delta;
+    });
+  }
+}
 let _lastScrollLoad=0;
+let _lastScrollLoadTop=0;
 function setupFeedScrollObserver(){
   if(feedScrollObserver)feedScrollObserver.disconnect();
-  const sentinel=document.getElementById('feed-scroll-sentinel');
-  if(!sentinel)return;
+  if(feedScrollObserverTop)feedScrollObserverTop.disconnect();
   const container=document.getElementById('content-area');
   if(!container)return;
-  // Don't set up observer if there are no older entries to load
-  const selD=new Date(selectedDate+'T12:00:00');
-  const oldestLoaded=new Date(selD);oldestLoaded.setDate(oldestLoaded.getDate()-(feedDaysLoaded-1));
-  const oldestDateStr=dateStr(oldestLoaded);
-  const hasOlder=db.entries.some(e=>e.date<oldestDateStr&&!e.eventType&&!e.isHelp);
-  if(!hasOlder){sentinel.remove();return;}
-  feedScrollObserver=new IntersectionObserver(entries=>{
-    if(entries[0].isIntersecting){
-      feedScrollObserver.disconnect();
-      // Debounce: don't load more than once per 500ms
-      const now=Date.now();
-      if(now-_lastScrollLoad<500)return;
-      _lastScrollLoad=now;
-      loadMoreDays();
+  // Bottom sentinel — load older days
+  const sentinel=document.getElementById('feed-scroll-sentinel');
+  if(sentinel){
+    const selD=new Date(getFeedTopDate()+'T12:00:00');
+    const oldestLoaded=new Date(selD);oldestLoaded.setDate(oldestLoaded.getDate()-(feedDaysLoaded-1));
+    const oldestDateStr=dateStr(oldestLoaded);
+    const hasOlder=db.entries.some(e=>e.date<oldestDateStr&&!e.eventType&&!e.isHelp);
+    if(!hasOlder){sentinel.remove();}
+    else {
+      feedScrollObserver=new IntersectionObserver(entries=>{
+        if(entries[0].isIntersecting){
+          feedScrollObserver.disconnect();
+          const now=Date.now();
+          if(now-_lastScrollLoad<500)return;
+          _lastScrollLoad=now;
+          loadMoreDays();
+        }
+      },{root:container,rootMargin:'200px'});
+      feedScrollObserver.observe(sentinel);
     }
-  },{root:container,rootMargin:'200px'});
-  feedScrollObserver.observe(sentinel);
+  }
+  // Top sentinel — load newer days
+  const topSentinel=document.getElementById('feed-scroll-sentinel-top');
+  if(topSentinel){
+    feedScrollObserverTop=new IntersectionObserver(entries=>{
+      if(entries[0].isIntersecting){
+        feedScrollObserverTop.disconnect();
+        const now=Date.now();
+        if(now-_lastScrollLoadTop<500)return;
+        _lastScrollLoadTop=now;
+        loadMoreNewerDays();
+      }
+    },{root:container,rootMargin:'200px'});
+    feedScrollObserverTop.observe(topSentinel);
+  }
 }
 function getCtxLabel(cid){const c=db.contexts.find(x=>x.id===cid);return c?c.label:null;}
 function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,160)+'px';}
@@ -1527,15 +1691,9 @@ function captureKey(e){
 function submitEntry(){
   const inp=document.getElementById('capture-input');if(!inp)return;
   const content=inp.value.trim();if(!content)return;
-  let ts=Date.now();
-  if(selectedDate!==todayStr()){
-    // Pin to 12:01 AM of that date
-    const p=selectedDate.split('-');
-    const d=new Date(+p[0],+p[1]-1,+p[2],0,1,0,0);
-    ts=d.getTime();
-  }
+  const ts=Date.now();
   const mentions=extractMentions(content);
-  db.entries.push({id:genId('e'),content,tags:extractTags(content),mentions,date:selectedDate,ts,isNote:false,noteTitle:'',contextId:null});
+  db.entries.push({id:genId('e'),content,tags:extractTags(content),mentions,date:todayStr(),ts,isNote:false,noteTitle:'',contextId:null});
   registerMentions(mentions);
   save();inp.value='';inp.style.height='auto';renderActiveView();renderTagCloud();renderAllSections();
   // Re-focus capture input so user can keep typing
@@ -1764,14 +1922,22 @@ function renderNoteEditor(area,noteId){
   cmEditorView.focus();
   setupCMImageHandlers();
   renderNoteMetaBar(noteId);
-  // Handle clicks on crosslinks — must capture before CM6 moves cursor
+  // Handle clicks on crosslinks and URLs — must capture before CM6 moves cursor
   cmEditorView.dom.addEventListener('mousedown',e=>{
-    const el=e.target.closest('.cm-dd-crosslink');
-    if(el){
-      const text=el.textContent; // grab text before DOM changes
+    const cl=e.target.closest('.cm-dd-crosslink');
+    if(cl){
+      const text=cl.textContent;
       e.preventDefault();
-      e.stopImmediatePropagation(); // prevent CM6 from processing this click
+      e.stopImmediatePropagation();
       navCrosslink(text);
+      return;
+    }
+    const link=e.target.closest('.cm-dd-link');
+    if(link){
+      const url=link.getAttribute('data-url')||link.textContent;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.open(url,'_blank','noopener');
     }
   },true); // capture phase
 }
@@ -1897,9 +2063,17 @@ function cmDecorateLine(builder,line,Decoration){
     const s=m.index,e=s+m[0].length;
     if(!claim(s,e))continue;
     const textEnd=s+1+m[1].length;
+    const url=m[2];
     builder.push(Decoration.replace({}).range(from+s,from+s+1)); // hide [
-    builder.push(Decoration.mark({class:'cm-dd-link'}).range(from+s+1,from+textEnd)); // style link text
+    builder.push(Decoration.mark({class:'cm-dd-link',attributes:{'data-url':url}}).range(from+s+1,from+textEnd)); // style link text
     builder.push(Decoration.replace({}).range(from+textEnd,from+e)); // hide ](url)
+  }
+  // Bare URLs — http(s)://...
+  const urlRe=/(^|[^"'>(\[])(https?:\/\/[^\s<)]+)/g;
+  while((m=urlRe.exec(text))!==null){
+    const s=m.index+m[1].length,e=s+m[2].length;
+    if(!claim(s,e))continue;
+    builder.push(Decoration.mark({class:'cm-dd-link',attributes:{'data-url':m[2]}}).range(from+s,from+e));
   }
   // Cross-links [[text]]
   const clRe=/\[\[([^\]]+)\]\]/g;
@@ -2404,13 +2578,24 @@ const EVENT_TYPES={
   unpin: {icon:'📌', verb:'Unpinned'},
   create:{icon:'✨', verb:'Created'},
   delete:{icon:'🗑️', verb:'Deleted'},
+  section_create:{icon:'✨', verb:'New section'},
+  section_rename:{icon:'✏️', verb:'Renamed section'},
+  section_filter:{icon:'🔧', verb:'Section filter'},
+  section_delete:{icon:'🗑️', verb:'Removed section'},
+  search_create: {icon:'🔍', verb:'Search'},
 };
 function logEvent(eventType, label, refId){
-  db.entries.push({
+  const ev={
     id:genId('ev'), date:todayStr(), ts:Date.now(),
     content:label, tags:[], isNote:false, noteTitle:'', contextId:null,
     eventType:eventType, refId:refId||null
-  });
+  };
+  db.entries.push(ev);
+  return ev.id;
+}
+function updateEvent(id, label){
+  const ev=db.entries.find(e=>e.id===id);
+  if(ev){ev.content=label;ev.ts=Date.now();}
 }
 
 /* ═══════════ CALENDAR ═══════════ */
@@ -2427,12 +2612,14 @@ function renderCalendar(){
   grid.innerHTML=h;
 }
 function navMonth(d){calViewDate.setMonth(calViewDate.getMonth()+d);renderCalendar();}
-function selCalDay(ds){selectedDate=ds;updateDateBar();renderActiveView();renderCalendar();}
+function selCalDay(ds){selectedDate=ds;feedTopDate=ds>=todayStr()?null:ds;feedDaysLoaded=7;feedDayShowMore={};activeTab='feed';updateDateBar();renderTabBar();renderActiveView();renderCalendar();const c=document.getElementById('content-area');if(c)c.scrollTop=0;}
 
 /* ═══════════ RIGHT SIDEBAR: CUSTOM SECTIONS ═══════════ */
 function addSection(){
-  db.sections.push({id:genId('sec'),name:'New Section',query:'',height:200,col:'right'});
-  save();renderAllSections();
+  const sec={id:genId('sec'),name:'New Section',query:'',height:200,col:'right'};
+  db.sections.push(sec);
+  logEvent('section_create',`New section: ${sec.name}`,sec.id);
+  save();renderAllSections();renderActiveView();
 }
 
 const SEC_PAGE_SIZE=30;
@@ -2594,8 +2781,21 @@ function matchEntries(query){
   return base.filter(e=>matched.has(e.id)).sort((a,b)=>b.ts-a.ts);
 }
 
-function updateSection(id,field,val){const s=db.sections.find(x=>x.id===id);if(!s)return;s[field]=val;save();if(field==='query')renderAllSections();}
-function delSection(id){db.sections=db.sections.filter(s=>s.id!==id);save();renderAllSections();}
+function updateSection(id,field,val){
+  const s=db.sections.find(x=>x.id===id);if(!s)return;
+  const old=s[field];
+  s[field]=val;
+  if(field==='name'&&old!==val){logEvent('section_rename',`Renamed section: "${old}" → "${val}"`,id);renderActiveView();}
+  else if(field==='query'&&old!==val){logEvent('section_filter',`Section "${s.name}" filter: ${val||'(empty)'}`,id);renderActiveView();}
+  save();
+  if(field==='query')renderAllSections();
+}
+function delSection(id){
+  const s=db.sections.find(x=>x.id===id);
+  if(s)logEvent('section_delete',`Removed section: ${s.name}`,id);
+  db.sections=db.sections.filter(s=>s.id!==id);
+  save();renderAllSections();renderActiveView();
+}
 function toggleSectionConfig(id){
   const s=db.sections.find(x=>x.id===id);if(!s)return;
   s._configOpen=!s._configOpen;renderAllSections();
@@ -2714,11 +2914,24 @@ function renderSearchTab(area,tabId){
   area.innerHTML=h;
 }
 
+const _searchLogTimers={};
 function updateSearchTab(tabId,query){
   const st=searchTabs.find(s=>s.id===tabId);
   if(!st)return;
   st.query=query;
   st.showCount=SEARCH_PAGE;
+  // Debounced log: capture/update the search criteria as a feed event
+  clearTimeout(_searchLogTimers[tabId]);
+  _searchLogTimers[tabId]=setTimeout(()=>{
+    if(!st.query||!st.query.trim()){
+      if(st.eventId){const ev=db.entries.find(e=>e.id===st.eventId);if(ev){db.entries=db.entries.filter(e=>e.id!==st.eventId);st.eventId=null;}}
+    } else if(st.eventId){
+      updateEvent(st.eventId,`Search: ${st.query}`);
+    } else {
+      st.eventId=logEvent('search_create',`Search: ${st.query}`,tabId);
+    }
+    save();renderActiveView();
+  },1500);
   renderTabBar(); // update tab label
   // Re-render results only
   const resultsEl=document.querySelector('.search-tab-results');
@@ -2761,9 +2974,7 @@ function showMoreSearchTab(tabId){
 function hlMatch(html,q){if(!q||q==='NOMATCH')return html;return html.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');}
 function jumpToEntry(id){
   const e=db.entries.find(x=>x.id===id);if(!e)return;
-  if(e.isNote){openNoteTab(e.id);return;}
-  selectedDate=e.date;activeTab='feed';updateDateBar();renderTabBar();renderActiveView();renderCalendar();
-  setTimeout(()=>{const card=document.querySelector(`.entry-card[data-id="${id}"]`);if(card){card.scrollIntoView({behavior:'smooth',block:'center'});card.classList.add('highlight');setTimeout(()=>card.classList.remove('highlight'),2000);}},50);
+  openAsNote(id);
 }
 
 /* Context stubs (feature removed) */
@@ -2928,6 +3139,37 @@ const THEMES={
   }
 };
 
+function openGhost(){
+  const trigger=document.getElementById('ghost-trigger');
+  const cap=document.getElementById('capture');
+  if(!trigger||!cap)return;
+  trigger.style.display='none';
+  cap.style.display='block';
+  const inp=cap.querySelector('textarea');
+  if(inp){inp.focus();autoGrow(inp);}
+  setupCaptureImageHandlers();
+}
+function closeGhost(){
+  if(db.captureMode!=='ghost')return;
+  const inp=document.getElementById('capture-input');
+  if(inp&&inp.value.trim())return;
+  // small delay so clicking submit-btn fires before blur collapses
+  setTimeout(()=>{
+    const inp2=document.getElementById('capture-input');
+    if(inp2&&inp2.value.trim())return;
+    const trigger=document.getElementById('ghost-trigger');
+    const cap=document.getElementById('capture');
+    if(trigger)trigger.style.display='';
+    if(cap)cap.style.display='none';
+  },150);
+}
+
+function setCaptureMode(mode){
+  db.captureMode=mode;
+  save('settings');
+  renderActiveView();
+}
+
 function applyTheme(name){
   const t=THEMES[name];if(!t)return;
   const root=document.documentElement;
@@ -2982,6 +3224,24 @@ function renderSettingsTab(area){
         <div class="settings-section" style="border:2px solid var(--danger);border-radius:var(--radius-md);padding:16px">
           <h2 style="color:var(--danger)">Danger Zone</h2>
           <button class="modal-btn danger" onclick="confirmPurge()">&#128465; Purge All Data</button>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section" style="margin-top:4px">
+      <h2>Capture Style</h2>
+      <p style="color:var(--text3);margin-bottom:10px">How the quick-capture input appears in the feed.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div onclick="setCaptureMode('rail')" style="cursor:pointer;border:2px solid ${db.captureMode==='rail'?'var(--accent)':'var(--border)'};border-radius:var(--radius-md);padding:12px 16px;flex:1;min-width:180px;background:${db.captureMode==='rail'?'var(--accent-light)':'var(--surface)'}">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;color:${db.captureMode==='rail'?'var(--accent)':'var(--text)'}">Input Rail</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5">Capture sits at the top of the feed with an amber left border — a notepad margin line. Scrolls with content.</div>
+        </div>
+        <div onclick="setCaptureMode('dock')" style="cursor:pointer;border:2px solid ${db.captureMode==='dock'?'var(--accent)':'var(--border)'};border-radius:var(--radius-md);padding:12px 16px;flex:1;min-width:180px;background:${db.captureMode==='dock'?'var(--accent-light)':'var(--surface)'}">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;color:${db.captureMode==='dock'?'var(--accent)':'var(--text)'}">Bottom Dock</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5">Capture is pinned to the bottom of the feed — always visible. Feed scrolls independently above it.</div>
+        </div>
+        <div onclick="setCaptureMode('ghost')" style="cursor:pointer;border:2px solid ${db.captureMode==='ghost'?'var(--accent)':'var(--border)'};border-radius:var(--radius-md);padding:12px 16px;flex:1;min-width:180px;background:${db.captureMode==='ghost'?'var(--accent-light)':'var(--surface)'}">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;color:${db.captureMode==='ghost'?'var(--accent)':'var(--text)'}">Ghost Input</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5">A subtle dashed line at the top of the feed. Click to expand into a full composer. Collapses when empty.</div>
         </div>
       </div>
     </div>
