@@ -974,6 +974,15 @@ function idbPutAll(store,items){
   });
 }
 
+function idbDelete(store,id){
+  return new Promise((resolve,reject)=>{
+    const tx=idb.transaction(store,'readwrite');
+    tx.objectStore(store).delete(id);
+    tx.oncomplete=()=>resolve();
+    tx.onerror=e=>reject(e.target.error);
+  });
+}
+
 function idbClearStore(store){
   return new Promise((resolve,reject)=>{
     const tx=idb.transaction(store,'readwrite');
@@ -1546,11 +1555,24 @@ function closeDeleteModal(){pendingDeleteId=null;document.getElementById('delete
 function doDelete(){
   if(!pendingDeleteId)return;
   const id=pendingDeleteId;
+  const entry=db.entries.find(e=>e.id===id);
+  // Collect image IDs embedded in this entry before removing it
+  const deletedImgIds=entry?[...(entry.content||'').matchAll(/!\[\]\((img_[a-z0-9_]+)\)/g)].map(m=>m[1]):[];
   // Close tab if open
   if(openTabs.includes(id)){openTabs=openTabs.filter(t=>t!==id);if(activeTab===id){activeTab='feed';}}
   // Remove linked pins
   db.openItems=db.openItems.filter(o=>o.entryId!==id);
   db.entries=db.entries.filter(e=>e.id!==id);
+  // Delete images that are no longer referenced by any remaining entry
+  if(deletedImgIds.length){
+    const allContent=db.entries.map(e=>e.content||'').join('\n');
+    deletedImgIds.forEach(imgId=>{
+      if(!allContent.includes(imgId)){
+        db.images.delete(imgId);
+        idbDelete('images',imgId).catch(()=>{});
+      }
+    });
+  }
   save();closeDeleteModal();renderTabBar();renderActiveView();renderTagCloud();renderAllSections();renderPins();
 }
 // Keep old name for any legacy calls
