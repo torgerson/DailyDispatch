@@ -423,6 +423,10 @@
   .cm-dd-image img { max-width: 100%; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; display: block; }
   .cm-dd-image-missing { font-size: 10px; color: var(--text3); font-style: italic; }
 
+  /* Feed card image thumbnails */
+  .entry-image-thumbs { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+  .entry-image-thumbs img { height: 52px; width: 52px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; }
+
   /* Drag-over highlight */
   .cm-wrap.drag-over { border-color: var(--accent) !important; background: var(--accent-light); }
   #capture.drag-over { outline: 2px dashed var(--accent); outline-offset: -2px; border-radius: var(--radius-md); }
@@ -1396,15 +1400,25 @@ function renderEntryCard(e){
   let h=`<div class="entry-card" data-id="${e.id}" data-action="open" style="border-left-color:${borderColor}">`;
   h+=`<span class="entry-time">${fmtTime(e.ts)}</span>`;
   if(pinned){h+=`<span class="entry-pinned-dot" title="Pinned">&#128204;</span>`;}
+  // Extract image IDs and strip tokens from display content
+  const imgIds=[...e.content.matchAll(/!\[\]\((img_[a-z0-9_]+)\)/g)].map(m=>m[1]);
+  const contentNoImgs=e.content.replace(/\n?!\[\]\(img_[a-z0-9_]+\)\n?/g,' ').trim();
   // Content
   if(e.isNote){
-    const preview=e.content.replace(/#[a-zA-Z0-9_-]+/g,'').replace(/\[\[([^\]]+)\]\]/g,'$1').replace(/[*`_~#\[\]]/g,'').trim();
-    const titleText=escH(e.noteTitle||'Untitled');
-    const previewText=preview&&preview!==e.noteTitle?(' — '+escH(preview.slice(0,80))+(preview.length>80?'...':'')):'';
+    const cleanTitle=(e.noteTitle||'Untitled').replace(/!\[\]\(img_[a-z0-9_]+\)/g,'').trim()||'Untitled';
+    const preview=contentNoImgs.replace(/#[a-zA-Z0-9_-]+/g,'').replace(/\[\[([^\]]+)\]\]/g,'$1').replace(/[*`_~#\[\]]/g,'').trim();
+    const titleText=escH(cleanTitle);
+    const previewText=preview&&preview!==cleanTitle?(' — '+escH(preview.slice(0,80))+(preview.length>80?'...':'')):'';
     h+=`<span class="entry-content"><strong>${titleText}</strong>${previewText}</span>`;
   } else {
-    let content=e.content.replace(/#[a-zA-Z0-9_-]+/g,'').trim();
+    let content=contentNoImgs.replace(/#[a-zA-Z0-9_-]+/g,'').trim();
     h+=`<span class="entry-content">${renderMdInline(content)}</span>`;
+  }
+  // Image thumbnails
+  if(imgIds.length){
+    h+=`<span class="entry-image-thumbs">`;
+    imgIds.forEach(id=>{const img=db.images.get(id);if(img)h+=`<img src="${img.data}" onclick="event.stopPropagation();window.open(this.src)" title="Click to open full size">`;});
+    h+=`</span>`;
   }
   // Tag pills right-aligned — no overlap now since actions are removed
   if((e.tags||[]).length){
@@ -1419,12 +1433,6 @@ function renderEntryCard(e){
 // Inline markdown — no tag/mention rendering (those are shown as pills)
 function renderMdInline(raw){
   let t=escH(raw);
-  // Substitute image tokens inline (feed cards)
-  t=t.replace(/!\[\]\((img_[a-z0-9_]+)\)/g,(m,id)=>{
-    const img=db.images.get(id);
-    if(!img)return'';
-    return`<img src="${img.data}" style="max-height:80px;border-radius:3px;margin:2px 0;display:block;cursor:pointer" loading="lazy" onclick="event.stopPropagation();window.open(this.src)" title="Click to open">`;
-  });
   t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
   t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   t=t.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g,'<em>$1</em>');
