@@ -464,6 +464,20 @@
     background: var(--border-strong); border: none; margin: 0;
     vertical-align: middle;
   }
+  /* Tab context menu */
+  .tab-ctx-item {
+    display: flex; align-items: center; gap: 10px; padding: 7px 12px;
+    font-size: 12px; color: var(--text); cursor: pointer; border-radius: 3px;
+    user-select: none;
+  }
+  .tab-ctx-item:hover { background: var(--accent-light); color: var(--accent); }
+  .tab-ctx-item.tab-ctx-danger:hover { background: rgba(225,98,89,0.1); color: var(--danger); }
+  .tab-ctx-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; font-size: 13px; color: var(--text3);
+  }
+  .tab-ctx-item:hover .tab-ctx-icon { color: inherit; }
+  .tab-ctx-sep { height: 1px; background: var(--border-light); margin: 4px 6px; }
   /* Floating note popup window */
   body.floating-mode {
     grid-template-columns: 1fr !important;
@@ -699,18 +713,85 @@
     width: 20px; height: 2px; border-radius: 1px; background: var(--border-strong);
   }
 
-  /* Section config popover */
-  .rs-config {
-    display: none; padding: 6px 10px; background: var(--surface); border-bottom: 1px solid var(--border);
+  /* Legacy section config popover — kept for backward compat but unused */
+  .rs-config { display: none; }
+  /* Compact saved-section header affordances */
+  .rs-title-display {
+    flex: 1; font-size: 12px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .rs-config.open { display: block; }
-  .rs-config label { font-size: 9px; color: var(--text2); display: block; margin-bottom: 2px; }
-  .rs-config input {
-    width: 100%; padding: 4px 6px; border: 1px solid var(--border); border-radius: 3px;
-    font-family: var(--mono); font-size: 10px; outline: none; color: var(--text); margin-bottom: 4px;
+  .rs-edit {
+    background: none; border: none; cursor: pointer; color: var(--text3);
+    font-size: 11px; width: 20px; height: 20px; display: flex; align-items: center;
+    justify-content: center; border-radius: 3px; padding: 0;
   }
-  .rs-config input:focus { border-color: var(--accent); }
-  .rs-config .hint { font-size: 9px; color: var(--text3); line-height: 1.3; }
+  .rs-edit:hover { color: var(--accent); background: var(--accent-light); }
+  .rs-query-display {
+    display: flex; align-items: center; gap: 6px; padding: 0 10px 4px;
+    font-family: var(--mono); font-size: 10px; color: var(--text3);
+  }
+  .rs-query-display .rs-query-icon { font-size: 10px; }
+  .rs-query-display .rs-query-text {
+    flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .rs-query-display .rs-query-count {
+    font-size: 9px; color: var(--text3); background: var(--accent-light);
+    padding: 1px 6px; border-radius: 8px; font-family: var(--sans); font-weight: 600;
+  }
+  /* Guided setup card (Proposal A) */
+  .rs-panel-setup {
+    background: linear-gradient(180deg, var(--accent-light), transparent 100%) !important;
+    border: 1px dashed var(--accent) !important;
+  }
+  .rs-setup { padding: 14px 14px 12px; }
+  .rs-setup-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .rs-setup-badge {
+    background: var(--accent); color: #fff; font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: 10px;
+  }
+  .rs-setup-title { font-size: 12px; font-weight: 600; color: var(--text); }
+  .rs-setup-field { margin-bottom: 10px; }
+  .rs-setup-field label {
+    display: block; font-size: 10px; font-weight: 600; color: var(--text2);
+    margin-bottom: 3px;
+  }
+  .rs-setup-field input {
+    width: 100%; padding: 6px 9px; font-size: 12px; font-family: var(--sans);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .rs-setup-field input.rs-setup-query { font-family: var(--mono); font-size: 11px; }
+  .rs-setup-field input:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light);
+  }
+  .rs-setup-hint {
+    font-size: 9px; color: var(--text3); margin-top: 3px; line-height: 1.4;
+  }
+  .rs-setup-hint code {
+    font-family: var(--mono); font-size: 9px; background: var(--sidebar-bg);
+    padding: 1px 4px; border-radius: 2px; color: var(--text2);
+  }
+  .rs-setup-examples {
+    display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px;
+  }
+  .rs-setup-chip {
+    font-size: 10px; font-family: var(--mono); color: var(--text2);
+    background: var(--sidebar-bg); border: 1px solid var(--border);
+    padding: 2px 7px; border-radius: 10px; cursor: pointer; user-select: none;
+  }
+  .rs-setup-chip:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+  .rs-setup-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .rs-setup-btn {
+    flex: 1; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 11px;
+    font-weight: 600; cursor: pointer; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); font-family: var(--sans);
+  }
+  .rs-setup-btn:hover { background: var(--bg); }
+  .rs-setup-btn.primary {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .rs-setup-btn.primary:hover { filter: brightness(0.92); }
 
   /* ── AUTOCOMPLETE ── */
   #autocomplete {
@@ -772,6 +853,16 @@
 
   /* Search results */
   .sr-empty { padding: 40px 20px; text-align: center; color: var(--text3); font-size: 13px; }
+  /* Search tab tips */
+  .search-tips { padding: 24px 28px; max-width: 720px; margin: 0 auto; color: var(--text2); font-size: 12px; line-height: 1.55; }
+  .search-tips-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 14px; }
+  .search-tips-section { margin-bottom: 16px; }
+  .search-tips-hdr { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); font-weight: 600; margin-bottom: 6px; }
+  .search-tip-row { display: flex; align-items: baseline; gap: 12px; padding: 3px 0; }
+  .search-tip-syntax { flex: 0 0 auto; min-width: 190px; font-family: var(--mono); font-size: 11px; color: var(--accent); background: var(--accent-light); padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+  .search-tip-desc { color: var(--text2); }
+  .search-tip-desc code { font-family: var(--mono); font-size: 11px; background: var(--sidebar-bg); padding: 1px 4px; border-radius: 2px; }
+  .search-tip-desc em { font-style: italic; color: var(--text); }
   mark { background: #fef08a; border-radius: 2px; padding: 0 1px; }
 
   .empty { text-align: center; padding: 16px 8px; color: var(--text3); font-size: 11px; }
@@ -915,12 +1006,6 @@
     <div class="sb-hdr" onclick="toggleSb(this)"><h3>Tags</h3><span class="arrow">&#9660;</span></div>
     <div class="sb-body">
       <div class="tag-cloud" id="tag-cloud"></div>
-    </div>
-  </div>
-  <div class="sb-section">
-    <div class="sb-hdr collapsed" onclick="toggleSb(this)"><h3>Help</h3><span class="arrow">&#9660;</span></div>
-    <div class="sb-body">
-      <div id="help-list"></div>
     </div>
   </div>
   <div id="left-drop-zone">Drop section here</div>
@@ -1192,6 +1277,13 @@ async function flushSave(){
   for(const store of todo){
     if(store==='settings'){
       await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',captureMode:db.captureMode||'rail',defaultSectionsSeeded:db.defaultSectionsSeeded||false,floatingNote:db.floatingNote||{position:'right',width:300},openTabs,activeTab,searchTabs}]);
+    } else if(store==='sections'&&db.sections){
+      // Strip transient session-only flags and drop unsaved drafts
+      const sanitized=db.sections
+        .filter(s=>!s._isNew) // unsaved drafts never persist
+        .map(s=>{const {_setupMode,_isNew,_editing,_configOpen,...rest}=s;return rest;});
+      await idbClearStore(store);
+      if(sanitized.length)await idbPutAll(store,sanitized);
     } else if(db[store]){
       // Clear and re-put (simple, handles deletions)
       await idbClearStore(store);
@@ -1368,7 +1460,7 @@ function renderTabBar(){
       h+=`<div class="tab${isA?' active':''}" onclick="switchTab('${tid}')"${drag}>&#128269; ${label}<span class="tab-close" onclick="event.stopPropagation();closeTab('${tid}')">&times;</span></div>`;
     }
     else{const e=db.entries.find(x=>x.id===tid);const title=e?(e.noteTitle||'Note'):'Note';
-      h+=`<div class="tab${isA?' active':''}" onclick="switchTab('${tid}')"${drag}>${escH(title.slice(0,22))}<span class="tab-close" onclick="event.stopPropagation();closeTab('${tid}')">&times;</span></div>`;}
+      h+=`<div class="tab${isA?' active':''}" onclick="switchTab('${tid}')" oncontextmenu="showTabContextMenu(event,'${tid}')" title="Right-click for options"${drag}>${escH(title.slice(0,22))}<span class="tab-close" onclick="event.stopPropagation();closeTab('${tid}')">&times;</span></div>`;}
   });
   h+=`<button id="new-tab-btn" onclick="createNote()" title="New note (Cmd+N)">+</button>`;
   h+=`<div class="tab-spacer"></div>`;
@@ -1829,10 +1921,19 @@ function openAsNote(id){
 function copyEntry(id){const e=db.entries.find(x=>x.id===id);if(e)navigator.clipboard.writeText(e.content);}
 /* ═══════════ NOTES (entries with isNote=true) ═══════════ */
 function createNote(){
-  const entry={id:genId('e'),content:'',tags:[],date:selectedDate,ts:Date.now(),isNote:true,noteTitle:'',contextId:null};
-  db.entries.push(entry);save();
+  // Always stamp with today + now so new notes land in the current feed day
+  const today=todayStr();
+  const entry={id:genId('e'),content:'',tags:[],date:today,ts:Date.now(),isNote:true,noteTitle:'',contextId:null};
+  db.entries.push(entry);
+  // Anchor the feed to today so the new note is visible when switching back
+  selectedDate=today;
+  feedTopDate=null;
+  feedDaysLoaded=7;
+  feedDayShowMore={};
+  save();
   if(!openTabs.includes(entry.id))openTabs.push(entry.id);
-  activeTab=entry.id;renderTabBar();renderActiveView();renderAllSections();
+  activeTab=entry.id;
+  updateDateBar();renderTabBar();renderActiveView();renderAllSections();renderTagCloud();renderRecent();renderCalendar();
 }
 function openNoteTab(id){if(!openTabs.includes(id))openTabs.push(id);activeTab=id;renderTabBar();renderActiveView();}
 /* ═══════════ CM6 INTEGRATION LAYER — START (rip-out safe) ═══════════ */
@@ -2275,6 +2376,19 @@ function cmBulletContinuation(view){
   const pos=state.selection.main.head;
   const line=state.doc.lineAt(pos);
   const text=line.text;
+  // Checkbox: [ ] or [x] (with optional - or * prefix). Must come before generic bullet.
+  const cm=text.match(/^(\s*(?:[-*]\s+)?)\[[ x]\]\s+/);
+  if(cm){
+    // Empty checkbox — clear line
+    if(/^\s*(?:[-*]\s+)?\[[ x]\]\s*$/.test(text)){
+      view.dispatch({changes:{from:line.from,to:line.to,insert:''}});
+      return true;
+    }
+    // Continue with a fresh unchecked checkbox preserving bullet prefix (if any)
+    const prefix=cm[1]+'[ ] ';
+    view.dispatch({changes:{from:pos,insert:'\n'+prefix},selection:{anchor:pos+1+prefix.length}});
+    return true;
+  }
   // Bullet: - or *
   const bm=text.match(/^(\s*[-*]\s+)/);
   if(bm){
@@ -2782,19 +2896,19 @@ function pinEntry(id){
 }
 function isEntryPinned(id){return db.openItems.some(o=>o.entryId===id);}
 
-/* ═══════════ HELP LIST ═══════════ */
-function renderHelpList(){
-  const el=document.getElementById('help-list');
-  if(!el)return;
-  const notes=db.entries.filter(e=>e.isHelp).sort((a,b)=>{
-    // Welcome first, then alphabetical
-    if(a.id==='help_welcome')return -1;if(b.id==='help_welcome')return 1;
-    return(a.noteTitle||'').localeCompare(b.noteTitle||'');
-  });
-  el.innerHTML=notes.map(n=>{
-    const title=escH(n.noteTitle||'Untitled');
-    return`<div class="pin-card" style="cursor:pointer" onclick="openNoteTab('${n.id}')"><span style="font-size:10px;margin-right:4px;color:var(--text3)">&#10068;</span><span class="pin-txt">${title}</span></div>`;
-  }).join('');
+/* Seed default sections once for brand-new users to encourage use. */
+function ensureHelpSection(){
+  if(db.defaultSectionsSeeded)return;
+  const hasHelp=db.sections.some(s=>(s.query||'').toLowerCase().includes('#dailydispatchhelp'));
+  if(!hasHelp){
+    db.sections.push({id:'sec_help',name:'Help',query:'#DailyDispatchHelp',height:260,col:'left'});
+  }
+  const hasMeetings=db.sections.some(s=>(s.name||'').toLowerCase()==='meetings');
+  if(!hasMeetings){
+    db.sections.push({id:'sec_meetings',name:'Meetings',query:'#meeting',height:260,col:'right'});
+  }
+  db.defaultSectionsSeeded=true;
+  save();
 }
 
 /* ═══════════ RECENT NOTES ═══════════ */
@@ -2865,10 +2979,75 @@ function selCalDay(ds){selectedDate=ds;feedTopDate=ds>=todayStr()?null:ds;feedDa
 
 /* ═══════════ RIGHT SIDEBAR: CUSTOM SECTIONS ═══════════ */
 function addSection(){
-  const sec={id:genId('sec'),name:'New Section',query:'',height:200,col:'right'};
+  // Create a draft section in setup mode — user commits via "Create section" button
+  const sec={id:genId('sec'),name:'',query:'',height:200,col:'right',_setupMode:true,_isNew:true};
   db.sections.push(sec);
-  logEvent('section_create',`New section: ${sec.name}`,sec.id);
+  renderAllSections();
+  setTimeout(()=>{
+    const inp=document.querySelector(`.rs-panel-setup[data-sid="${sec.id}"] .rs-setup-name`);
+    if(inp)inp.focus();
+  },60);
+}
+function editSection(id){
+  const s=db.sections.find(x=>x.id===id);
+  if(!s)return;
+  s._setupMode=true;
+  s._isNew=false;
+  renderAllSections();
+  setTimeout(()=>{
+    const inp=document.querySelector(`.rs-panel-setup[data-sid="${id}"] .rs-setup-name`);
+    if(inp){inp.focus();inp.select();}
+  },60);
+}
+function saveSectionSetup(id){
+  const s=db.sections.find(x=>x.id===id);
+  if(!s)return;
+  const panel=document.querySelector(`.rs-panel-setup[data-sid="${id}"]`);
+  if(!panel)return;
+  const nameEl=panel.querySelector('.rs-setup-name');
+  const queryEl=panel.querySelector('.rs-setup-query');
+  const name=nameEl.value.trim();
+  const query=queryEl.value.trim();
+  if(!name){
+    nameEl.focus();
+    nameEl.style.borderColor='var(--danger)';
+    setTimeout(()=>{nameEl.style.borderColor='';},1200);
+    return;
+  }
+  const wasNew=s._isNew;
+  const oldName=s.name,oldQuery=s.query;
+  s.name=name;
+  s.query=query;
+  delete s._setupMode;
+  delete s._isNew;
+  if(wasNew){
+    logEvent('section_create',`New section: ${name}`,id);
+  } else {
+    if(oldName!==name)logEvent('section_rename',`Renamed section: "${oldName}" → "${name}"`,id);
+    if(oldQuery!==query)logEvent('section_filter',`Section "${name}" filter: ${query||'(empty)'}`,id);
+  }
   save();renderAllSections();renderActiveView();
+}
+function cancelSectionSetup(id){
+  const s=db.sections.find(x=>x.id===id);
+  if(!s)return;
+  if(s._isNew){
+    db.sections=db.sections.filter(x=>x.id!==id);
+  } else {
+    delete s._setupMode;
+    delete s._isNew;
+  }
+  renderAllSections();
+}
+function insertSectionExample(id,query){
+  const inp=document.querySelector(`.rs-panel-setup[data-sid="${id}"] .rs-setup-query`);
+  if(!inp)return;
+  inp.value=query;
+  inp.focus();
+}
+function handleSetupKey(e,id){
+  if(e.key==='Enter'){e.preventDefault();saveSectionSetup(id);}
+  else if(e.key==='Escape'){e.preventDefault();cancelSectionSetup(id);}
 }
 
 const SEC_PAGE_SIZE=30;
@@ -2876,6 +3055,37 @@ const SEC_PAGE_SIZE=30;
 let sectionShowCount={};
 
 function renderSectionPanel(sec){
+  // Setup / edit mode — guided form
+  if(sec._setupMode){
+    const isNew=sec._isNew;
+    const badge=isNew?'New':'Edit';
+    const title=isNew?'Set up section':'Edit section';
+    const btnLabel=isNew?'Create section':'Save';
+    return `<div class="rs-panel rs-panel-setup" data-sid="${sec.id}">
+      <div class="rs-setup">
+        <div class="rs-setup-hdr">
+          <span class="rs-setup-badge">${badge}</span>
+          <span class="rs-setup-title">${title}</span>
+        </div>
+        <div class="rs-setup-field">
+          <label>Section name</label>
+          <input class="rs-setup-name" type="text" placeholder="e.g. Meetings, Action items, Ideas" value="${escH(sec.name||'')}" onkeydown="handleSetupKey(event,'${sec.id}')">
+          <div class="rs-setup-hint">Shown as the header in the sidebar.</div>
+        </div>
+        <div class="rs-setup-field">
+          <label>Filter</label>
+          <input class="rs-setup-query" type="text" placeholder="#meeting -draft" value="${escH(sec.query||'')}" onkeydown="handleSetupKey(event,'${sec.id}')">
+          <div class="rs-setup-hint"><code>#tag</code> <code>@person</code> <code>word</code> <code>-exclude</code> · <code>&quot;exact phrase&quot;</code> · <code>line:</code> scope</div>
+        </div>
+        <div class="rs-setup-actions">
+          <button class="rs-setup-btn" onclick="cancelSectionSetup('${sec.id}')">Cancel</button>
+          <button class="rs-setup-btn primary" onclick="saveSectionSetup('${sec.id}')">${btnLabel}</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Compact saved view
   const matches=matchEntries(sec.query);
   const total=matches.length;
   const limit=sectionShowCount[sec.id]||SEC_PAGE_SIZE;
@@ -2892,17 +3102,14 @@ function renderSectionPanel(sec){
   return`<div class="rs-panel" data-sid="${sec.id}" draggable="true" ondragstart="dragSecStart(event,'${sec.id}')" ondragend="dragSecEnd(event)" ondragover="dragSecOver(event)" ondrop="dragSecDrop(event,'${sec.id}')" style="height:${sec.height||200}px;flex:none">
     <div class="rs-header">
       <span class="rs-drag-handle" title="Drag to reorder">&#x2630;</span>
-      <input class="rs-title" value="${escH(sec.name)}" onchange="updateSection('${sec.id}','name',this.value)" onclick="event.stopPropagation()">
+      <span class="rs-title-display" ondblclick="editSection('${sec.id}')" title="Double-click to edit">${escH(sec.name||'Untitled')}</span>
+      <button class="rs-edit" onclick="editSection('${sec.id}')" title="Edit section">&#9998;</button>
       <button class="rs-del" onclick="delSection('${sec.id}')" title="Remove">&times;</button>
     </div>
-    <div class="rs-config${sec._configOpen?' open':''}">
-      <label>Filter query</label>
-      <input value="${escH(sec.query)}" placeholder="#tag @person keyword -exclude" onchange="updateSection('${sec.id}','query',this.value);renderAllSections()">
-      <div class="hint">#tag @person keyword -exclude. Searches all entries across all dates.</div>
-    </div>
-    <div class="rs-header" style="cursor:pointer;padding:3px 10px" onclick="toggleSectionConfig('${sec.id}')">
-      <span class="rs-query" style="pointer-events:none;font-size:9px">${escH(sec.query||'click to set filter...')}</span>
-      <span style="font-size:8px;color:var(--text3)">${total}</span>
+    <div class="rs-query-display" onclick="editSection('${sec.id}')" title="Click to edit filter">
+      <span class="rs-query-icon">&#128269;</span>
+      <span class="rs-query-text">${escH(sec.query||'(no filter — click to set)')}</span>
+      <span class="rs-query-count">${total}</span>
     </div>
     <div class="rs-body">${bodyHtml}</div>
     <div class="rs-resize" onmousedown="startResize(event,'${sec.id}')"></div>
@@ -3002,27 +3209,53 @@ function dragSecDrop(e,targetId){
 // matchEntries always searches ALL data. Returns full sorted array.
 // Callers are responsible for slicing for rendering.
 function matchEntries(query){
-  const base=db.entries.filter(e=>!e.eventType&&!e.isHelp);
+  // Note: help notes are intentionally included here so sections filtered by
+  // #DailyDispatchHelp can find them. Feed and tag cloud still exclude them.
+  const base=db.entries.filter(e=>!e.eventType);
   if(!query||!query.trim())return base.sort((a,b)=>b.ts-a.ts);
   // Split on OR (case-insensitive, surrounded by spaces)
   const orGroups=query.split(/\s+OR\s+/i);
   const matched=new Set();
   for(const group of orGroups){
-    const parts=group.trim().toLowerCase().split(/\s+/);
-    const tags=[],mentions=[],words=[],excludes=[];
+    // Extract quoted phrases first ("text" or -"text") so whitespace inside them is preserved
+    const phrases=[],excludePhrases=[];
+    let stripped=group.trim().toLowerCase();
+    // line: modifier — all non-tag/mention tokens in this group must appear on the same line
+    let lineMode=false;
+    if(stripped.startsWith('line:')){lineMode=true;stripped=stripped.slice(5).trim();}
+    stripped=stripped.replace(/-"([^"]+)"/g,(_,m)=>{excludePhrases.push(m);return ' ';});
+    stripped=stripped.replace(/"([^"]+)"/g,(_,m)=>{phrases.push(m);return ' ';});
+    const parts=stripped.split(/\s+/).filter(Boolean);
+    const tags=[],mentions=[],words=[...phrases],excludes=[...excludePhrases];
+    const lineTerms=lineMode?[...phrases]:null; // literal terms that must co-occur on one line
     parts.forEach(p=>{
       if(p==='or')return; // skip stray OR
-      if(p.startsWith('#'))tags.push(p.slice(1));
-      else if(p.startsWith('@'))mentions.push(p.slice(1));
+      if(p.startsWith('#')){
+        tags.push(p.slice(1));
+        if(lineMode)lineTerms.push(p); // keep '#idea' as a literal for per-line check
+      }
+      else if(p.startsWith('@')){
+        mentions.push(p.slice(1));
+        if(lineMode)lineTerms.push(p);
+      }
       else if(p.startsWith('-')&&p.length>1)excludes.push(p.slice(1));
-      else words.push(p);
+      else {
+        words.push(p);
+        if(lineMode)lineTerms.push(p);
+      }
     });
     base.forEach(e=>{
       if(matched.has(e.id))return;
       const content=(e.content+' '+(e.noteTitle||'')).toLowerCase();
       if(tags.length&&!tags.every(t=>(e.tags||[]).some(et=>et.toLowerCase()===t)))return;
       if(mentions.length&&!mentions.every(m=>(e.mentions||[]).some(em=>em.toLowerCase()===m)))return;
-      if(words.length&&!words.every(w=>content.includes(w)))return;
+      if(lineMode){
+        // At least one line of content (or the note title) must contain all line terms literally
+        const lines=(e.content||'').toLowerCase().split('\n').concat([(e.noteTitle||'').toLowerCase()]);
+        if(!lines.some(ln=>lineTerms.every(t=>ln.includes(t))))return;
+      } else {
+        if(words.length&&!words.every(w=>content.includes(w)))return;
+      }
       if(excludes.length&&excludes.some(w=>content.includes(w)))return;
       matched.add(e.id);
     });
@@ -3118,13 +3351,82 @@ function openFloatingNote(){
   const entry={id:genId('e'),content:'',tags:[],date:todayStr(),ts:Date.now(),isNote:true,noteTitle:'',contextId:null};
   db.entries.push(entry);
   save();
+  _openFloatingWindowFor(entry.id);
+}
+function openFloatingNoteFor(id){
+  // Open an EXISTING note in a floating window. Called from a left-click
+  // in the context menu, so we have a valid user gesture — window.open first,
+  // then clean up the main-window tab.
+  const e=db.entries.find(x=>x.id===id&&x.isNote);
+  if(!e)return;
+  const win=_openFloatingWindowFor(id);
+  if(!win)return; // blocked — leave the main tab alone
+  if(openTabs.includes(id)){
+    openTabs=openTabs.filter(x=>x!==id);
+    if(activeTab===id)activeTab=openTabs[openTabs.length-1]||'feed';
+    renderTabBar();renderActiveView();
+  }
+}
+
+/* ── Tab context menu ── */
+function showTabContextMenu(e,tabId){
+  e.preventDefault();
+  e.stopPropagation();
+  closeTabContextMenu();
+  const menu=document.createElement('div');
+  menu.id='tab-context-menu';
+  menu.style.cssText=`position:fixed;top:${e.clientY}px;left:${e.clientX}px;z-index:99999;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:0 6px 18px rgba(0,0,0,0.18);padding:4px;min-width:200px;font-family:var(--sans);`;
+  menu.innerHTML=`
+    <div class="tab-ctx-item" data-action="float">
+      <span class="tab-ctx-icon">⬈</span>
+      <span>Open in floating window</span>
+    </div>
+    <div class="tab-ctx-sep"></div>
+    <div class="tab-ctx-item tab-ctx-danger" data-action="close">
+      <span class="tab-ctx-icon">×</span>
+      <span>Close tab</span>
+    </div>
+  `;
+  document.body.appendChild(menu);
+  menu.addEventListener('click',ev=>{
+    const item=ev.target.closest('.tab-ctx-item');
+    if(!item)return;
+    const action=item.dataset.action;
+    closeTabContextMenu();
+    if(action==='float')openFloatingNoteFor(tabId);
+    else if(action==='close')closeTab(tabId);
+  });
+  // Dismiss on outside click or Escape — defer so the opening click doesn't close it
+  setTimeout(()=>{
+    document.addEventListener('mousedown',_tabCtxOutside,true);
+    document.addEventListener('keydown',_tabCtxKeydown,true);
+    window.addEventListener('blur',closeTabContextMenu);
+  },0);
+}
+function _tabCtxOutside(e){
+  const m=document.getElementById('tab-context-menu');
+  if(!m)return;
+  if(m.contains(e.target))return;
+  closeTabContextMenu();
+}
+function _tabCtxKeydown(e){
+  if(e.key==='Escape'){e.preventDefault();closeTabContextMenu();}
+}
+function closeTabContextMenu(){
+  const m=document.getElementById('tab-context-menu');
+  if(m)m.remove();
+  document.removeEventListener('mousedown',_tabCtxOutside,true);
+  document.removeEventListener('keydown',_tabCtxKeydown,true);
+  window.removeEventListener('blur',closeTabContextMenu);
+}
+function _openFloatingWindowFor(noteId){
   const cfg=db.floatingNote||{position:'right',width:300};
   const w=Math.max(220,Math.min(800,parseInt(cfg.width,10)||300));
   const h=Math.max(400,Math.round(window.screen.availHeight*0.85));
   const left=cfg.position==='left'?0:Math.max(0,window.screen.availWidth-w);
   const top=Math.max(0,Math.round((window.screen.availHeight-h)/2));
-  const url=window.location.pathname+'?floating=1#'+entry.id;
-  window.open(url,'dd-floating-'+entry.id,`width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,status=no`);
+  const url=window.location.pathname+'?floating=1#'+noteId;
+  return window.open(url,'dd-floating-'+noteId,`width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,status=no`);
 }
 function isFloatingMode(){
   return new URLSearchParams(window.location.search).get('floating')==='1';
@@ -3159,6 +3461,38 @@ async function initFloatingMode(){
 }
 function closeSearch(){/* compat stub — closing search tab via closeTab */}
 
+function _searchTipsHtml(){
+  const row=(syntax,desc)=>`<div class="search-tip-row"><code class="search-tip-syntax">${syntax}</code><span class="search-tip-desc">${desc}</span></div>`;
+  return `<div class="search-tips">
+    <div class="search-tips-title">Search tips</div>
+    <div class="search-tips-section">
+      <div class="search-tips-hdr">Basics</div>
+      ${row('word','Match entries containing <em>word</em> anywhere')}
+      ${row('word1 word2','All words must appear (AND)')}
+      ${row('word1 OR word2','Either word matches')}
+      ${row('&quot;exact phrase&quot;','Match the exact phrase (use for things like <code>[ ]</code>)')}
+      ${row('-word','Exclude entries containing <em>word</em>')}
+      ${row('-&quot;exact phrase&quot;','Exclude entries containing the exact phrase')}
+    </div>
+    <div class="search-tips-section">
+      <div class="search-tips-hdr">Filters</div>
+      ${row('#tag','Entries with this tag')}
+      ${row('@person','Entries mentioning a person')}
+    </div>
+    <div class="search-tips-section">
+      <div class="search-tips-hdr">Scope</div>
+      ${row('line: …','All terms must appear on the <em>same line</em> of the entry')}
+    </div>
+    <div class="search-tips-section">
+      <div class="search-tips-hdr">Examples</div>
+      ${row('&quot;[ ]&quot;','Find open to-dos')}
+      ${row('-&quot;[x]&quot; &quot;[ ]&quot;','Open to-dos, excluding completed ones')}
+      ${row('line: [[project x]] #idea','Lines that contain both a link to project x and the #idea tag')}
+      ${row('#meeting @jane -draft','Meetings with Jane, not drafts')}
+    </div>
+  </div>`;
+}
+
 function renderSearchTab(area,tabId){
   const st=searchTabs.find(s=>s.id===tabId);
   if(!st)return;
@@ -3170,7 +3504,7 @@ function renderSearchTab(area,tabId){
   let h=`<div class="search-tab">
     <div class="search-tab-bar">
       <span style="color:var(--text3);font-size:16px">&#128269;</span>
-      <input id="search-tab-input" class="search-tab-input" placeholder="Search... (#tag @person keyword -exclude)"
+      <input id="search-tab-input" class="search-tab-input" placeholder='Search... (#tag @person keyword "exact phrase" -exclude)'
              value="${escH(st.query)}"
              oninput="updateSearchTab('${tabId}',this.value)"
              onkeydown="if(event.key==='Escape'){closeTab('${tabId}');event.preventDefault();}">
@@ -3179,7 +3513,7 @@ function renderSearchTab(area,tabId){
     <div class="search-tab-results">`;
 
   if(!st.query){
-    h+=`<div class="sr-empty">Type to search across all entries, notes, and tags</div>`;
+    h+=_searchTipsHtml();
   } else if(!total){
     h+=`<div class="sr-empty">No results for "${escH(st.query)}"</div>`;
   } else {
@@ -3225,7 +3559,11 @@ function updateSearchTab(tabId,query){
     } else {
       st.eventId=logEvent('search_create',`Search: ${st.query}`,tabId);
     }
-    save();renderActiveView();
+    save();
+    // Don't re-render the active view if the user is still in the search tab —
+    // that would destroy the input and kill keyboard focus. The feed event is
+    // already persisted and will show next time the feed is rendered.
+    if(activeTab!==tabId)renderActiveView();
   },1500);
   renderTabBar(); // update tab label
   // Re-render results only
@@ -3236,7 +3574,7 @@ function updateSearchTab(tabId,query){
   const total=results.length;
   const visible=results.slice(0,st.showCount);
   if(countEl)countEl.textContent=query?total+' results':'';
-  if(!query){resultsEl.innerHTML='<div class="sr-empty">Type to search across all entries, notes, and tags</div>';return;}
+  if(!query){resultsEl.innerHTML=_searchTipsHtml();return;}
   if(!total){resultsEl.innerHTML=`<div class="sr-empty">No results for "${escH(query)}"</div>`;return;}
   let h='';
   const byDate={};
@@ -3762,7 +4100,7 @@ async function doPurge(){
   await openIDB();
   closePurge();closeSettings();
   openTabs=['feed'];activeTab='feed';activeTagFilters=[];
-  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderHelpList();renderAllSections();
+  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderAllSections();
 }
 function exportData(){
   const out={...db,images:[...db.images.entries()].map(([id,v])=>({id,data:v.data,mimeType:v.mimeType}))};
@@ -3790,7 +4128,7 @@ function importData(e){
         await saveAll();
         closeSettings();
         openTabs=['feed'];activeTab='feed';
-        updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderHelpList();renderAllSections();
+        updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderAllSections();
       } else {alert('Invalid backup file');}
     }catch(err){alert('Failed to parse file: '+err.message);}
   };
@@ -3811,6 +4149,7 @@ Everything lives in your browser's IndexedDB. No server, no internet, no account
 - Use **#tags** to categorize: #meeting, #api, #question — anything you want
 - Use **@mentions** to reference people: @Sarah, @Dave
 - Click any entry to open it as a full note with the markdown editor
+- In notes, type \`/\` to open slash commands (headings, tables, code blocks, dividers, etc.)
 - Pin important items by hovering and clicking the 📌 icon
 
 ## Key Shortcuts
@@ -3825,14 +4164,20 @@ Everything lives in your browser's IndexedDB. No server, no internet, no account
 See these guides for more detail:
 - [[Quick Entries & Feed]]
 - [[Notes & Markdown Editor]]
+- [[Slash Commands]]
 - [[Tags & Filtering]]
 - [[Sections & Custom Views]]
 - [[Search Tabs & Boolean Queries]]
 - [[Pinned Items]]
+- [[Floating Note Window]]
+- [[Events & Activity Log]]
 - [[People & Mentions]]
 - [[Import, Export & Backup]]
 - [[Themes & Settings]]
-- [[Keyboard Shortcuts]]`},
+- [[Keyboard Shortcuts]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_entries',noteTitle:'Quick Entries & Feed',content:`# Quick Entries & Feed
 
@@ -3840,7 +4185,12 @@ See these guides for more detail:
 
 The capture box at the top of the Feed tab is your quick-entry point. Type anything and press **Cmd+Enter** or click **Add**.
 
-Entries are timestamped and appear in the feed sorted by time, newest first, grouped by hour.
+Entries are timestamped with the current time and land on today's date — even if you're viewing an older day in the feed. Clicking anywhere in the capture rail focuses the input.
+
+The capture box has three visual styles (Settings → Capture Style):
+- **Input Rail** — sits at the top with a warm left margin, scrolls with content
+- **Bottom Dock** — pinned to the bottom of the feed, always visible
+- **Ghost Input** — a subtle dashed line that expands on click
 
 ## Markdown in Entries
 
@@ -3850,6 +4200,7 @@ Your entries support inline markdown:
 - \`inline code\` with backticks
 - Links: \`[text](url)\` or just paste a URL
 - #tags and @mentions are auto-detected
+- Images can be dropped or pasted directly
 
 ## Opening as Notes
 
@@ -3859,13 +4210,17 @@ Click any entry in the feed to open it as a full note in a new tab. This convert
 
 - Use the **◀ ▶** arrows in the topbar to navigate days
 - Click the date to open the calendar
-- Adding entries while viewing a past/future date timestamps them at 12:01 AM on that day
+- Clicking any day in the calendar pins that day to the top of the feed
+- Scroll up to walk forward toward today, scroll down for older days — both directions auto-load
 
 ## Daily Summary
 
 A "Generate daily summary" banner appears at the top of the feed. Click it to create a markdown note summarizing all entries for that day, grouped by tag.
 
-See also: [[Notes & Markdown Editor]], [[Tags & Filtering]]`},
+See also: [[Notes & Markdown Editor]], [[Tags & Filtering]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_notes',noteTitle:'Notes & Markdown Editor',content:`# Notes & Markdown Editor
 
@@ -3873,6 +4228,7 @@ See also: [[Notes & Markdown Editor]], [[Tags & Filtering]]`},
 
 - Click the **+** button in the tab bar, or press **Cmd+N**
 - Click any feed entry to open it as a note
+- Use the 📝 floating note button for a popup window (see [[Floating Note Window]])
 
 Notes are full entries with a rich markdown editor powered by CodeMirror 6.
 
@@ -3886,12 +4242,18 @@ The editor shows **rendered markdown on lines you're not editing** and **raw mar
 - \`**bold**\` and \`*italic*\`
 - \`\\\`inline code\\\`\`
 - \`- bullet\` or \`* bullet\` (auto-continues on Enter, double-Enter to exit)
-- \`1. numbered\` lists (auto-increments)
+- \`1. numbered\` or \`1)\` lists (auto-increments)
 - \`> blockquote\` (auto-continues on Enter)
 - \`---\` horizontal divider
 - \`[ ] unchecked\` and \`[x] checked\` checkboxes (clickable!)
-- \`[link text](url)\` links
+- \`[link text](url)\` or plain \`https://...\` URLs (click to open)
 - \`[[Note Title]]\` cross-links to other notes
+- Fenced code blocks with triple backticks \`\\\`\\\`\\\`\` — rendered with monospace font, light background, and a left border
+- Markdown tables with \`| col | col |\` (source rendered; live table widget coming)
+
+## Slash Commands
+
+Type \`/\` on any line to open the slash menu. Insert headings, lists, blockquotes, dividers, code blocks, and tables with one keystroke. See [[Slash Commands]].
 
 ## Cross-Links
 
@@ -3899,7 +4261,11 @@ Type \`[[\` to get autocomplete for existing note titles. Click a rendered cross
 
 ## Checkboxes
 
-Type \`[ ] \` for an unchecked item or \`[x] \` for checked. In the rendered view, these show as clickable checkboxes. Checked items get strikethrough styling.
+Type \`[ ] \` for an unchecked item or \`[x] \` for checked. In the rendered view, these show as clickable checkboxes. Checked items get strikethrough styling. Press Enter on a checkbox line to continue with a fresh \`[ ]\`; Enter on an empty checkbox clears the line.
+
+## Clickable URLs
+
+Plain \`https://...\` URLs in a note become clickable. Place your cursor on a different line to see the URL styled; click to open in a new tab.
 
 ## Note Title
 
@@ -3913,7 +4279,47 @@ Use the toolbar above the editor to:
 - **Copy** the raw markdown
 - **Delete** the note
 
-See also: [[Tags & Filtering]], [[Quick Entries & Feed]]`},
+See also: [[Slash Commands]], [[Tags & Filtering]], [[Quick Entries & Feed]]
+
+---
+#DailyDispatchHelp`},
+
+{id:'help_slash',noteTitle:'Slash Commands',content:`# Slash Commands
+
+Type \`/\` on any line in a note (at the start of a line, or after whitespace) to open the slash menu. Filter by typing the command name, navigate with arrow keys, and press **Enter** or **Tab** to insert.
+
+## Available Commands
+
+| Command | Inserts |
+|---|---|
+| \`/h1\` | \`# \` — large heading |
+| \`/h2\` | \`## \` — medium heading |
+| \`/h3\` | \`### \` — small heading |
+| \`/bullet\` | \`- \` — unordered list item |
+| \`/numbered\` | \`1. \` — ordered list item |
+| \`/blockquote\` | \`> \` — quoted text |
+| \`/divider\` | \`---\` — horizontal rule |
+| \`/code\` | Fenced code block with cursor inside |
+| \`/table\` | Opens an **8×8 grid picker** — click a cell to insert a table of that size |
+
+## Table Picker
+
+When you select \`/table\`, a small grid appears next to the slash. **Hover** to choose a size (first row becomes the header), **click** to insert. Esc or click-outside cancels.
+
+## Code Block Rendering
+
+Fenced code blocks (triple backticks) render with monospace font, a light gray background, and a left border. Markdown inside a code block is not interpreted — so you can paste code without worrying about \`#\`, \`*\`, or \`[\` being rendered.
+
+## Tips
+
+- Filtering is prefix-based: \`/h\` shows \`/h1\`, \`/h2\`, \`/h3\`; \`/b\` shows \`/bullet\` and \`/blockquote\`
+- Slash commands replace the \`/cmd\` text when inserted — nothing to clean up
+- Escape closes the menu without inserting
+
+See also: [[Notes & Markdown Editor]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_tags',noteTitle:'Tags & Filtering',content:`# Tags & Filtering
 
@@ -3943,29 +4349,46 @@ In the Settings tab under **Tags**:
 - **Delete** a tag — the # prefix is removed from entries, the word stays
 - **Merge** tags — drag one tag onto another to combine them
 
-See also: [[Sections & Custom Views]], [[Search Tabs & Boolean Queries]]`},
+See also: [[Sections & Custom Views]], [[Search Tabs & Boolean Queries]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_sections',noteTitle:'Sections & Custom Views',content:`# Sections & Custom Views
 
 ## What Are Sections?
 
-Sections are **saved filter views** that appear in the right sidebar. They let you create custom dashboards showing entries matching specific criteria.
+Sections are **saved filter views** that appear in the sidebars. They let you create custom dashboards showing entries matching specific criteria — a live, always-up-to-date view.
 
 ## Creating a Section
 
 1. Click the **+** button in the right sidebar header
-2. Name your section (click the title to edit)
-3. Click the filter row to set your query
+2. A **Setup card** opens with labeled fields — amber border, "NEW" badge
+3. Fill in the **Section name** (e.g. "Meetings")
+4. Fill in the **Filter** query (e.g. \`#meeting -draft\`)
+5. Click **Create section** or press Enter
+
+The setup card makes it obvious that both fields need attention — no more guessing where to click.
+
+## Editing a Section
+
+The compact saved card shows the name, query, and result count. To edit:
+- Click the ✎ **pencil** icon on the section header
+- Click the query row (the monospace text)
+- Double-click the name
+
+Each of these re-opens the setup card with the existing values. **Cancel** restores them; **Save** commits.
 
 ## Filter Query Syntax
 
-Sections use the same query syntax as search:
+Sections use the same query syntax as [[Search Tabs & Boolean Queries]]:
 - \`#meeting\` — entries with the meeting tag
 - \`#api -draft\` — entries with #api but NOT containing "draft"
 - \`@Dave\` — entries mentioning Dave
 - \`#api #review\` — entries with BOTH tags (AND)
 - \`#meeting OR #standup\` — entries with EITHER tag (OR)
-- \`deploy Friday\` — entries containing both words
+- \`"exact phrase"\` — literal phrase (useful for \`"[ ]"\` to find open todos)
+- \`line: [[project]] #idea\` — all terms must appear on the same line
 
 ## Managing Sections
 
@@ -3974,52 +4397,72 @@ Sections use the same query syntax as search:
 - **Move between columns** — drag a section to the left sidebar drop zone
 - **Delete** — click the × button
 
-## Section Results
+## Section Events
 
-Each section shows matching entries with timestamp and preview. Click an entry to open it. "Show more" loads additional results.
+Creating, renaming, changing the filter, or deleting a section is logged as an event in the feed — see [[Events & Activity Log]].
 
-See also: [[Search Tabs & Boolean Queries]], [[Tags & Filtering]]`},
+## Default Help Section
+
+The **Help** section in the left sidebar is a regular section filtered by \`#DailyDispatchHelp\`. You can delete it if you want; it won't come back automatically.
+
+See also: [[Search Tabs & Boolean Queries]], [[Tags & Filtering]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_search',noteTitle:'Search Tabs & Boolean Queries',content:`# Search Tabs & Boolean Queries
 
 ## Opening Search
 
-Click the 🔍 icon in the tab bar or press **Cmd+K**. This opens a new search tab.
+Click the 🔍 icon in the tab bar or press **Cmd+K**. This opens a new search tab. An empty search tab shows a **Search tips panel** with every operator and concrete examples — your live cheat sheet.
 
 ## Search Syntax
 
-Search uses the same powerful query syntax as sections:
-
 ### Basic
-- \`keyword\` — full-text search across all entries and notes
+- \`keyword\` — full-text search across content and note titles
+- \`word1 word2\` — all words must appear (AND)
+- \`word1 OR word2\` — either word
+- \`"exact phrase"\` — match the literal phrase (whitespace preserved)
+- \`-word\` or \`-"exact phrase"\` — exclude entries containing this
+
+### Filters
 - \`#tag\` — entries with a specific tag
 - \`@person\` — entries mentioning someone
+- Multiple tags and mentions are combined with AND
 
-### AND (default)
-- \`#api #review\` — must have BOTH tags
-- \`#meeting @Dave\` — must have #meeting tag AND mention @Dave
-- \`deploy server\` — must contain both words
+### Scope
+- \`line: …\` — all terms must appear on the **same line** of an entry. Example:
+  \`line: [[project x]] #idea\` finds lines containing both \`[[project x]]\` and \`#idea\` literally, not entries where they appear on different lines.
 
-### OR
-- \`#meeting OR #standup\` — entries with EITHER tag
-- \`#api #review OR #frontend\` — (api AND review) OR (frontend)
+## Finding Open Todos
 
-### Exclude
-- \`#api -draft\` — has #api but does NOT contain "draft"
-- \`#meeting -standup -1on1\` — meetings except standups and 1-on-1s
+Searching for \`[ ]\` used to also return \`[x]\` items because of word splitting. Wrap it in quotes:
+- \`"[ ]"\` — all open todos
+- \`"[ ]" -"[x]"\` — open todos, excluding anything with a completed one
+- \`"[ ]" #meeting\` — open todos in meeting notes
 
-### Combined
+## Combined Examples
+
 - \`#api @Dave OR #frontend @Sarah\` — Dave's API work OR Sarah's frontend work
+- \`#meeting -standup -1on1\` — meetings except standups and 1-on-1s
+- \`line: @jane action\` — lines where you assigned an action item to Jane
 
 ## Multiple Search Tabs
 
-You can have multiple search tabs open simultaneously — useful for comparing different filtered views.
+You can have multiple search tabs open simultaneously — useful for comparing different filtered views. Each search tab's query is **auto-saved as a feed event** (see [[Events & Activity Log]]), so you can reopen a previous search later by clicking the "reopen" link on the event.
 
 ## Results
 
-Results are grouped by date, showing the entry with its tags. Click any result to jump to it (opens as a note or scrolls to it in the feed).
+Results are grouped by date, showing the entry with its tags. Click any result to open it in a tab.
 
-See also: [[Sections & Custom Views]], [[Tags & Filtering]]`},
+## Keyboard-Friendly
+
+Focus stays in the search input as you type — even while results refresh — so you can iterate on a query without reaching for the mouse.
+
+See also: [[Sections & Custom Views]], [[Tags & Filtering]], [[Events & Activity Log]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_pins',noteTitle:'Pinned Items',content:`# Pinned Items
 
@@ -4041,9 +4484,100 @@ Pinned items appear in the left sidebar under **PINNED**. Click any pinned item 
 
 ## Pin Events
 
-Pinning and unpinning are logged as events in the feed, so you have a record of when items were pinned.
+Pinning and unpinning are logged as events in the feed, so you have a record of when items were pinned — see [[Events & Activity Log]].
 
-See also: [[Quick Entries & Feed]], [[Notes & Markdown Editor]]`},
+See also: [[Quick Entries & Feed]], [[Notes & Markdown Editor]]
+
+---
+#DailyDispatchHelp`},
+
+{id:'help_floating',noteTitle:'Floating Note Window',content:`# Floating Note Window
+
+The floating note button (📝 icon in the tab bar) opens a **small popup window** pinned to the edge of your screen. It's a brand-new note ready to type — perfect for capture that needs to stay visible while you're working on something else.
+
+## The Meeting Notes Use Case
+
+This feature was built for a specific workflow: **taking meeting notes while a video call fills most of your screen.**
+
+Typical setup:
+1. You're in a Zoom/Meet/Teams call in your browser — it fills the main window
+2. Click the 📝 floating note button in DailyDispatch
+3. A narrow note window (default 300px wide) tucks against the right edge of your screen
+4. Your video call stays front-and-center, your notes are visible on the side
+5. Type meeting notes — action items, decisions, questions, whatever
+6. When the call ends, close the floating window
+7. The note **automatically opens as a tab in the main DailyDispatch window**, ready to clean up and tag
+
+No copy-paste. No "where did that note go?" No switching windows mid-call.
+
+## How It Works
+
+- The popup is the same note editor as the main window — full markdown, slash commands, checkboxes, tables
+- Every keystroke saves immediately (no 300ms debounce) so nothing is lost
+- On close (Ctrl-W, the X button, or pagehide), any pending write is flushed synchronously and a signal is sent to the main window
+- The main window reloads the note from IndexedDB and opens it as a tab
+
+## Settings
+
+**Settings → Floating Note Window** has two controls:
+- **Position** — right edge (default) or left edge of your screen
+- **Width** — 220 to 800 pixels (default 300)
+
+Pick the side opposite your video call's controls so nothing overlaps.
+
+## Tips
+
+- Start every meeting with \`/h1 Meeting title\` then \`/bullet\` for attendees
+- Use \`[ ]\` for action items so you can later find open tasks with \`"[ ]" #meeting\`
+- Tag the note with \`#meeting @jane\` so it shows up in your Meetings section
+- The popup stays in place even when you switch tabs in the main window
+
+See also: [[Notes & Markdown Editor]], [[Slash Commands]]
+
+---
+#DailyDispatchHelp`},
+
+{id:'help_events',noteTitle:'Events & Activity Log',content:`# Events & Activity Log
+
+Events are small activity-log items that appear **inline in your feed**. They record things that happened — pins, section changes, searches — so you have a record of your activity alongside the entries you wrote.
+
+## Event Types
+
+| Icon | Event | When it fires |
+|---|---|---|
+| 📌 | **Pinned / Unpinned** | You pin or unpin an entry or note |
+| ✨ | **New section** | You create a filter section |
+| ✏️ | **Renamed section** | You change a section's name |
+| 🔧 | **Section filter** | You change a section's filter query |
+| 🗑️ | **Removed section** | You delete a section |
+| 🔍 | **Search** | You type a query in a search tab (debounced) |
+
+## Search Events — Reopen a Past Query
+
+When you type a query in a search tab, DailyDispatch debounces for 1.5 seconds, then writes a **Search** event to the feed with the query text. If you keep editing the same search tab, it updates the same event rather than creating a new one. Clear the query and the event is removed.
+
+Each search event in the feed has a **"reopen"** link — click it to spawn a new search tab pre-filled with that query. Great for rerunning a research query you did yesterday.
+
+## Pin Events
+
+Pinning an entry pushes a 📌 event into the feed with the text of the pinned item. Unpin and you'll see the matching unpin event later.
+
+## Section Events
+
+Renaming or changing a section's filter writes an event like:
+- \`Renamed section: "Meetings" → "Weekly Meetings"\`
+- \`Section "Ideas" filter: #idea -draft\`
+
+This means your feed doubles as a history of how your dashboards evolved.
+
+## Filtering Events Out
+
+Events are excluded from search and section queries — they only appear in the feed. If you apply any tag filter, events are hidden automatically so the feed stays focused on matching entries.
+
+See also: [[Search Tabs & Boolean Queries]], [[Pinned Items]], [[Sections & Custom Views]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_people',noteTitle:'People & Mentions',content:`# People & Mentions
 
@@ -4068,7 +4602,10 @@ In the Settings tab under **People**:
 
 Use \`@person\` in search tabs or section filters to find all entries mentioning someone.
 
-See also: [[Tags & Filtering]], [[Search Tabs & Boolean Queries]]`},
+See also: [[Tags & Filtering]], [[Search Tabs & Boolean Queries]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_backup',noteTitle:'Import, Export & Backup',content:`# Import, Export & Backup
 
@@ -4097,7 +4634,10 @@ The **Danger Zone** in Settings has a **Purge All Data** button. This permanentl
 - Data persists across browser restarts but NOT across different browsers or devices
 - Safari Private Browsing mode will lose data when the window closes
 
-See also: [[Themes & Settings]]`},
+See also: [[Themes & Settings]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_themes',noteTitle:'Themes & Settings',content:`# Themes & Settings
 
@@ -4107,13 +4647,29 @@ Click the ⚙ gear icon at the right end of the tab bar. Settings opens as a tab
 
 ## Themes
 
-At the bottom of the Settings tab, choose from 4 built-in themes:
+Choose from 9 built-in themes (Settings → Theme):
 - **Warm Notion** — cream/amber warm tones (default)
 - **T-Mobile** — clean white with magenta accents
 - **Mint Pastel** — soft green/mint tones
-- **Dark** — dark background with amber accents
+- **Solarized Light** — classic warm palette with blue accent
+- **Nordic** — cool, minimal, slight blue cast
+- **Sepia** — paper-like, reading-focused beige
+- **Lavender** — soft purple light theme
+- **Dark** — charcoal with amber accent
+- **Midnight Blue** — deep navy dark theme with cyan accent
 
 Your theme choice is saved and persists across sessions.
+
+## Capture Style
+
+Choose how the quick-capture input appears on the feed:
+- **Input Rail** — at the top, warm left margin, scrolls with content
+- **Bottom Dock** — pinned to the bottom, always visible
+- **Ghost Input** — dashed hint that expands on click
+
+## Floating Note Window
+
+Configure the floating popup's edge position (left/right) and width (220–800px). See [[Floating Note Window]].
 
 ## Tag Editor
 
@@ -4123,7 +4679,10 @@ Manage your tags: rename, recolor, delete, or merge. Drag one tag onto another t
 
 Manage your people list: rename, add, or remove.
 
-See also: [[Import, Export & Backup]]`},
+See also: [[Import, Export & Backup]]
+
+---
+#DailyDispatchHelp`},
 
 {id:'help_shortcuts',noteTitle:'Keyboard Shortcuts',content:`# Keyboard Shortcuts
 
@@ -4150,40 +4709,56 @@ See also: [[Import, Export & Backup]]`},
 |----------|--------|
 | **Enter** on a bullet line | Continue the bullet |
 | **Enter** on empty bullet | Exit bullet mode |
+| **Enter** on a numbered line | Continue the numbering (supports \`1.\` and \`1)\`) |
+| **Enter** on a \`[ ]\` line | Continue with a fresh \`[ ]\` |
+| **Enter** on an empty \`[ ]\` | Clear the line |
 | **Enter** on a \`> \` line | Continue blockquote |
 | **Cmd+Z** | Undo |
 | **Cmd+Shift+Z** | Redo |
-| **Tab/Enter** | Accept autocomplete |
+| **Tab/Enter** | Accept autocomplete / slash command |
 
-## Autocomplete Triggers
+## Autocomplete & Command Triggers
 
 | Trigger | What it does |
 |---------|-------------|
 | \`#\` | Tag autocomplete |
 | \`@\` | Person/mention autocomplete |
 | \`[[\` | Note cross-link autocomplete |
+| \`/\` | Slash command menu (headings, list, code, table, etc.) |
 
-See also: [[Welcome to DailyDispatch]], [[Notes & Markdown Editor]]`}
+## Section Setup
+
+| Shortcut | Action |
+|----------|--------|
+| **Enter** (in setup card) | Save / Create section |
+| **Escape** (in setup card) | Cancel — discards a brand-new section |
+
+See also: [[Welcome to DailyDispatch]], [[Notes & Markdown Editor]], [[Slash Commands]]
+
+---
+#DailyDispatchHelp`}
 ];
 
 function ensureHelpNotes(){
   let changed=false;
   HELP_NOTES.forEach(h=>{
     const existing=db.entries.find(e=>e.id===h.id);
+    const tags=['DailyDispatchHelp'];
     if(!existing){
       db.entries.push({
-        id:h.id, content:h.content, tags:[], mentions:[],
+        id:h.id, content:h.content, tags, mentions:[],
         date:'2026-01-01', ts:new Date('2026-01-01T00:01:00').getTime(),
         isNote:true, noteTitle:h.noteTitle, contextId:null, isHelp:true
       });
       changed=true;
-    } else if(existing.content!==h.content||existing.noteTitle!==h.noteTitle){
+    } else if(existing.content!==h.content||existing.noteTitle!==h.noteTitle||!(existing.tags||[]).includes('DailyDispatchHelp')){
       // Update content if it changed (e.g. after app update)
-      existing.content=h.content;existing.noteTitle=h.noteTitle;existing.tags=[];existing.isHelp=true;
+      existing.content=h.content;existing.noteTitle=h.noteTitle;existing.tags=tags;existing.isHelp=true;
       changed=true;
     }
   });
   if(changed)save();
+  ensureHelpSection();
 }
 
 /* ═══════════ INIT ═══════════ */
@@ -4319,7 +4894,7 @@ async function init(){
   if(!db.people)db.people=[];
   ensureHelpNotes();
   if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
-  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderHelpList();renderAllSections();
+  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderAllSections();
   // Cross-window sync via BroadcastChannel — used while floating window is alive
   try{
     window._ddBC=new BroadcastChannel('dailydispatch');

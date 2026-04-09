@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Section Edit — UX proposals</title>
+<style>
+  :root {
+    --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+    --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+    --text:#37352f; --text2:#787774; --text3:#9b9a97;
+    --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+    --danger:#e16259; --blue:#5b9bd5;
+    --radius-sm:4px; --radius-md:6px;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; font-family:var(--sans); font-size:13px; color:var(--text);
+    background:var(--bg); padding:40px 24px; -webkit-font-smoothing:antialiased;
+  }
+  h1 { font-size:20px; font-weight:700; margin:0 0 6px; }
+  .sub { color:var(--text2); margin:0 0 32px; font-size:13px; }
+  .proposals { display:grid; grid-template-columns:repeat(3, 340px); gap:32px; justify-content:center; }
+  .proposal-col { }
+  .proposal-hdr {
+    font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--text3);
+    font-weight:600; margin-bottom:10px;
+  }
+  .proposal-title {
+    font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px;
+  }
+  .proposal-desc {
+    font-size:12px; color:var(--text2); margin-bottom:14px; line-height:1.5;
+  }
+
+  /* ── Shared section card base ── */
+  .rs-panel {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-md); overflow:hidden;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+  }
+  .rs-panel + .rs-panel { margin-top:14px; }
+  .section-label {
+    font-size:10px; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--text3); font-weight:600; margin:0 4px 10px;
+  }
+
+  /* ══════════════════════════════════════════════════════════════ */
+  /* PROPOSAL A — Guided Setup Card                                  */
+  /* ══════════════════════════════════════════════════════════════ */
+  .pA .rs-panel { padding:0; }
+  .pA-new {
+    background:linear-gradient(180deg, rgba(203,145,47,0.05), transparent 100%);
+    border:1px dashed var(--accent); border-radius:var(--radius-md);
+    padding:18px 18px 14px;
+  }
+  .pA-new-hdr {
+    display:flex; align-items:center; gap:8px; margin-bottom:14px;
+  }
+  .pA-new-badge {
+    background:var(--accent); color:#fff; font-size:9px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.5px; padding:2px 8px;
+    border-radius:10px;
+  }
+  .pA-new-title { font-size:14px; font-weight:600; color:var(--text); }
+  .pA-field { margin-bottom:12px; }
+  .pA-field label {
+    display:block; font-size:11px; font-weight:600; color:var(--text2);
+    margin-bottom:4px;
+  }
+  .pA-field input {
+    width:100%; padding:8px 10px; font-size:13px; font-family:var(--sans);
+    border:1px solid var(--border); border-radius:var(--radius-sm);
+    background:var(--surface); color:var(--text); outline:none;
+    transition:border-color 0.15s, box-shadow 0.15s;
+  }
+  .pA-field input:focus {
+    border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-light);
+  }
+  .pA-field .hint {
+    font-size:10px; color:var(--text3); margin-top:3px;
+  }
+  .pA-examples {
+    display:flex; gap:5px; flex-wrap:wrap; margin-top:4px;
+  }
+  .pA-chip {
+    font-size:10px; font-family:var(--mono); color:var(--text2);
+    background:var(--sidebar-bg); border:1px solid var(--border);
+    padding:2px 7px; border-radius:10px; cursor:pointer;
+  }
+  .pA-chip:hover { background:var(--accent-light); color:var(--accent); border-color:var(--accent); }
+  .pA-actions {
+    display:flex; gap:8px; margin-top:10px;
+  }
+  .pA-btn {
+    flex:1; padding:8px 14px; border-radius:var(--radius-sm); font-size:12px;
+    font-weight:600; cursor:pointer; border:1px solid var(--border);
+    background:var(--surface); color:var(--text);
+  }
+  .pA-btn.primary {
+    background:var(--accent); color:#fff; border-color:var(--accent);
+  }
+  .pA-btn.primary:hover { background:#b37c22; }
+
+  /* Collapsed (saved) state */
+  .pA-saved {
+    padding:10px 14px;
+  }
+  .pA-saved-row {
+    display:flex; align-items:center; gap:8px;
+  }
+  .pA-saved-drag { color:var(--text3); font-size:11px; cursor:grab; }
+  .pA-saved-name {
+    flex:1; font-size:13px; font-weight:600; color:var(--text);
+  }
+  .pA-saved-edit {
+    color:var(--text3); background:none; border:none; cursor:pointer;
+    padding:4px 6px; border-radius:3px; font-size:12px;
+  }
+  .pA-saved-edit:hover { color:var(--accent); background:var(--accent-light); }
+  .pA-saved-query {
+    display:flex; align-items:center; gap:6px; margin-top:4px;
+    font-size:10px; font-family:var(--mono); color:var(--text3);
+  }
+  .pA-query-icon { color:var(--text3); font-size:10px; }
+  .pA-saved-results {
+    font-size:11px; color:var(--text3); margin-top:8px; padding-top:8px;
+    border-top:1px solid var(--border-light);
+  }
+  .pA-saved-results strong { color:var(--text2); }
+
+  /* ══════════════════════════════════════════════════════════════ */
+  /* PROPOSAL B — Always-Visible Labels                              */
+  /* ══════════════════════════════════════════════════════════════ */
+  .pB .rs-panel { padding:12px 14px; }
+  .pB-row { display:flex; align-items:center; gap:6px; }
+  .pB-name-wrap {
+    flex:1; display:flex; align-items:center; gap:6px;
+    border-bottom:1.5px solid transparent; padding:2px 0;
+    transition:border-color 0.15s;
+  }
+  .pB-name-wrap:hover { border-bottom-color:var(--border); }
+  .pB-name-wrap:focus-within { border-bottom-color:var(--accent); }
+  .pB-name {
+    flex:1; font-size:14px; font-weight:600; color:var(--text);
+    background:none; border:none; outline:none; padding:0; font-family:var(--sans);
+  }
+  .pB-name::placeholder { color:var(--text3); font-style:italic; font-weight:500; }
+  .pB-pencil {
+    color:var(--text3); font-size:10px; opacity:0; transition:opacity 0.15s;
+  }
+  .pB-name-wrap:hover .pB-pencil { opacity:1; }
+  .pB-close {
+    background:none; border:none; color:var(--text3); cursor:pointer;
+    font-size:16px; line-height:1; padding:2px 6px;
+  }
+  .pB-close:hover { color:var(--danger); }
+
+  .pB-filter {
+    margin-top:10px; padding:8px 10px;
+    background:var(--sidebar-bg); border-radius:var(--radius-sm);
+    border:1px solid var(--border-light);
+  }
+  .pB-filter-label {
+    display:flex; align-items:center; gap:6px; margin-bottom:6px;
+  }
+  .pB-filter-label-txt {
+    font-size:10px; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--text3); font-weight:600;
+  }
+  .pB-filter-help {
+    margin-left:auto; color:var(--text3); font-size:10px; cursor:help;
+    width:14px; height:14px; border-radius:50%; border:1px solid var(--border-strong);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pB-filter input {
+    width:100%; padding:6px 8px; font-size:12px; font-family:var(--mono);
+    border:1px solid var(--border); border-radius:3px;
+    background:var(--surface); color:var(--text); outline:none;
+  }
+  .pB-filter input:focus {
+    border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-light);
+  }
+  .pB-filter input::placeholder { color:var(--text3); font-style:italic; }
+  .pB-filter-examples {
+    display:flex; gap:4px; flex-wrap:wrap; margin-top:6px;
+  }
+  .pB-ex-chip {
+    font-size:10px; font-family:var(--mono); color:var(--text2);
+    background:var(--surface); border:1px solid var(--border);
+    padding:1px 6px; border-radius:10px; cursor:pointer;
+  }
+  .pB-ex-chip:hover { color:var(--accent); border-color:var(--accent); }
+
+  .pB-results {
+    margin-top:10px; padding-top:8px; border-top:1px solid var(--border-light);
+    font-size:11px; color:var(--text3);
+  }
+  .pB-entry {
+    padding:5px 0; display:flex; gap:8px; font-size:11px;
+  }
+  .pB-entry-time { color:var(--text3); font-family:var(--mono); font-size:10px; min-width:50px; }
+  .pB-entry-txt { color:var(--text2); }
+
+  /* ══════════════════════════════════════════════════════════════ */
+  /* PROPOSAL C — Modal Dialog                                       */
+  /* ══════════════════════════════════════════════════════════════ */
+  .pC .rs-panel {
+    padding:10px 12px; position:relative;
+  }
+  .pC-head {
+    display:flex; align-items:center; gap:8px;
+  }
+  .pC-drag { color:var(--text3); font-size:11px; cursor:grab; }
+  .pC-name {
+    flex:1; font-size:13px; font-weight:600; color:var(--text);
+  }
+  .pC-gear {
+    background:none; border:none; color:var(--text3); cursor:pointer;
+    padding:3px 6px; font-size:12px; border-radius:3px;
+  }
+  .pC-gear:hover { color:var(--accent); background:var(--accent-light); }
+  .pC-close {
+    background:none; border:none; color:var(--text3); cursor:pointer;
+    font-size:14px; line-height:1; padding:3px 5px;
+  }
+  .pC-close:hover { color:var(--danger); }
+  .pC-meta {
+    display:flex; align-items:center; gap:8px; margin-top:5px;
+    padding-left:18px;
+    font-size:10px; color:var(--text3);
+  }
+  .pC-query-pill {
+    font-family:var(--mono); font-size:10px; color:var(--text2);
+    background:var(--sidebar-bg); padding:1px 6px; border-radius:3px;
+    border:1px solid var(--border-light);
+  }
+  .pC-count {
+    background:var(--accent); color:#fff; padding:1px 7px; border-radius:10px;
+    font-size:9px; font-weight:700;
+  }
+  .pC-results {
+    margin-top:10px; padding-top:8px; border-top:1px solid var(--border-light);
+  }
+
+  /* Modal overlay demo (below the section) */
+  .pC-modal-shell {
+    margin-top:18px; padding:14px; background:rgba(0,0,0,0.04);
+    border-radius:var(--radius-md);
+  }
+  .pC-modal-caption {
+    font-size:10px; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--text3); font-weight:600; margin-bottom:8px; text-align:center;
+  }
+  .pC-modal {
+    background:var(--surface); border:1px solid var(--border-strong);
+    border-radius:var(--radius-md); padding:18px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12);
+  }
+  .pC-modal-hdr {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .pC-modal-title { font-size:14px; font-weight:700; color:var(--text); }
+  .pC-modal-x {
+    background:none; border:none; color:var(--text3); cursor:pointer;
+    font-size:16px; padding:2px 6px;
+  }
+  .pC-mf { margin-bottom:12px; }
+  .pC-mf label {
+    display:block; font-size:11px; font-weight:600; color:var(--text2);
+    margin-bottom:4px;
+  }
+  .pC-mf input {
+    width:100%; padding:7px 9px; font-size:12px;
+    border:1px solid var(--border); border-radius:var(--radius-sm);
+    background:var(--surface); color:var(--text); outline:none;
+  }
+  .pC-mf input:focus { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-light); }
+  .pC-mf .hint {
+    font-size:10px; color:var(--text3); margin-top:3px;
+  }
+  .pC-mf-query { font-family:var(--mono); }
+  .pC-modal-actions {
+    display:flex; gap:8px; margin-top:14px; padding-top:12px;
+    border-top:1px solid var(--border-light);
+  }
+  .pC-modal-del {
+    background:none; border:1px solid var(--border); color:var(--danger);
+    padding:7px 12px; border-radius:var(--radius-sm); cursor:pointer; font-size:11px;
+    margin-right:auto;
+  }
+  .pC-modal-cancel {
+    background:var(--surface); border:1px solid var(--border); color:var(--text2);
+    padding:7px 14px; border-radius:var(--radius-sm); cursor:pointer; font-size:12px;
+  }
+  .pC-modal-save {
+    background:var(--accent); border:1px solid var(--accent); color:#fff;
+    padding:7px 18px; border-radius:var(--radius-sm); cursor:pointer; font-size:12px; font-weight:600;
+  }
+
+  /* Tradeoff footer */
+  .tradeoffs {
+    max-width:1080px; margin:48px auto 0; padding:20px 24px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-md);
+  }
+  .tradeoffs h2 { font-size:13px; margin:0 0 12px; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; }
+  .tradeoffs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .tr-col h3 { font-size:13px; margin:0 0 6px; color:var(--text); }
+  .tr-col .pro, .tr-col .con { font-size:11px; color:var(--text2); margin:3px 0; padding-left:14px; position:relative; }
+  .tr-col .pro::before { content:'✓'; position:absolute; left:0; color:#4daa57; }
+  .tr-col .con::before { content:'✗'; position:absolute; left:0; color:var(--danger); }
+</style>
+</head>
+<body>
+
+<h1>Section Edit — UX Proposals</h1>
+<p class="sub">Three approaches to making section creation &amp; editing discoverable. All shown in Warm Notion theme tokens.</p>
+
+<div class="proposals">
+
+  <!-- ══════════ PROPOSAL A ══════════ -->
+  <div class="proposal-col pA">
+    <div class="proposal-hdr">Proposal A</div>
+    <div class="proposal-title">Guided Setup Card</div>
+    <div class="proposal-desc">
+      New sections open in a distinct <strong>setup mode</strong> with labeled
+      fields, example chips, and a primary <em>Create</em> button. Collapses to
+      a compact read-only view once saved. Hover reveals an edit pencil.
+    </div>
+
+    <!-- New section state -->
+    <div class="section-label">Creating a new section</div>
+    <div class="rs-panel">
+      <div class="pA-new">
+        <div class="pA-new-hdr">
+          <span class="pA-new-badge">New</span>
+          <span class="pA-new-title">Set up section</span>
+        </div>
+
+        <div class="pA-field">
+          <label>Section name</label>
+          <input type="text" placeholder="e.g. Meetings, Action items, Ideas" autofocus>
+          <div class="hint">Shown as the header in the sidebar.</div>
+        </div>
+
+        <div class="pA-field">
+          <label>Filter</label>
+          <input type="text" placeholder="#meeting -draft">
+          <div class="hint"><code style="font-family:var(--mono)">#tag</code> <code style="font-family:var(--mono)">@person</code> <code style="font-family:var(--mono)">word</code> <code style="font-family:var(--mono)">-exclude</code></div>
+          <div class="pA-examples">
+            <span class="pA-chip">#meeting</span>
+            <span class="pA-chip">#idea -draft</span>
+            <span class="pA-chip">@jane #action</span>
+          </div>
+        </div>
+
+        <div class="pA-actions">
+          <button class="pA-btn">Cancel</button>
+          <button class="pA-btn primary">Create section</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Saved state -->
+    <div class="section-label" style="margin-top:18px">After saving</div>
+    <div class="rs-panel">
+      <div class="pA-saved">
+        <div class="pA-saved-row">
+          <span class="pA-saved-drag">☰</span>
+          <span class="pA-saved-name">Meetings</span>
+          <button class="pA-saved-edit" title="Edit">✎</button>
+          <button class="pA-saved-edit" title="Remove">×</button>
+        </div>
+        <div class="pA-saved-query">
+          <span class="pA-query-icon">🔍</span>
+          <span>#meeting -draft</span>
+        </div>
+        <div class="pA-saved-results">
+          <strong>12 matches</strong> · latest 10:35 PM
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PROPOSAL B ══════════ -->
+  <div class="proposal-col pB">
+    <div class="proposal-hdr">Proposal B</div>
+    <div class="proposal-title">Always-Visible Labels</div>
+    <div class="proposal-desc">
+      Zero hidden state. Name input sits inline with an editable underline
+      on hover/focus. Filter is always visible in a dedicated sub-panel with
+      a clear label and example chips beneath. Simplest to ship.
+    </div>
+
+    <!-- New / empty -->
+    <div class="section-label">Empty / new</div>
+    <div class="rs-panel">
+      <div class="pB-row">
+        <span class="pA-saved-drag">☰</span>
+        <div class="pB-name-wrap">
+          <input class="pB-name" placeholder="Name this section…">
+          <span class="pB-pencil">✎</span>
+        </div>
+        <button class="pB-close">×</button>
+      </div>
+      <div class="pB-filter">
+        <div class="pB-filter-label">
+          <span class="pB-filter-label-txt">Filter</span>
+          <span class="pB-filter-help" title="Supports #tag @person word -exclude">?</span>
+        </div>
+        <input placeholder="#tag  @person  keyword  -exclude">
+        <div class="pB-filter-examples">
+          <span class="pB-ex-chip">#meeting</span>
+          <span class="pB-ex-chip">@jane</span>
+          <span class="pB-ex-chip">#idea -draft</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Populated -->
+    <div class="section-label" style="margin-top:18px">Populated</div>
+    <div class="rs-panel">
+      <div class="pB-row">
+        <span class="pA-saved-drag">☰</span>
+        <div class="pB-name-wrap">
+          <input class="pB-name" value="Meetings">
+          <span class="pB-pencil">✎</span>
+        </div>
+        <button class="pB-close">×</button>
+      </div>
+      <div class="pB-filter">
+        <div class="pB-filter-label">
+          <span class="pB-filter-label-txt">Filter</span>
+          <span class="pB-filter-help" title="Supports #tag @person word -exclude">?</span>
+        </div>
+        <input value="#meeting -draft">
+      </div>
+      <div class="pB-results">
+        <div class="pB-entry"><span class="pB-entry-time">10:35 PM</span><span class="pB-entry-txt"># partner #meeting # pa...</span></div>
+        <div class="pB-entry"><span class="pB-entry-time">2:14 PM</span><span class="pB-entry-txt">#meeting prep for Q1 review</span></div>
+        <div class="pB-entry"><span class="pB-entry-time">Mar 3</span><span class="pB-entry-txt">#meeting with @jane</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PROPOSAL C ══════════ -->
+  <div class="proposal-col pC">
+    <div class="proposal-hdr">Proposal C</div>
+    <div class="proposal-title">Compact Card + Modal</div>
+    <div class="proposal-desc">
+      Section card stays minimal — just a name, query pill, and result count.
+      A gear icon (or clicking the name) opens a focused modal with proper
+      form fields and a <em>Delete</em>. Best for long-term power users.
+    </div>
+
+    <!-- Compact card -->
+    <div class="section-label">Compact card (default)</div>
+    <div class="rs-panel">
+      <div class="pC-head">
+        <span class="pC-drag">☰</span>
+        <span class="pC-name">Meetings</span>
+        <button class="pC-gear" title="Edit">⚙</button>
+        <button class="pC-close">×</button>
+      </div>
+      <div class="pC-meta">
+        <span class="pC-query-pill">#meeting -draft</span>
+        <span class="pC-count">12</span>
+      </div>
+      <div class="pC-results">
+        <div class="pB-entry"><span class="pB-entry-time">10:35 PM</span><span class="pB-entry-txt"># partner #meeting # pa...</span></div>
+        <div class="pB-entry"><span class="pB-entry-time">2:14 PM</span><span class="pB-entry-txt">#meeting prep for Q1 review</span></div>
+      </div>
+    </div>
+
+    <!-- Modal that opens -->
+    <div class="pC-modal-shell">
+      <div class="pC-modal-caption">Click the gear → modal opens</div>
+      <div class="pC-modal">
+        <div class="pC-modal-hdr">
+          <div class="pC-modal-title">Edit section</div>
+          <button class="pC-modal-x">×</button>
+        </div>
+        <div class="pC-mf">
+          <label>Name</label>
+          <input value="Meetings">
+        </div>
+        <div class="pC-mf">
+          <label>Filter query</label>
+          <input class="pC-mf-query" value="#meeting -draft">
+          <div class="hint"><code style="font-family:var(--mono)">#tag  @person  word  -exclude</code> &nbsp;·&nbsp; <code style="font-family:var(--mono)">OR</code> between terms &nbsp;·&nbsp; <code style="font-family:var(--mono)">"exact phrase"</code></div>
+        </div>
+        <div class="pC-modal-actions">
+          <button class="pC-modal-del">Delete</button>
+          <button class="pC-modal-cancel">Cancel</button>
+          <button class="pC-modal-save">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Tradeoffs -->
+<div class="tradeoffs">
+  <h2>Tradeoffs</h2>
+  <div class="tradeoffs-grid">
+    <div class="tr-col">
+      <h3>A · Guided Setup</h3>
+      <div class="pro">Strongest first-run clarity — impossible to miss the name/filter fields</div>
+      <div class="pro">Chips teach query syntax by example, clickable to insert</div>
+      <div class="pro">Visually distinguishes new vs. saved</div>
+      <div class="con">Two visual modes = more code / CSS</div>
+      <div class="con">Experts doing bulk edits have to enter edit mode each time</div>
+    </div>
+    <div class="tr-col">
+      <h3>B · Always-Visible</h3>
+      <div class="pro">Zero hidden state, everything is already on screen</div>
+      <div class="pro">Smallest code change from today's design</div>
+      <div class="pro">Edit &amp; preview are unified — no mode switching</div>
+      <div class="con">Takes more vertical space per section</div>
+      <div class="con">Empty-state still looks "ready" — slightly less push to fill it in</div>
+    </div>
+    <div class="tr-col">
+      <h3>C · Card + Modal</h3>
+      <div class="pro">Cleanest sidebar when you have many sections</div>
+      <div class="pro">Modal gives room for help text, examples, delete</div>
+      <div class="pro">Separates "use" from "configure" cleanly</div>
+      <div class="con">Modals are friction for quick tweaks</div>
+      <div class="con">First-run discoverability depends on finding the gear icon</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
