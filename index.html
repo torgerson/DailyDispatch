@@ -8251,11 +8251,18 @@ function submitTaskAdd(){
   if(!inp||!inp.value.trim())return;
   const priEl=document.getElementById('task-add-pri');
   const dueInp=document.getElementById('task-add-due-input');
-  createTask({
+  const hasDue=dueInp&&dueInp.value;
+  const task=createTask({
     title:inp.value.trim(),
     priority:priEl?priEl.dataset.val:'L',
-    due_date:dueInp&&dueInp.value?dueInp.value:null
+    due_date:hasDue?dueInp.value:null
   });
+  // Tasks added from Today view are starred for today (unless user set a
+  // specific due date, in which case the date speaks for itself).
+  if(task&&activeTab==='today'&&!hasDue){
+    task.today=true;
+    save('tasks');
+  }
   collapseTaskAdd();
   renderActiveView();
   renderSidebar();
