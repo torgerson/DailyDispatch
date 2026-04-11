@@ -1544,18 +1544,20 @@
   .task-add-options {
     display: flex; align-items: center; gap: 8px;
   }
-  .task-add-pri { display: flex; gap: 3px; }
-  .tap-dot {
-    width: 22px; height: 22px; border-radius: 50%; font-size: 9px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; border: 2px solid transparent; transition: all 0.12s;
-    color: #fff; user-select: none;
+  .task-add-pri { display: flex; gap: 4px; }
+  .tap-pill {
+    padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;
+    cursor: pointer; transition: all 0.12s; user-select: none;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    border: 1px solid transparent;
   }
-  .tap-dot.high { background: var(--danger); opacity: 0.35; }
-  .tap-dot.med { background: var(--amber); opacity: 0.35; }
-  .tap-dot.low { background: var(--border-strong); opacity: 0.35; }
-  .tap-dot.active { opacity: 1; border-color: var(--text); transform: scale(1.15); }
-  .tap-dot:hover { opacity: 0.8; }
+  .tap-pill.high { background: rgba(220,38,38,0.1); color: var(--danger); border-color: rgba(220,38,38,0.2); }
+  .tap-pill.med { background: rgba(217,119,6,0.1); color: var(--amber); border-color: rgba(217,119,6,0.2); }
+  .tap-pill.low { background: rgba(107,114,128,0.1); color: var(--text3); border-color: rgba(107,114,128,0.2); }
+  .tap-pill.active.high { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .tap-pill.active.med { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .tap-pill.active.low { background: var(--border-strong); color: #fff; border-color: var(--border-strong); }
+  .tap-pill:hover { filter: brightness(1.1); }
   .task-add-due-btn {
     display: flex; align-items: center; gap: 5px;
     padding: 4px 10px; border-radius: 12px; font-size: 11px;
@@ -3085,9 +3087,9 @@ function renderToday(area){
       <input id="task-add-title" class="task-add-title" type="text" placeholder="What needs to be done?" onkeydown="if(event.key==='Enter'){event.preventDefault();submitTaskAdd();}if(event.key==='Escape'){collapseTaskAdd();}">
       <div class="task-add-options">
         <div class="task-add-pri" id="task-add-pri" data-val="L">
-          <span class="tap-dot high" onclick="setTaskAddPri('H')" title="High">H</span>
-          <span class="tap-dot med" onclick="setTaskAddPri('M')" title="Medium">M</span>
-          <span class="tap-dot low active" onclick="setTaskAddPri('L')" title="Low">L</span>
+          <span class="tap-pill high" onclick="setTaskAddPri('H')">High</span>
+          <span class="tap-pill med" onclick="setTaskAddPri('M')">Medium</span>
+          <span class="tap-pill low active" onclick="setTaskAddPri('L')">Low</span>
         </div>
         <button class="task-add-due-btn" id="task-add-due-btn" onclick="toggleTaskAddDate()">
           <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="12" rx="2"/><line x1="3" y1="9" x2="17" y2="9"/><line x1="7" y1="3" x2="7" y2="6"/><line x1="13" y1="3" x2="13" y2="6"/></svg>
@@ -8228,8 +8230,9 @@ function setTaskAddPri(p){
   const wrap=document.getElementById('task-add-pri');
   if(!wrap)return;
   wrap.dataset.val=p;
-  wrap.querySelectorAll('.tap-dot').forEach(d=>{
-    d.classList.toggle('active',d.textContent===p);
+  const map={H:'High',M:'Medium',L:'Low'};
+  wrap.querySelectorAll('.tap-pill').forEach(d=>{
+    d.classList.toggle('active',d.textContent===map[p]);
   });
 }
 function toggleTaskAddDate(){
