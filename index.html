@@ -1462,6 +1462,12 @@
   .help-table td { padding: 5px 10px; border-bottom: 1px solid var(--border-light); color: var(--text); }
 
   /* Summary banner */
+  /* Today view — centered content wrapper */
+  .today-wrap { max-width: 740px; margin: 0 auto; padding: 0 4px 40px; width: 100%; }
+
+  /* Tasks view — fill height so Kanban board doesn't collapse */
+  #content-area.tasks-view-active { overflow-y: hidden; }
+
   /* Today view — tasks due section */
   .today-tasks-hdr {
     font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -1575,14 +1581,16 @@
   /* ═══ Kanban board ═══ */
   .kanban-board {
     display: flex; gap: 12px; padding: 14px 16px;
-    overflow-x: auto; overflow-y: hidden; align-items: flex-start;
-    flex: 1;
+    overflow-x: auto; overflow-y: hidden;
+    align-items: stretch; /* columns fill height */
+    flex: 1; min-height: 0; /* critical for nested flex overflow */
   }
   .kanban-col {
     min-width: 240px; max-width: 280px; flex: 1;
     background: var(--sidebar-bg); border-radius: var(--radius-lg);
-    display: flex; flex-direction: column; max-height: calc(100vh - 140px);
+    display: flex; flex-direction: column;
     border: 1px solid var(--border-light);
+    overflow: hidden;
   }
   .kanban-col-done { min-width: 220px; max-width: 240px; flex: 0 0 auto; opacity: 0.85; }
   .kanban-col-done:hover { opacity: 1; }
@@ -2595,6 +2603,9 @@ function renderActiveView(){
   if(activeTab!=='today'){
     const t=document.getElementById('capture-top');if(t){t.classList.remove('visible');t.innerHTML='';}
   }
+  // Toggle overflow mode: Kanban needs the content area to NOT scroll
+  // (the board fills the viewport), everything else scrolls normally.
+  a.classList.toggle('tasks-view-active',activeTab==='tasks'&&tasksViewMode==='kanban');
   if(activeTab==='today')renderToday(a);
   else if(activeTab==='home')renderHome(a);
   else if(activeTab==='tasks')renderTasksView(a);
@@ -2746,7 +2757,7 @@ function renderKanbanCard(t,today){
     :t.due_date===today?'today'
     :fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
   const dueClass=!t.due_date?'':(t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':'future');
-  return`<div class="kanban-card${isDone?' done':''} pri-${pri}" draggable="true" data-task="${t.id}" ondragstart="kanbanCardDragStart(event,'${t.id}')" ondragend="kanbanCardDragEnd(event)" onclick="openTaskDetail('${t.id}')">
+  return`<div class="kanban-card${isDone?' done':''} pri-${pri}" draggable="true" data-task="${t.id}" ondragstart="kanbanCardDragStart(event,'${t.id}')" ondragend="kanbanCardDragEnd(event)" onmousedown="_kcMD=event.clientX+event.clientY" onclick="if(Math.abs((event.clientX+event.clientY)-(_kcMD||0))<5)openTaskDetail('${t.id}')">
     <div class="kc-top">
       <div class="kc-chk${isDone?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!isDone});renderActiveView();renderSidebar()"></div>
       <span class="kc-title${isDone?' strikethrough':''}">${escH(t.title)}</span>
@@ -2757,6 +2768,7 @@ function renderKanbanCard(t,today){
 
 /* ── Kanban drag-and-drop: cards ── */
 let _kanbanDragTaskId=null;
+let _kcMD=0; // mousedown position for click vs drag detection
 function kanbanCardDragStart(e,taskId){
   _kanbanDragTaskId=taskId;
   e.dataTransfer.effectAllowed='move';
@@ -2948,7 +2960,7 @@ function renderToday(area){
   const captureHTML=`<div id="capture" onclick="if(event.target===this||event.target.id==='capture-bar'||event.target.classList.contains('spacer')){const i=document.getElementById('capture-input');if(i)i.focus();}"><textarea id="capture-input" placeholder="What's happening? (#tags supported)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)"></textarea><div id="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button id="submit-btn" onclick="submitEntry()">Add</button></div></div>`;
   const topEl=document.getElementById('capture-top');
   if(topEl){topEl.classList.add('visible');topEl.innerHTML=captureHTML;}
-  let h='';
+  let h='<div class="today-wrap">';
 
   // ── Tasks due today + overdue ──
   const viewingToday=selectedDate===todayStr();
@@ -3033,6 +3045,7 @@ function renderToday(area){
   if(hasOlder||hasAny){
     h+=`<div id="feed-scroll-sentinel" style="height:1px"></div>`;
   }
+  h+='</div>'; // close .today-wrap
   area.innerHTML=h;
   setupCaptureImageHandlers();
   setTimeout(setupFeedScrollObserver,50);
