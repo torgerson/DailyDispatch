@@ -1507,6 +1507,19 @@
   .tt-col { font-size: 9px; color: var(--text3); padding: 2px 6px; border-radius: 3px; background: var(--sidebar-bg); }
   .tt-note { font-size: 10px; color: var(--blue); cursor: pointer; }
   .tt-note:hover { text-decoration: underline; }
+  /* Today star — shared across Today view, Kanban, list, and modal */
+  .tt-star, .kc-star, .tl-star, .tm-star {
+    cursor: pointer; font-size: 13px; color: var(--border-strong);
+    transition: all 0.12s; flex-shrink: 0; user-select: none;
+  }
+  .tt-star:hover, .kc-star:hover, .tl-star:hover, .tm-star:hover { color: var(--amber); }
+  .tt-star.active, .kc-star.active, .tl-star.active, .tm-star.active { color: var(--amber); }
+  .kc-star { font-size: 11px; opacity: 0; margin-left: auto; }
+  .kanban-card:hover .kc-star { opacity: 1; }
+  .kc-star.active { opacity: 1; }
+  .tl-star { font-size: 12px; }
+  .tm-star { font-size: 18px; }
+  .today-task-row.starred { border-left: 3px solid var(--amber); }
   /* Quick add task */
   .today-task-add {
     display: flex; gap: 6px; align-items: center;
@@ -2761,6 +2774,7 @@ function renderKanbanCard(t,today){
     <div class="kc-top">
       <div class="kc-chk${isDone?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!isDone});renderActiveView();renderSidebar()"></div>
       <span class="kc-title${isDone?' strikethrough':''}">${escH(t.title)}</span>
+      <span class="kc-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Add to Today'}">&#9733;</span>
     </div>
     ${t.due_date||t.note_id?`<div class="kc-meta">${dueLabel?`<span class="kc-due ${dueClass}">${dueLabel}</span>`:''}${t.note_id?`<span class="kc-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:''}</div>`:''}
   </div>`;
@@ -2910,6 +2924,7 @@ function renderTaskList(tasks,cols){
       const dueClass=!t.due_date?'none':(t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':'future');
       h+=`<div class="tl-row${isDone?' done':''}" onclick="openTaskDetail('${t.id}')">
         <div class="tl-chk${isDone?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!isDone});renderActiveView();renderSidebar()"></div>
+        <span class="tl-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Star for Today'}">&#9733;</span>
         <span class="tl-pri-dot ${pri}"></span>
         <span class="tl-title${isDone?' strikethrough':''}">${escH(t.title)}</span>
         ${dueLabel?`<span class="tl-due ${dueClass}">${dueLabel}</span>`:''}
@@ -2962,33 +2977,44 @@ function renderToday(area){
   if(topEl){topEl.classList.add('visible');topEl.innerHTML=captureHTML;}
   let h='<div class="today-wrap">';
 
-  // ── Tasks due today + overdue ──
+  // ── Tasks for today: starred + due today + overdue ──
   const viewingToday=selectedDate===todayStr();
   const today=todayStr();
-  const overdueTasks=getTasksOverdue(today).sort((a,b)=>a.due_date.localeCompare(b.due_date));
-  const dueTodayTasks=getTasksDueOn(today);
-  const futureDateTasks=!viewingToday&&selectedDate>today?getTasksDueOn(selectedDate):[];
-  const allDueTasks=viewingToday?[...overdueTasks,...dueTodayTasks]:futureDateTasks;
-  if(allDueTasks.length){
-    const overdueCount=overdueTasks.length;
+  const todayTasks=viewingToday?getTasksForToday():
+    (selectedDate>today?getTasksDueOn(selectedDate):[]);
+  // Sort: overdue first, then due today, then starred-only
+  todayTasks.sort((a,b)=>{
+    const aOD=a.due_date&&a.due_date<today?0:a.due_date===today?1:2;
+    const bOD=b.due_date&&b.due_date<today?0:b.due_date===today?1:2;
+    if(aOD!==bOD)return aOD-bOD;
+    const pOrd={H:0,M:1,L:2};
+    return(pOrd[a.priority]||2)-(pOrd[b.priority]||2);
+  });
+  if(todayTasks.length){
+    const overdueCount=todayTasks.filter(t=>t.due_date&&t.due_date<today).length;
+    const starredCount=todayTasks.filter(t=>t.today&&!(t.due_date&&t.due_date<=today)).length;
     const label=viewingToday
-      ?`Tasks <span style="font-weight:400;color:var(--text3)">${allDueTasks.length} due${overdueCount?' · '+overdueCount+' overdue':''}</span>`
+      ?`Tasks <span style="font-weight:400;color:var(--text3)">${todayTasks.length}${overdueCount?' · '+overdueCount+' overdue':''}${starredCount?' · '+starredCount+' starred':''}</span>`
       :`Tasks due ${fmtDateLabel(selectedDate)}`;
     h+=`<div class="today-tasks-hdr">${label}</div>`;
-    allDueTasks.forEach(t=>{
-      const isOverdue=t.due_date<today;
-      const dueLabel=isOverdue?'overdue '+(()=>{const d=Math.ceil((new Date(today+'T12:00:00')-new Date(t.due_date+'T12:00:00'))/(24*3600*1000));return d+'d';})()
+    todayTasks.forEach(t=>{
+      const isOverdue=t.due_date&&t.due_date<today;
+      const dueLabel=!t.due_date?''
+        :isOverdue?'overdue '+(()=>{const d=Math.ceil((new Date(today+'T12:00:00')-new Date(t.due_date+'T12:00:00'))/(24*3600*1000));return d+'d';})()
         :t.due_date===today?'today'
         :fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
-      const dueClass=isOverdue?'overdue':t.due_date===today?'today':'future';
+      const dueClass=!t.due_date?'':(isOverdue?'overdue':t.due_date===today?'today':'future');
       const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
       const col=getColumnName(t.column_id);
       const noteLink=t.note_id?`<span class="tt-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:'';
-      h+=`<div class="today-task-row" onclick="openTaskDetail('${t.id}')">
+      const isStarredOnly=t.today&&!(t.due_date&&t.due_date<=today);
+      const starBtn=`<span class="tt-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Add to Today'}">&#9733;</span>`;
+      h+=`<div class="today-task-row${isStarredOnly?' starred':''}" onclick="openTaskDetail('${t.id}')">
         <div class="tt-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',!${t.completed});renderActiveView();renderSidebar()"></div>
         <div class="tt-stripe ${pri}"></div>
+        ${starBtn}
         <span class="tt-title${t.completed?' done':''}">${escH(t.title)}</span>
-        <span class="tt-due ${dueClass}">${dueLabel}</span>
+        ${dueLabel?`<span class="tt-due ${dueClass}">${dueLabel}</span>`:''}
         ${col?`<span class="tt-col">${escH(col)}</span>`:''}
         ${noteLink}
       </div>`;
@@ -6769,8 +6795,23 @@ function closeSettings(){
 }
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
-const APP_VERSION='2.3.0';
+const APP_VERSION='2.4.0';
 const CHANGELOG=[
+  {
+    version:'2.4.0',
+    date:'2026-04-11',
+    title:'Today star',
+    changes:[
+      'New **Today star** (★) on tasks — click to mark a task for today without changing its due date',
+      'Starred tasks appear on the **Today view** alongside overdue and due-today tasks',
+      'Star is visible on **Kanban cards** (appears on hover, always visible when active), **list view rows**, **task detail modal**, and **Today view** task rows',
+      'Un-starring removes the task from Today (unless it is due today or overdue)',
+      'Today view sorts: overdue first, then due today, then starred-only; within each group sorted by priority',
+      'Starred-only tasks get an amber left border on Today to visually distinguish from due/overdue tasks',
+      '`getTasksForToday()` combines starred + due + overdue in one query',
+      'Task data model: new `today` boolean field (defaults false)'
+    ]
+  },
   {
     version:'2.3.0',
     date:'2026-04-11',
@@ -8085,6 +8126,7 @@ function openTaskDetail(taskId){
   body.innerHTML=`
     <div class="tm-header">
       <div class="tm-chk${t.completed?' checked':''}" onclick="completeTask('${t.id}',${!t.completed});openTaskDetail('${t.id}');renderActiveView();renderSidebar()"></div>
+      <span class="tm-star${t.today?' active':''}" onclick="toggleTaskToday('${t.id}');openTaskDetail('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Star for Today'}">&#9733;</span>
       <input class="tm-title" value="${escH(t.title)}" onchange="updateTask('${t.id}',{title:this.value.trim()});renderActiveView();renderSidebar()">
       <button class="tm-close" onclick="closeTaskModal()">&times;</button>
     </div>
@@ -8148,7 +8190,8 @@ function createTask(opts){
     note_id:opts.note_id||null,
     created_at:Date.now(),
     completed_at:null,
-    order:getNextTaskOrder(colId)
+    order:getNextTaskOrder(colId),
+    today:false // starred for Today — shows on Today view regardless of due date
   };
   if(!db.tasks)db.tasks=[];
   db.tasks.push(task);
@@ -8184,6 +8227,20 @@ function completeTask(id,completed){
 function deleteTask(id){
   db.tasks=(db.tasks||[]).filter(t=>t.id!==id);
   save('tasks');
+}
+function toggleTaskToday(id){
+  const t=(db.tasks||[]).find(x=>x.id===id);
+  if(!t)return;
+  t.today=!t.today;
+  save('tasks');
+}
+function getTasksForToday(){
+  const today=todayStr();
+  // Tasks that appear on Today: starred, due today, or overdue — and not completed
+  return(db.tasks||[]).filter(t=>!t.completed&&(
+    t.today||
+    (t.due_date&&t.due_date<=today)
+  ));
 }
 function getTasksDueOn(dateStr){
   return(db.tasks||[]).filter(t=>!t.completed&&t.due_date&&t.due_date===dateStr);
