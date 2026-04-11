@@ -1462,6 +1462,67 @@
   .help-table td { padding: 5px 10px; border-bottom: 1px solid var(--border-light); color: var(--text); }
 
   /* Summary banner */
+  /* Today view — tasks due section */
+  .today-tasks-hdr {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: var(--text2);
+    padding: 12px 0 6px; margin-bottom: 2px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .today-task-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; margin-bottom: 2px;
+    background: var(--surface); border-radius: var(--radius-md);
+    border: 1px solid var(--border-light); cursor: pointer;
+    transition: all 0.1s;
+  }
+  .today-task-row:hover { border-color: var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+  .tt-chk {
+    width: 15px; height: 15px; border: 2px solid var(--border-strong); border-radius: 50%;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .tt-chk:hover { border-color: var(--green); }
+  .tt-chk.checked { background: var(--green); border-color: var(--green); }
+  .tt-chk.checked::after { content: '✓'; color: #fff; font-size: 8px; font-weight: 700; }
+  .tt-stripe { width: 3px; height: 20px; border-radius: 2px; flex-shrink: 0; }
+  .tt-stripe.high { background: var(--danger); }
+  .tt-stripe.med { background: var(--amber); }
+  .tt-stripe.low { background: var(--border-strong); }
+  .tt-title { flex: 1; font-size: 13px; font-weight: 500; }
+  .tt-title.done { text-decoration: line-through; color: var(--text3); }
+  .tt-due {
+    font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px;
+    white-space: nowrap;
+  }
+  .tt-due.overdue { background: #fef2f2; color: var(--danger); }
+  .tt-due.today { background: #fefce8; color: var(--amber); }
+  .tt-due.future { background: var(--bg); color: var(--text3); }
+  .tt-col { font-size: 9px; color: var(--text3); padding: 2px 6px; border-radius: 3px; background: var(--sidebar-bg); }
+  .tt-note { font-size: 10px; color: var(--blue); cursor: pointer; }
+  .tt-note:hover { text-decoration: underline; }
+  /* Quick add task */
+  .today-task-add {
+    display: flex; gap: 6px; align-items: center;
+    padding: 6px 0; margin-bottom: 16px;
+  }
+  .today-task-add input[type="text"] {
+    flex: 1; padding: 6px 10px; border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm); font-size: 12px; font-family: var(--sans);
+    color: var(--text); background: transparent; outline: none;
+  }
+  .today-task-add input[type="text"]:focus { border-style: solid; border-color: var(--accent); }
+  .today-task-add input[type="text"]::placeholder { color: var(--text3); }
+  .today-task-add select {
+    padding: 5px 6px; border: 1px solid var(--border); border-radius: 3px;
+    font-size: 10px; color: var(--text2); background: var(--surface);
+    font-family: var(--sans); cursor: pointer;
+  }
+  .today-task-add input[type="date"] {
+    padding: 4px 6px; border: 1px solid var(--border); border-radius: 3px;
+    font-size: 10px; color: var(--text2); background: var(--surface);
+    font-family: var(--sans);
+  }
   .summary-banner {
     display: flex; align-items: center; gap: 8px;
     padding: 8px 14px; margin-bottom: 12px;
@@ -1748,8 +1809,8 @@
 <script>
 /* ═══════════ DATA — IndexedDB ═══════════ */
 const DB_NAME='dailydispatch';
-const DB_VERSION=2;
-const COLLECTIONS=['entries','questions','contexts','sections','settings'];
+const DB_VERSION=3;
+const COLLECTIONS=['entries','questions','contexts','sections','settings','tasks','columns'];
 const genId=p=>p+'_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function dateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -1793,7 +1854,7 @@ function getAllPeople(){
 }
 
 // In-memory db object — same shape as before
-let db={entries:[],questions:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map(),defaultSectionsSeeded:false};
+let db={entries:[],questions:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map(),tasks:[],columns:[],defaultSectionsSeeded:false};
 let idb=null; // IndexedDB handle
 
 function openIDB(){
@@ -1853,6 +1914,8 @@ async function loadDB(){
   db.questions=await idbGetAll('questions');
   db.contexts=await idbGetAll('contexts');
   db.sections=await idbGetAll('sections');
+  db.tasks=await idbGetAll('tasks');
+  db.columns=await idbGetAll('columns');
   const settings=await idbGetAll('settings');
   const s=settings.find(x=>x.id==='main')||{};
   db.tagColors=s.tagColors||{};
@@ -1921,6 +1984,8 @@ async function saveAll(){
   await idbPutAll('questions',db.questions);
   await idbPutAll('contexts',db.contexts);
   await idbPutAll('sections',db.sections);
+  if(db.tasks&&db.tasks.length)await idbPutAll('tasks',db.tasks);
+  if(db.columns&&db.columns.length)await idbPutAll('columns',db.columns);
   await idbPutAll('settings',[{
     id:'main',
     tagColors:db.tagColors,
@@ -1940,7 +2005,7 @@ async function saveAll(){
 let _dirtyStores=new Set();
 let _saveTimer=null;
 function save(...stores){
-  if(stores.length===0)stores=['entries','sections','settings'];
+  if(stores.length===0)stores=['entries','sections','settings','tasks','columns'];
   stores.forEach(s=>_dirtyStores.add(s));
   if(stores.includes('entries')||stores.length===0)invalidateTagCache();
   clearTimeout(_saveTimer);
@@ -2344,6 +2409,47 @@ function renderToday(area){
   const topEl=document.getElementById('capture-top');
   if(topEl){topEl.classList.add('visible');topEl.innerHTML=captureHTML;}
   let h='';
+
+  // ── Tasks due today + overdue ──
+  const viewingToday=selectedDate===todayStr();
+  const today=todayStr();
+  const overdueTasks=getTasksOverdue(today).sort((a,b)=>a.due_date.localeCompare(b.due_date));
+  const dueTodayTasks=getTasksDueOn(today);
+  const futureDateTasks=!viewingToday&&selectedDate>today?getTasksDueOn(selectedDate):[];
+  const allDueTasks=viewingToday?[...overdueTasks,...dueTodayTasks]:futureDateTasks;
+  if(allDueTasks.length){
+    const overdueCount=overdueTasks.length;
+    const label=viewingToday
+      ?`Tasks <span style="font-weight:400;color:var(--text3)">${allDueTasks.length} due${overdueCount?' · '+overdueCount+' overdue':''}</span>`
+      :`Tasks due ${fmtDateLabel(selectedDate)}`;
+    h+=`<div class="today-tasks-hdr">${label}</div>`;
+    allDueTasks.forEach(t=>{
+      const isOverdue=t.due_date<today;
+      const dueLabel=isOverdue?'overdue '+(()=>{const d=Math.ceil((new Date(today+'T12:00:00')-new Date(t.due_date+'T12:00:00'))/(24*3600*1000));return d+'d';})()
+        :t.due_date===today?'today'
+        :fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
+      const dueClass=isOverdue?'overdue':t.due_date===today?'today':'future';
+      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+      const col=getColumnName(t.column_id);
+      const noteLink=t.note_id?`<span class="tt-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:'';
+      h+=`<div class="today-task-row" onclick="openTaskDetail('${t.id}')">
+        <div class="tt-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',!${t.completed});renderActiveView();renderSidebar()"></div>
+        <div class="tt-stripe ${pri}"></div>
+        <span class="tt-title${t.completed?' done':''}">${escH(t.title)}</span>
+        <span class="tt-due ${dueClass}">${dueLabel}</span>
+        ${col?`<span class="tt-col">${escH(col)}</span>`:''}
+        ${noteLink}
+      </div>`;
+    });
+  }
+  // Quick add task — always show on today view
+  if(viewingToday||selectedDate>=today){
+    h+=`<div class="today-task-add">
+      <input id="quick-task-input" type="text" placeholder="+ Add a task..." onkeydown="if(event.key==='Enter'){event.preventDefault();quickAddTask();}">
+      <select id="quick-task-priority"><option value="L">Low</option><option value="M">Med</option><option value="H">High</option></select>
+      <input id="quick-task-due" type="date" value="${viewingToday?'':selectedDate}" title="Due date (optional)">
+    </div>`;
+  }
 
   // Top sentinel — loads newer days when scrolled to top (only if anchor is in the past)
   if(getFeedTopDate()<todayStr()){
@@ -5584,6 +5690,13 @@ function updateSidebarNav(){
   document.querySelectorAll('.sb-nav-item').forEach(el=>el.classList.remove('active'));
   if(activeTab==='today')document.getElementById('nav-today')?.classList.add('active');
   else if(activeTab==='tasks')document.getElementById('nav-tasks')?.classList.add('active');
+  // Update Tasks badge with open task count
+  const openCount=(db.tasks||[]).filter(t=>!t.completed).length;
+  const badge=document.getElementById('nav-tasks-count');
+  if(badge){
+    badge.textContent=openCount;
+    badge.style.display=openCount?'':'none';
+  }
 }
 function renderSidebar(){
   renderCalendar();
@@ -6041,8 +6154,25 @@ function closeSettings(){
 }
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
-const APP_VERSION='2.0.0';
+const APP_VERSION='2.1.0';
 const CHANGELOG=[
+  {
+    version:'2.1.0',
+    date:'2026-04-11',
+    title:'Task data model + Today view tasks (Phases 2+3)',
+    changes:[
+      'New **tasks** and **columns** collections in IndexedDB (schema version 3)',
+      'Default Kanban columns seeded on first launch: Inbox, Backlog, In Work, Done',
+      'Task CRUD: `createTask`, `updateTask`, `completeTask`, `deleteTask` with auto-ordering and Done column sync',
+      'Completing a task moves it to the Done column; unchecking moves it back to Inbox',
+      '**Today view** shows tasks due today + overdue tasks above the journal entries',
+      'Task rows with priority stripe, due date badge, column pill, and note link',
+      '**Quick add task** inline form on Today: title + priority + due date, Enter to create',
+      'Future dates in calendar show tasks due on that day',
+      'Sidebar Tasks nav badge shows open task count',
+      'Export/import/purge updated to include tasks and columns'
+    ]
+  },
   {
     version:'2.0.0',
     date:'2026-04-11',
@@ -6615,7 +6745,7 @@ async function doPurge(){
   localStorage.removeItem('dailydispatch_v1');
   localStorage.removeItem('dailydispatch_v2');
   // Reset in-memory state
-  db={entries:[],questions:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map()};
+  db={entries:[],questions:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map(),tasks:[],columns:[]};
   // Reopen fresh database
   await openIDB();
   closePurge();closeSettings();
@@ -6634,6 +6764,8 @@ function exportData(){
     people:db.people||[],
     theme:db.theme||'Warm Notion',
     floatingNote:db.floatingNote||{position:'right',width:300},
+    tasks:db.tasks||[],
+    columns:db.columns||[],
     images:[...db.images.entries()].map(([id,v])=>({id,data:v.data,mimeType:v.mimeType,ts:v.ts||0}))
   };
   const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
@@ -6659,6 +6791,8 @@ function importData(e){
       db.questions=data.questions||[];
       db.contexts=data.contexts||[];
       db.sections=data.sections||[];
+      db.tasks=data.tasks||[];
+      db.columns=data.columns||[];
       // Settings
       db.tagColors=data.tagColors||{};
       db.people=data.people||[];
@@ -7271,6 +7405,107 @@ See also: [[Welcome to DailyDispatch]], [[Notes & Markdown Editor]], [[Slash Com
 #DailyDispatchHelp`}
 ];
 
+/* ═══════════ TASKS ═══════════ */
+function quickAddTask(){
+  const inp=document.getElementById('quick-task-input');
+  const pri=document.getElementById('quick-task-priority');
+  const due=document.getElementById('quick-task-due');
+  if(!inp)return;
+  const title=inp.value.trim();
+  if(!title)return;
+  createTask({title,priority:pri?pri.value:'L',due_date:due&&due.value?due.value:null});
+  inp.value='';
+  if(pri)pri.value='L';
+  if(due)due.value='';
+  renderActiveView();
+  renderSidebar();
+}
+function openTaskDetail(taskId){
+  // Phase 6 will implement a full modal. For now show a simple alert with task info.
+  const t=(db.tasks||[]).find(x=>x.id===taskId);
+  if(!t)return;
+  const col=getColumnName(t.column_id);
+  const msg=`${t.title}\n\nPriority: ${t.priority}\nColumn: ${col}\nDue: ${t.due_date||'none'}\nCompleted: ${t.completed?'Yes':'No'}`;
+  alert(msg);
+}
+
+function ensureDefaultColumns(){
+  if(db.columns&&db.columns.length)return;
+  db.columns=[
+    {id:'col_inbox',name:'Inbox',color:'#cb912f',order:0},
+    {id:'col_backlog',name:'Backlog',color:'#5b9bd5',order:1},
+    {id:'col_inwork',name:'In Work',color:'#7c3aed',order:2},
+    {id:'col_done',name:'Done',color:'#16a34a',order:3,isDone:true}
+  ];
+  save('columns');
+}
+function getDoneColumn(){
+  return(db.columns||[]).find(c=>c.isDone)||null;
+}
+function getNextTaskOrder(columnId){
+  const tasks=(db.tasks||[]).filter(t=>t.column_id===columnId);
+  return tasks.length?Math.max(...tasks.map(t=>t.order||0))+1:0;
+}
+function createTask(opts){
+  if(!opts||!opts.title||!opts.title.trim())return null;
+  const inboxCol=(db.columns||[]).find(c=>!c.isDone&&c.order===0)||(db.columns||[])[0];
+  const colId=opts.column_id||inboxCol?.id||'col_inbox';
+  const task={
+    id:genId('t'),
+    title:opts.title.trim(),
+    priority:opts.priority||'L',
+    due_date:opts.due_date||null,
+    column_id:colId,
+    completed:false,
+    note_id:opts.note_id||null,
+    created_at:Date.now(),
+    completed_at:null,
+    order:getNextTaskOrder(colId)
+  };
+  if(!db.tasks)db.tasks=[];
+  db.tasks.push(task);
+  save('tasks');
+  return task;
+}
+function updateTask(id,changes){
+  const t=(db.tasks||[]).find(x=>x.id===id);
+  if(!t)return null;
+  Object.assign(t,changes);
+  save('tasks');
+  return t;
+}
+function completeTask(id,completed){
+  const t=(db.tasks||[]).find(x=>x.id===id);
+  if(!t)return;
+  t.completed=!!completed;
+  if(completed){
+    t.completed_at=Date.now();
+    const doneCol=getDoneColumn();
+    if(doneCol)t.column_id=doneCol.id;
+  } else {
+    t.completed_at=null;
+    // Move back to Inbox when unchecked
+    const inbox=(db.columns||[]).find(c=>!c.isDone&&c.order===0);
+    if(inbox)t.column_id=inbox.id;
+  }
+  t.order=getNextTaskOrder(t.column_id);
+  save('tasks');
+}
+function deleteTask(id){
+  db.tasks=(db.tasks||[]).filter(t=>t.id!==id);
+  save('tasks');
+}
+function getTasksDueOn(dateStr){
+  return(db.tasks||[]).filter(t=>!t.completed&&t.due_date&&t.due_date===dateStr);
+}
+function getTasksOverdue(beforeDate){
+  return(db.tasks||[]).filter(t=>!t.completed&&t.due_date&&t.due_date<beforeDate);
+}
+function getColumnName(colId){
+  const c=(db.columns||[]).find(x=>x.id===colId);
+  return c?c.name:'';
+}
+
 function ensureHelpNotes(){
   let changed=false;
   const validIds=new Set(HELP_NOTES.map(h=>h.id));
@@ -7509,6 +7744,7 @@ async function init(){
   if(!db.entries)db.entries=[];
   if(!db.tagColors)db.tagColors={};
   if(!db.people)db.people=[];
+  ensureDefaultColumns();
   ensureHelpNotes();
   if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
   // First-launch: open the home tab once so new users get the landing page.
