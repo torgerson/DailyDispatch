@@ -553,24 +553,24 @@
   }
   .status-editor-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
   .status-signal-row {
-    display: flex; gap: 6px; margin-bottom: 10px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px;
   }
   .status-signal-btn {
-    flex: 1; padding: 7px 0; border: 2px solid transparent; border-radius: 6px;
+    padding: 7px 0; border: 2px solid transparent; border-radius: 6px;
     font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
     cursor: pointer; text-align: center; transition: all 0.12s;
   }
   .status-signal-btn:hover { filter: brightness(1.1); }
   .status-signal-btn.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
   .status-color-grid {
-    display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-bottom: 16px;
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 16px;
   }
   .status-color-swatch {
-    width: 28px; height: 28px; border-radius: 6px; border: 2px solid transparent;
-    cursor: pointer; transition: all 0.12s;
+    width: 100%; aspect-ratio: 1; border-radius: 5px; border: 2px solid transparent;
+    cursor: pointer; transition: all 0.12s; padding: 0;
   }
-  .status-color-swatch:hover { transform: scale(1.15); }
-  .status-color-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
+  .status-color-swatch:hover { transform: scale(1.12); }
+  .status-color-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--text); }
   .status-editor-actions { display: flex; gap: 8px; justify-content: flex-end; }
   .status-editor-btn {
     padding: 7px 16px; border-radius: var(--radius-sm); font-size: 12px;
@@ -1547,18 +1547,6 @@
       <div class="cal-grid" id="cal-grid"></div>
     </div>
   </div>
-  <div class="sb-section">
-    <div class="sb-hdr" onclick="toggleSb(this)"><h3>Recent</h3><span class="arrow">&#9660;</span></div>
-    <div class="sb-body">
-      <div id="recent-list"></div>
-    </div>
-  </div>
-  <div class="sb-section">
-    <div class="sb-hdr" onclick="toggleSb(this)"><h3>Tags</h3><span class="arrow">&#9660;</span></div>
-    <div class="sb-body">
-      <div class="tag-cloud" id="tag-cloud"></div>
-    </div>
-  </div>
   <div id="left-drop-zone">Drop section here</div>
   <div id="left-sections"></div>
 </div>
@@ -1761,6 +1749,7 @@ async function loadDB(){
   db.homeShownOnce=s.homeShownOnce||false;
   db.floatingNote=s.floatingNote||{position:'right',width:300};
   db.lastBackupTs=s.lastBackupTs||0;
+  db.virtualPanels=s.virtualPanels||{recent:{col:'left',order:0},tags:{col:'left',order:1}};
   // Restore tab session
   if(s.openTabs&&s.openTabs.length){
     const validId=id=>id==='feed'||id==='home'||id==='settings'||id==='gallery'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
@@ -1828,6 +1817,7 @@ async function saveAll(){
     homeShownOnce:db.homeShownOnce||false,
     floatingNote:db.floatingNote||{position:'right',width:300},
     lastBackupTs:db.lastBackupTs||0,
+    virtualPanels:db.virtualPanels||{recent:{col:'left',order:0},tags:{col:'left',order:1}},
     openTabs,activeTab,searchTabs
   }]);
 }
@@ -1847,7 +1837,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,openTabs,activeTab,searchTabs}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,virtualPanels:db.virtualPanels||{recent:{col:'left',order:0},tags:{col:'left',order:1}},openTabs,activeTab,searchTabs}]);
     } else if(store==='sections'&&db.sections){
       // Strip transient session-only flags and drop unsaved drafts
       const sanitized=db.sections
@@ -2056,7 +2046,7 @@ function renderTabBar(){
     if(tid==='feed'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('feed')"${dropTarget}>&#128221; Feed</div>`;}
     else if(tid==='home'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('home')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg>Home<span class="tab-close" onclick="event.stopPropagation();closeTab('home')">&times;</span></div>`;}
     else if(tid==='gallery'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('gallery')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg>Gallery<span class="tab-close" onclick="event.stopPropagation();closeTab('gallery')">&times;</span></div>`;}
-    else if(tid==='settings'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('settings')"${drag}>&#9881; Settings<span class="tab-close" onclick="event.stopPropagation();closeTab('settings')">&times;</span></div>`;}
+    else if(tid==='settings'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('settings')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><circle cx="10" cy="10" r="2.8"/><path d="M10 2 v2.5 M10 15.5 v2.5 M2 10 h2.5 M15.5 10 h2.5 M4.4 4.4 l1.8 1.8 M13.8 13.8 l1.8 1.8 M15.6 4.4 l-1.8 1.8 M6.2 13.8 l-1.8 1.8"/></svg>Settings<span class="tab-close" onclick="event.stopPropagation();closeTab('settings')">&times;</span></div>`;}
     else if(tid.startsWith('search_')){
       const st=searchTabs.find(s=>s.id===tid);
       const label=st?escH((st.query||'Search').slice(0,18)):'Search';
@@ -2065,7 +2055,7 @@ function renderTabBar(){
     else{const e=db.entries.find(x=>x.id===tid);const title=e?(e.noteTitle||'Note'):'Note';
       tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('${tid}')" oncontextmenu="showTabContextMenu(event,'${tid}')" title="Right-click for options"${drag}>${escH(title.slice(0,22))}<span class="tab-close" onclick="event.stopPropagation();closeTab('${tid}')">&times;</span></div>`;}
   });
-  tabsHtml+=`<button id="new-tab-btn" onclick="createNote()" title="New note (Cmd+N)">+</button>`;
+  tabsHtml+=`<button id="new-tab-btn" onclick="createNote()" title="New note (Cmd+;)">+</button>`;
   // Tabs scroll in their own container; icons sit in a fixed-width strip to the right
   // so they can't be overlapped when there are many tabs open.
   let h=`<div id="tab-bar-tabs">${tabsHtml}</div>`;
@@ -2182,9 +2172,11 @@ function renderActiveView(){
   else if(activeTab==='settings')renderSettingsTab(a);
   else if(activeTab.startsWith('search_'))renderSearchTab(a,activeTab);
   else renderNoteEditor(a,activeTab);
-  // Refresh backlinks panel whenever the active view changes — the panel
-  // shows links TO the currently-viewed note, so it must update on tab switch.
-  if(_backlinksOpen)renderBacklinks();
+  // Refresh backlinks on every tab switch — the panel shows links TO the
+  // currently-viewed note. This must run AFTER sections render (which
+  // destroys and rebuilds the DOM), so we call renderAllSections which
+  // internally re-renders backlinks at the end.
+  if(_backlinksOpen)renderAllSections();
 }
 
 /* ═══════════ FEED ═══════════ */
@@ -2327,6 +2319,10 @@ function renderEntryCard(e){
 // Inline markdown — no tag/mention rendering (those are shown as pills)
 function renderMdInline(raw){
   let t=escH(raw);
+  // Headings: # H1, ## H2, ### H3 — must come before #tag detection
+  t=t.replace(/^### (.+)$/gm,'<span style="font-size:15px;font-weight:600;color:var(--text)">$1</span>');
+  t=t.replace(/^## (.+)$/gm,'<span style="font-size:17px;font-weight:700;color:var(--brown)">$1</span>');
+  t=t.replace(/^# (.+)$/gm,'<span style="font-size:19px;font-weight:800;color:var(--text)">$1</span>');
   t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
   t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   t=t.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g,'<em>$1</em>');
@@ -2334,6 +2330,11 @@ function renderMdInline(raw){
   t=t.replace(/(^|[^"'>])(https?:\/\/[^\s<]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
   t=t.replace(/@([a-zA-Z0-9_.-]+)/g,'<span class="mention-pill" onclick="event.stopPropagation();toggleFilter(\'@$1\')">@$1</span>');
   t=t.replace(/\[\[([^\]]+)\]\]/g,(m,inner)=>`<a class="crosslink" onclick="event.stopPropagation();navCrosslink('${escH(inner)}')">${escH(inner)}</a>`);
+  // #tags — render as colored pills inline
+  t=t.replace(/#([a-zA-Z0-9_-]+)/g,(m,tag)=>{
+    const c=getTagColor(tag);
+    return`<span class="tag-pill" style="background:${c}12;color:${c};font-size:11px">#${tag}</span>`;
+  });
   // Status badges
   t=t.replace(/\{\{status:([a-z]+):([^}]+)\}\}/gi,(m,color,text)=>{
     const c=STATUS_COLORS[color.toLowerCase()]||STATUS_COLORS.gray;
@@ -3097,14 +3098,14 @@ class CmTextWidget extends CM6.WidgetType{
 // Top-row "signal" colors — the big 3 for quick status
 const STATUS_SIGNAL_COLORS={
   green:  {bg:'#16a34a',fg:'#fff',label:'Green'},
-  yellow: {bg:'#d97706',fg:'#fff',label:'Yellow'},   // amber-gold, readable
+  yellow: {bg:'#c59000',fg:'#fff',label:'Yellow'},   // warm gold-yellow, readable
   red:    {bg:'#dc2626',fg:'#fff',label:'Red'},
 };
 // Extended palette — 2 rows of 10 for grouping and variety
 const STATUS_COLORS={
   // Signal
   green:     {bg:'#16a34a',fg:'#fff',label:'Green'},
-  yellow:    {bg:'#d97706',fg:'#fff',label:'Yellow'},
+  yellow:    {bg:'#c59000',fg:'#fff',label:'Yellow'},
   red:       {bg:'#dc2626',fg:'#fff',label:'Red'},
   // Row 1
   lime:      {bg:'#65a30d',fg:'#fff',label:'Lime'},
@@ -3470,6 +3471,58 @@ class CmTableWidget extends CM6.WidgetType{
           e.updatedTs=Date.now();
           clearTimeout(self._saveTimer);
           self._saveTimer=setTimeout(()=>save(),300);
+        });
+        // Slash commands in table cells: expand on Space or Enter after /command.
+        // Uses keydown (reliable across browsers) instead of input events.
+        // Order: datetime before date so /datetime doesn't partially match /date.
+        textEl.addEventListener('keydown',ev=>{
+          if(ev.key!==' '&&ev.key!=='Enter')return;
+          const raw=textEl.textContent||'';
+          const m=raw.match(/\/(datetime|date|time|status)$/i);
+          if(!m)return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          const cmd=m[1].toLowerCase();
+          const before=raw.slice(0,m.index);
+          const e=db.entries.find(x=>x.id===noteId);
+          if(cmd==='status'){
+            // Save text without the /status, show picker
+            if(e&&e.tables&&e.tables[tableId]){
+              e.tables[tableId].rows[rIdx][c]=before;
+            }
+            textEl.textContent=before;
+            showStatusEditor(null,null,(color,statusText)=>{
+              const token='{{status:'+color+':'+statusText+'}}';
+              const e2=db.entries.find(x=>x.id===noteId);
+              if(e2&&e2.tables&&e2.tables[tableId]){
+                e2.tables[tableId].rows[rIdx][c]=(e2.tables[tableId].rows[rIdx][c]||'')+token;
+              }
+              save();
+              _renderCell();
+            });
+          } else {
+            let val='';
+            if(cmd==='date')val=todayStr();
+            else if(cmd==='time')val=fmtTime(Date.now());
+            else if(cmd==='datetime')val=todayStr()+' '+fmtTime(Date.now());
+            const newRaw=before+val;
+            textEl.textContent=newRaw;
+            if(e&&e.tables&&e.tables[tableId]){
+              if(!e.tables[tableId].rows[rIdx])e.tables[tableId].rows[rIdx]=[];
+              e.tables[tableId].rows[rIdx][c]=newRaw;
+              e.updatedTs=Date.now();
+            }
+            save();
+            // Place cursor at end
+            try{
+              const range=document.createRange();
+              range.selectNodeContents(textEl);
+              range.collapse(false);
+              const sel=window.getSelection();
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }catch(err){}
+          }
         });
         // Tab / Shift-Tab navigates cells. Tab on the last cell creates a new row.
         textEl.addEventListener('keydown',ev=>{
@@ -4420,16 +4473,8 @@ function selectAC(){
 function closeAC(){acState=null;document.getElementById('autocomplete').classList.remove('open');}
 
 /* ═══════════ TAG CLOUD ═══════════ */
-function renderTagCloud(){
-  const counts=getAllTags(),el=document.getElementById('tag-cloud');
-  if(!Object.keys(counts).length){el.innerHTML='<div style="font-size:10px;color:var(--text3)">No tags yet</div>';return;}
-  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  let h='';sorted.forEach(([tag,cnt])=>{const c=getTagColor(tag),isA=activeTagFilters.includes(tag);h+=`<span class="tag-cloud-item${isA?' active':''}" style="${isA?'background:'+c+';color:#fff;border-color:'+c:'color:'+c+';border-color:'+c+'40'}" onclick="toggleFilter('${escH(tag)}')">#${escH(tag)} <span class="tag-cnt">${cnt}</span></span>`;});
-  if(activeTagFilters.length>0)h+=`<button class="clear-filters" onclick="clearFilters()">Clear</button>`;
-  el.innerHTML=h;
-}
-function toggleFilter(tag){const i=activeTagFilters.indexOf(tag);if(i>=0)activeTagFilters.splice(i,1);else activeTagFilters.push(tag);renderTagCloud();renderActiveView();}
-function clearFilters(){activeTagFilters=[];renderTagCloud();renderActiveView();}
+function toggleFilter(tag){const i=activeTagFilters.indexOf(tag);if(i>=0)activeTagFilters.splice(i,1);else activeTagFilters.push(tag);renderAllSections();renderActiveView();}
+function clearFilters(){activeTagFilters=[];renderAllSections();renderActiveView();}
 
 /* ═══════════ QUESTIONS ═══════════ */
 function addQuestion(text){text=text.trim();if(!text)return;db.questions.push({id:genId('q'),question:text,askedBy:[],status:'open',answer:'',tags:extractTags(text),date:todayStr(),ts:Date.now()});save();document.querySelector('.q-input').value='';renderQuestions();}
@@ -4548,18 +4593,10 @@ function _insertBacklinksPanel(bodyHtml){
   if(container)container.prepend(panel);
 }
 
-function renderRecent(){
-  const el=document.getElementById('recent-list');
-  if(!el)return;
-  const notes=db.entries.filter(e=>e.isNote&&!e.eventType&&!e.isHelp)
-    .sort((a,b)=>(b.updatedTs||b.ts)-(a.updatedTs||a.ts))
-    .slice(0,5);
-  if(!notes.length){el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:4px">No recent notes</div>';return;}
-  el.innerHTML=notes.map(n=>{
-    const title=escH((n.noteTitle||'Untitled').slice(0,40));
-    return`<div class="recent-card" onclick="openAsNote('${n.id}')"><span class="recent-icon">&#128196;</span><span class="recent-txt">${title}</span></div>`;
-  }).join('');
-}
+// Recent and Tags are now virtual section panels rendered by _doRenderAllSections.
+// These stubs exist so existing callers don't throw.
+function renderRecent(){renderAllSections();}
+function renderTagCloud(){renderAllSections();}
 // Event types and their display config
 const EVENT_TYPES={
   create:{icon:'✨', verb:'Created'},
@@ -4718,7 +4755,8 @@ function renderSectionPanel(sec){
   let bodyHtml='';
   if(!total){bodyHtml='<div class="rs-empty">No matches</div>';}
   else{
-    bodyHtml=visible.map(e=>`<div class="rs-entry" style="border-left-color:${e.isNote?'var(--accent)':'transparent'}" onclick="openAsNote('${e.id}')"><span class="rs-time">${fmtShortDate(e.ts)}</span>${e.isNote?'<strong>'+escH((e.noteTitle||'').slice(0,30))+'</strong> ':''}<span>${escH((e.isNote?e.content:e.content).slice(0,60))}</span></div>`).join('');
+    const isHelp=(sec.query||'').toLowerCase().includes('#dailydispatchhelp');
+    bodyHtml=visible.map(e=>`<div class="rs-entry" style="border-left-color:${e.isNote?'var(--accent)':'transparent'}" onclick="openAsNote('${e.id}')">${isHelp?'':'<span class="rs-time">'+fmtShortDate(e.ts)+'</span>'}${e.isNote?'<strong>'+escH((e.noteTitle||'').replace(/^#+\s+/,'').slice(0,30))+'</strong> ':''}<span>${escH((e.isNote?e.content:e.content).slice(0,60))}</span></div>`).join('');
     if(hasMore)bodyHtml+=`<div class="rs-show-more" onclick="event.stopPropagation();showMoreSection('${sec.id}')">Show more (${total-limit} remaining)</div>`;
   }
 
@@ -4751,13 +4789,74 @@ function renderAllSections(){
 }
 function _doRenderAllSections(){
   db.sections.forEach(s=>{if(!s.col)s.col='right';});
+  if(!db.virtualPanels)db.virtualPanels={recent:{col:'left',order:0},tags:{col:'left',order:1}};
   const rightSecs=db.sections.filter(s=>s.col==='right');
   const leftSecs=db.sections.filter(s=>s.col==='left');
   const rContainer=document.getElementById('right-sections');
   const lContainer=document.getElementById('left-sections');
   if(!rightSecs.length){rContainer.innerHTML='<div class="empty">Click + to add a filter section<br><br><span style="font-size:9px">Examples:<br>#meeting<br>#api -draft<br>#question open</span></div>';}
   else{rContainer.innerHTML=rightSecs.map(sec=>renderSectionPanel(sec)).join('');}
-  lContainer.innerHTML=leftSecs.map(sec=>renderSectionPanel(sec)).join('');
+  // Left: virtual panels (Recent, Tags) + regular sections
+  let leftHtml='';
+  const vPanels=Object.entries(db.virtualPanels).filter(([,v])=>v.col==='left').sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+  const rPanels=Object.entries(db.virtualPanels).filter(([,v])=>v.col==='right').sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+  // Render left virtual panels + sections
+  leftHtml+=vPanels.map(([id])=>_renderVirtualPanel(id)).join('');
+  leftHtml+=leftSecs.map(sec=>renderSectionPanel(sec)).join('');
+  lContainer.innerHTML=leftHtml;
+  // Append right virtual panels after right sections
+  rPanels.forEach(([id])=>{rContainer.innerHTML+=_renderVirtualPanel(id);});
+  // Re-render backlinks AFTER sections so the panel isn't destroyed by innerHTML
+  if(_backlinksOpen)renderBacklinks();
+  const btn=document.getElementById('backlinks-toggle');
+  if(btn)btn.classList.toggle('active',_backlinksOpen);
+}
+function _renderVirtualPanel(id){
+  if(id==='recent')return _renderRecentPanel();
+  if(id==='tags')return _renderTagsPanel();
+  return '';
+}
+function _renderRecentPanel(){
+  const notes=db.entries.filter(e=>e.isNote&&!e.eventType&&!e.isHelp)
+    .sort((a,b)=>(b.updatedTs||b.ts)-(a.updatedTs||a.ts))
+    .slice(0,8);
+  let body='';
+  if(!notes.length){body='<div class="rs-empty">No recent notes</div>';}
+  else{body=notes.map(n=>{
+    const title=escH((n.noteTitle||'Untitled').replace(/^#+\s+/,'').slice(0,40));
+    return`<div class="rs-entry" style="border-left-color:var(--accent)" onclick="openAsNote('${n.id}')"><span class="rs-time">${fmtShortDate(n.updatedTs||n.ts)}</span><strong>${title}</strong></div>`;
+  }).join('');}
+  return`<div class="rs-panel" data-sid="_recent" draggable="true" ondragstart="dragSecStart(event,'_recent')" ondragend="dragSecEnd(event)" ondragover="dragSecOver(event)" ondrop="dragSecDrop(event,'_recent')" style="height:200px;flex:none">
+    <div class="rs-header">
+      <span class="rs-drag-handle" title="Drag to reorder">&#x2630;</span>
+      <span class="rs-title-display">Recent</span>
+    </div>
+    <div class="rs-body">${body}</div>
+    <div class="rs-resize" onmousedown="startResize(event,'_recent')"></div>
+  </div>`;
+}
+function _renderTagsPanel(){
+  const counts=getAllTags();
+  let body='';
+  if(!Object.keys(counts).length){body='<div class="rs-empty">No tags yet</div>';}
+  else{
+    const sorted=Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0]));
+    body='<div class="tag-cloud" style="padding:4px">';
+    sorted.forEach(([tag,cnt])=>{
+      const c=getTagColor(tag),isA=activeTagFilters.includes(tag);
+      body+=`<span class="tag-cloud-item${isA?' active':''}" style="${isA?'background:'+c+';color:#fff;border-color:'+c:'color:'+c+';border-color:'+c+'40'}" onclick="toggleFilter('${escH(tag)}')">#${escH(tag)} <span class="tag-cnt">${cnt}</span></span>`;
+    });
+    if(activeTagFilters.length>0)body+=`<button class="clear-filters" onclick="clearFilters()">Clear</button>`;
+    body+='</div>';
+  }
+  return`<div class="rs-panel" data-sid="_tags" draggable="true" ondragstart="dragSecStart(event,'_tags')" ondragend="dragSecEnd(event)" ondragover="dragSecOver(event)" ondrop="dragSecDrop(event,'_tags')" style="height:180px;flex:none">
+    <div class="rs-header">
+      <span class="rs-drag-handle" title="Drag to reorder">&#x2630;</span>
+      <span class="rs-title-display">Tags</span>
+    </div>
+    <div class="rs-body">${body}</div>
+    <div class="rs-resize" onmousedown="startResize(event,'_tags')"></div>
+  </div>`;
 }
 
 /* ═══════════ SECTION DRAG & DROP ═══════════ */
@@ -4797,13 +4896,32 @@ function dragSecDrop(e,targetId){
   if(!dragSecId||dragSecId===targetId)return;
   const panel=e.currentTarget.closest('.rs-panel');
   const insertAfter=panel&&panel.classList.contains('drag-over-bottom');
+  // Handle virtual panels (Recent, Tags) — just update their column
+  const isVirtualSrc=dragSecId.startsWith('_');
+  const isVirtualTgt=targetId.startsWith('_');
+  if(isVirtualSrc){
+    if(!db.virtualPanels)db.virtualPanels={};
+    const vp=db.virtualPanels[dragSecId.slice(1)];
+    // Determine target column
+    const tgtCol=isVirtualTgt?(db.virtualPanels[targetId.slice(1)]||{}).col||'left':
+      (db.sections.find(s=>s.id===targetId)||{}).col||'right';
+    if(vp)vp.col=tgtCol;
+    save('settings');renderAllSections();
+    return;
+  }
   const srcIdx=db.sections.findIndex(s=>s.id===dragSecId);
-  const tgtIdx=db.sections.findIndex(s=>s.id===targetId);
-  if(srcIdx<0||tgtIdx<0)return;
-  // Move source to same column as target
+  const tgtIdx=isVirtualTgt?-1:db.sections.findIndex(s=>s.id===targetId);
+  if(srcIdx<0)return;
+  if(isVirtualTgt){
+    // Moving a regular section onto a virtual panel — just change column
+    const tgtCol=(db.virtualPanels[targetId.slice(1)]||{}).col||'left';
+    db.sections[srcIdx].col=tgtCol;
+    save();renderAllSections();
+    return;
+  }
+  if(tgtIdx<0)return;
   const tgtSec=db.sections[tgtIdx];
   db.sections[srcIdx].col=tgtSec.col;
-  // Reorder: remove src and insert before or after target
   const [moved]=db.sections.splice(srcIdx,1);
   let newTgtIdx=db.sections.findIndex(s=>s.id===targetId);
   if(insertAfter)newTgtIdx++;
@@ -5361,13 +5479,15 @@ function generateWrapUp(){
 function toggleSb(hdr){hdr.classList.toggle('collapsed');}
 
 /* ═══════════ KEYBOARD ═══════════ */
+// Global keyboard shortcuts — capture phase so they fire even when focus is
+// inside a CM6 widget, table cell, or other element that stops propagation.
 document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}
-  if((e.metaKey||e.ctrlKey)&&e.key==='n'){e.preventDefault();createNote();}
+  if((e.metaKey||e.ctrlKey)&&e.key===';'){e.preventDefault();createNote();}
   if((e.metaKey||e.ctrlKey)&&e.shiftKey&&(e.key==='o'||e.key==='O')){e.preventDefault();openQuickOpen();}
   if((e.metaKey||e.ctrlKey)&&e.key==='d'&&activeTab!=='feed'){e.preventDefault();closeTab(activeTab);}
   if(e.key==='Escape'){closeSearch();closeAC();closeNoteDatePicker();closeQuickOpen();closeChangelog();closeImageModal();}
-});
+},true);
 
 /* ═══════════ QUICK OPEN MODAL (Cmd+Shift+O) ═══════════ */
 let _qoState=null; // {results, selected}
@@ -5763,8 +5883,20 @@ function closeSettings(){
 }
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
-const APP_VERSION='1.10.0';
+const APP_VERSION='1.11.0';
 const CHANGELOG=[
+  {
+    version:'1.11.0',
+    date:'2026-04-11',
+    title:'Movable panels and backlinks fix',
+    changes:[
+      '**Recent** and **Tags** are now section-like panels that can be dragged between the left and right sidebars',
+      'Removed the fixed sidebar widgets — Recent and Tags render inside the section containers alongside Help, Meetings, etc.',
+      'Virtual panel positions persist across sessions via `db.virtualPanels` in settings',
+      '**Backlinks fix**: panel no longer disappears on tab switch — `_doRenderAllSections` re-renders backlinks AFTER rebuilding section DOM so the panel is never destroyed',
+      'Backlinks toggle button active state is restored after section re-renders'
+    ]
+  },
   {
     version:'1.10.0',
     date:'2026-04-11',
@@ -5775,7 +5907,9 @@ const CHANGELOG=[
       'Status editor modal with live preview, text input (auto-uppercased), and color picker grid',
       'Click any rendered status badge to re-edit its color and text',
       'Status badges render in the CM6 note editor, table cells, feed entries, and help viewer',
-      'Token format `{{status:color:TEXT}}` is portable — copy/paste carries the badge between notes'
+      'Token format `{{status:color:TEXT}}` is portable — copy/paste carries the badge between notes',
+      'Slash commands `/date`, `/time`, `/datetime`, `/status` now work inside **table cells** — type the command and it auto-expands',
+      '`#tags` now render as colored pills in table cells and inline markdown'
     ]
   },
   {
@@ -6422,7 +6556,7 @@ Everything lives in your browser's IndexedDB. No server, no internet, no account
 
 - **Cmd+K** — Open a search tab
 - **Cmd+Shift+O** — Quick-open a note by title
-- **Cmd+N** — Create a new note
+- **Cmd+;** — Create a new note
 - **Cmd+D** — Close the current tab
 - **Cmd+Enter** — Submit a quick entry
 
@@ -6913,7 +7047,7 @@ See also: [[Import, Export & Backup]]
 | Shortcut | Action |
 |----------|--------|
 | **Cmd+K** | Open a new search tab |
-| **Cmd+N** | Create a new note |
+| **Cmd+;** | Create a new note |
 | **Cmd+D** | Close the current tab |
 | **Escape** | Close autocomplete / cancel |
 
