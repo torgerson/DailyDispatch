@@ -877,6 +877,7 @@
     padding-left: 10px !important; padding-right: 10px !important;
     border-left: 3px solid var(--border);
     color: var(--text);
+    text-indent: 0 !important; /* prevent hanging indent inside code blocks */
   }
   .cm-dd-code-fence { color: var(--text3); }
   /* Editable table widget */
@@ -1053,19 +1054,63 @@
   #right {
     grid-area: right; background: var(--sidebar-bg); border-left: 1px solid var(--border-light);
     display: flex; flex-direction: column; overflow: hidden; min-width: 0; max-width: var(--right-w);
-    padding-top: 12px;
   }
-  #right-header {
-    padding: 0 14px 8px; display: flex; align-items: center; justify-content: space-between;
+  /* Right sidebar toolbar — matches the tab-bar icon strip visually */
+  #right-toolbar {
+    height: var(--tabbar-h); flex-shrink: 0;
+    display: flex; align-items: center; gap: 2px;
+    padding: 0 10px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-light);
   }
-  #right-header h3 { font-size: 10px; font-weight: 600; color: var(--brown); text-transform: uppercase; letter-spacing: .8px; }
+  #right-toolbar h3 {
+    font-size: 10px; font-weight: 600; color: var(--brown);
+    text-transform: uppercase; letter-spacing: .8px;
+    margin: 0; flex: 1;
+  }
+  #right-toolbar .tab-icon-btn.active { color: var(--accent); background: var(--accent-light); }
+  /* Backlinks panel */
+  .backlinks-panel {
+    background: var(--capture-bg, #fdf9f3); border-radius: var(--radius-md);
+    border: 1px solid var(--border-light); margin-bottom: 8px;
+    display: flex; flex-direction: column;
+  }
+  .backlinks-header {
+    display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+    flex-shrink: 0;
+  }
+  .backlinks-icon { color: var(--text3); display: inline-flex; }
+  .backlinks-title {
+    flex: 1; font-size: 11px; font-weight: 600; color: var(--brown);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .backlinks-close {
+    background: none; border: none; color: var(--text3); cursor: pointer;
+    font-size: 14px; padding: 2px 6px; border-radius: 3px;
+  }
+  .backlinks-close:hover { color: var(--danger); }
+  .backlinks-body { padding: 4px 8px 8px; overflow-y: auto; max-height: 280px; }
+  .backlinks-empty {
+    text-align: center; padding: 16px 10px; color: var(--text3);
+    font-size: 11px; font-style: italic;
+  }
+  .backlinks-entry {
+    padding: 4px 0; font-size: 11px; line-height: 1.4; cursor: pointer;
+    border-top: 1px solid var(--border-light);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--text2);
+  }
+  .backlinks-entry:first-child { border-top: none; }
+  .backlinks-entry:hover { color: var(--accent); }
+  .backlinks-entry .bl-time { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-right: 5px; }
+  /* Legacy add-section-btn kept for any residual references */
   #add-section-btn {
     font-size: 14px; background: none; border: none; cursor: pointer;
     color: var(--text3); width: 22px; height: 22px; border-radius: 3px;
     display: flex; align-items: center; justify-content: center;
   }
   #add-section-btn:hover { color: var(--accent); }
-  #right-sections { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding: 0 14px; }
+  #right-sections { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding: 10px 14px 0; }
 
   .rs-panel {
     display: flex; flex-direction: column; min-height: 80px; position: relative; transition: opacity 0.15s;
@@ -1444,9 +1489,10 @@
 
 <!-- RIGHT SIDEBAR -->
 <div id="right">
-  <div id="right-header">
+  <div id="right-toolbar">
     <h3>Sections</h3>
-    <button id="add-section-btn" onclick="addSection()" title="Add section">+</button>
+    <button class="tab-icon-btn" id="backlinks-toggle" onclick="toggleBacklinks()" title="Backlinks"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11.5 L6 14 A3.2 3.2 0 0 1 1.8 9.8 L5.5 6"/><path d="M11.5 8.5 L14 6 A3.2 3.2 0 0 1 18.2 10.2 L14.5 14"/><line x1="7.5" y1="12.5" x2="12.5" y2="7.5"/></svg></button>
+    <button class="tab-icon-btn" onclick="addSection()" title="Add section"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></button>
   </div>
   <div id="right-sections"></div>
 </div>
@@ -1940,7 +1986,7 @@ function renderTabBar(){
   h+=`<button class="tab-icon-btn" onclick="openSearch()" title="Search (Cmd+K)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg></button>`;
   h+=`<button class="tab-icon-btn" onclick="openFloatingNote()" title="Floating note"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14"/><circle cx="5.5" cy="6" r="0.5" fill="currentColor"/><circle cx="7.5" cy="6" r="0.5" fill="currentColor"/><line x1="6" y1="11" x2="14" y2="11"/><line x1="6" y1="14" x2="11" y2="14"/></svg></button>`;
   h+=`<button class="tab-icon-btn" onclick="openGallery()" title="Image gallery"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg></button>`;
-  h+=`<button class="tab-icon-btn" onclick="openSettings()" title="Settings">&#9881;</button>`;
+  h+=`<button class="tab-icon-btn" onclick="openSettings()" title="Settings"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.8"/><path d="M10 2 v2.5 M10 15.5 v2.5 M2 10 h2.5 M15.5 10 h2.5 M4.4 4.4 l1.8 1.8 M13.8 13.8 l1.8 1.8 M15.6 4.4 l-1.8 1.8 M6.2 13.8 l-1.8 1.8"/></svg></button>`;
   h+=`</div>`;
   document.getElementById('tab-bar').innerHTML=h;
   save('settings');
@@ -2049,6 +2095,9 @@ function renderActiveView(){
   else if(activeTab==='settings')renderSettingsTab(a);
   else if(activeTab.startsWith('search_'))renderSearchTab(a,activeTab);
   else renderNoteEditor(a,activeTab);
+  // Refresh backlinks panel whenever the active view changes — the panel
+  // shows links TO the currently-viewed note, so it must update on tab switch.
+  if(_backlinksOpen)renderBacklinks();
 }
 
 /* ═══════════ FEED ═══════════ */
@@ -2412,6 +2461,120 @@ function createNote(){
 }
 function openNoteTab(id){if(!openTabs.includes(id))openTabs.push(id);activeTab=id;renderTabBar();renderActiveView();}
 /* ═══════════ CM6 INTEGRATION LAYER — START (rip-out safe) ═══════════ */
+const INDENT_SIZE=5;
+const INDENT=' '.repeat(INDENT_SIZE);
+
+// Checks whether a given line number is inside a fenced code block.
+function cmIsInCodeBlock(state,lineNum){
+  let inBlock=false;
+  for(let n=1;n<=lineNum;n++){
+    if(/^```/.test(state.doc.line(n).text))inBlock=!inBlock;
+  }
+  // Fence lines themselves are not "inside" the block for indent purposes
+  if(/^```/.test(state.doc.line(lineNum).text))return false;
+  return inBlock;
+}
+
+/* ── Tab / Shift-Tab indentation ── */
+function cmIndentLines(view){
+  // Don't intercept if autocomplete is open — let cmACKeymap handle it
+  if(acState)return false;
+  const{state}=view;
+  const sel=state.selection.main;
+  const startLine=state.doc.lineAt(sel.from);
+  const endLine=state.doc.lineAt(sel.to);
+
+  // Inside a code block with a collapsed cursor: insert literal spaces at cursor
+  if(sel.empty&&cmIsInCodeBlock(state,startLine.number)){
+    view.dispatch({changes:{from:sel.from,insert:INDENT},selection:{anchor:sel.from+INDENT_SIZE}});
+    return true;
+  }
+
+  // Multi-line selection: indent every line in range
+  if(startLine.number!==endLine.number){
+    const changes=[];
+    for(let n=startLine.number;n<=endLine.number;n++){
+      changes.push({from:state.doc.line(n).from,insert:INDENT});
+    }
+    const tr=state.update({changes});
+    view.dispatch({
+      changes,
+      selection:{anchor:tr.changes.mapPos(sel.anchor,1),head:tr.changes.mapPos(sel.head,1)}
+    });
+    return true;
+  }
+
+  // Single line: prepend indent to line start, shift cursor right.
+  // Auto-convert numbered lists (1. 2. 3.) to letter lists (a. b. c.)
+  // when indenting, since nested sub-items conventionally use letters.
+  const numMatch=startLine.text.match(/^(\s*)(\d+)([.\)]\s+)/);
+  if(numMatch){
+    // Replace "1." with "a." (or "2)" with "a)") AND prepend indent
+    const letterReplacement='a';
+    const changes=[
+      {from:startLine.from,insert:INDENT},
+      {from:startLine.from+numMatch[1].length,to:startLine.from+numMatch[1].length+numMatch[2].length,insert:letterReplacement}
+    ];
+    const offset=INDENT_SIZE+(letterReplacement.length-numMatch[2].length);
+    view.dispatch({changes,selection:{anchor:sel.anchor+offset,head:sel.head+offset}});
+    return true;
+  }
+  view.dispatch({
+    changes:{from:startLine.from,insert:INDENT},
+    selection:{anchor:sel.anchor+INDENT_SIZE,head:sel.head+INDENT_SIZE}
+  });
+  return true;
+}
+
+function cmOutdentLines(view){
+  const{state}=view;
+  const sel=state.selection.main;
+  const startLine=state.doc.lineAt(sel.from);
+  const endLine=state.doc.lineAt(sel.to);
+
+  const changes=[];
+  for(let n=startLine.number;n<=endLine.number;n++){
+    const line=state.doc.line(n);
+    const m=line.text.match(/^( +)/);
+    if(!m)continue;
+    const remove=Math.min(m[1].length,INDENT_SIZE);
+    changes.push({from:line.from,to:line.from+remove,insert:''});
+    // When outdenting a letter list to root level (0 remaining indent),
+    // auto-convert back to a numbered list — continuing from the last
+    // root-level number, not restarting at 1.
+    const remaining=m[1].length-remove;
+    if(remaining===0){
+      const lm=line.text.match(/^( +)([a-z])([.\)]\s+)/);
+      if(lm){
+        // Scan backwards for the last root-level numbered item
+        let lastNum=0;
+        for(let sn=n-1;sn>=1;sn--){
+          const sl=state.doc.line(sn);
+          const txt=sl.text;
+          if(!txt.trim())continue; // skip blanks
+          if(/^\s/.test(txt))continue; // skip indented lines (sub-items)
+          const sm=txt.match(/^(\d+)[.\)]/);
+          if(sm){lastNum=parseInt(sm[1]);break;}
+          break; // hit a non-numbered root line, stop looking
+        }
+        const nextNum=String(lastNum+1);
+        const numStart=line.from+lm[1].length;
+        changes.push({from:numStart,to:numStart+1,insert:nextNum});
+      }
+    }
+  }
+  if(!changes.length)return true; // nothing to outdent, but consume the key
+
+  const tr=state.update({changes});
+  view.dispatch({
+    changes,
+    selection:{
+      anchor:Math.max(tr.changes.mapPos(sel.anchor,1),state.doc.lineAt(sel.anchor).from),
+      head:Math.max(tr.changes.mapPos(sel.head,1),state.doc.lineAt(sel.head).from)
+    }
+  });
+  return true;
+}
 let cmEditorView=null; // active CM6 EditorView instance
 let cmNoteId=null;     // which note is being edited
 
@@ -2526,6 +2689,7 @@ function renderNoteEditor(area,noteId){
       placeholder('Start writing... (#tags, @mentions, [[links]] supported)'),
       Prec.high(keymap.of(cmACKeymap)),
       keymap.of([{key:'Enter',run:cmBulletContinuation}]),
+      keymap.of([{key:'Tab',run:cmIndentLines},{key:'Shift-Tab',run:cmOutdentLines}]),
       keymap.of(defaultKeymap),
       keymap.of(historyKeymap),
       cmLivePreviewPlugin(),
@@ -2670,6 +2834,18 @@ function cmBuildDecorations(view){
           }
         } else if(line.number!==cursorLine&&!codeLines.has(line.number)){
           cmDecorateLine(builder,line,Decoration);
+        }
+        // Hanging indent for wrapped lines: if a line has leading spaces and
+        // is NOT inside a code block, add padding-left + negative text-indent
+        // so wrapped continuations align with the text content, not column 0.
+        if(!codeLines.has(line.number)){
+          const lead=line.text.match(/^( +)/);
+          if(lead){
+            const ch=lead[1].length;
+            builder.push(Decoration.line({
+              attributes:{style:`padding-left:${ch}ch;text-indent:-${ch}ch`}
+            }).range(line.from));
+          }
         }
         pos=line.to+1;
       }
@@ -3258,14 +3434,37 @@ function cmBulletContinuation(view){
     view.dispatch({changes:{from:pos,insert:'\n'+prefix},selection:{anchor:pos+1+prefix.length}});
     return true;
   }
-  // Blockquote: >
-  if(text.startsWith('> ')){
-    if(text.trim()==='>'||text==='> '){
+  // Letter list: a. b. c. or a) b) c) — used for nested/indented sub-items
+  const lm=text.match(/^(\s*)([a-z])([.\)]\s+)/);
+  if(lm){
+    if(text.trim().match(/^[a-z][.\)]$/)){
+      view.dispatch({changes:{from:line.from,to:line.to,insert:''}});
+      return true;
+    }
+    const nextChar=lm[2]==='z'?'a':String.fromCharCode(lm[2].charCodeAt(0)+1);
+    const prefix=lm[1]+nextChar+lm[3];
+    view.dispatch({changes:{from:pos,insert:'\n'+prefix},selection:{anchor:pos+1+prefix.length}});
+    return true;
+  }
+  // Blockquote: > (supports indented blockquotes like "     > text")
+  const bqm=text.match(/^(\s*)> /);
+  if(bqm){
+    if(text.trim()==='>'||/^\s*> $/.test(text)){
       // Empty blockquote — clear line
       view.dispatch({changes:{from:line.from,to:line.to,insert:''}});
       return true;
     }
-    view.dispatch({changes:{from:pos,insert:'\n> '},selection:{anchor:pos+3}});
+    const prefix=bqm[1]+'> ';
+    view.dispatch({changes:{from:pos,insert:'\n'+prefix},selection:{anchor:pos+1+prefix.length}});
+    return true;
+  }
+  // Plain text with leading indent — preserve the indent level on Enter
+  const indentMatch=text.match(/^(\s+)/);
+  if(indentMatch){
+    view.dispatch({
+      changes:{from:pos,insert:'\n'+indentMatch[1]},
+      selection:{anchor:pos+1+indentMatch[1].length}
+    });
     return true;
   }
   return false; // let default Enter handle it
@@ -3755,6 +3954,25 @@ function noteKey(e,noteId){
       autoGrowNote(ta);
       return;
     }
+    // Match letter list: "a. ", "b. ", etc. (nested sub-items)
+    const lm=curLine.match(/^(\s*)([a-z])(\.\s+)/);
+    if(lm){
+      if(curLine.trim().match(/^[a-z]\.$/)){
+        e.preventDefault();
+        lines[lines.length-1]='';
+        ta.value=lines.join('\n')+after;
+        ta.selectionStart=ta.selectionEnd=lines.join('\n').length;
+      } else {
+        e.preventDefault();
+        const nextChar=lm[2]==='z'?'a':String.fromCharCode(lm[2].charCodeAt(0)+1);
+        const ins='\n'+lm[1]+nextChar+lm[3];
+        ta.value=before+ins+after;
+        ta.selectionStart=ta.selectionEnd=pos+ins.length;
+      }
+      noteContentChanged(noteId,ta.value);
+      autoGrowNote(ta);
+      return;
+    }
   }
 }
 
@@ -3933,6 +4151,95 @@ function ensureHelpSection(){
 }
 
 /* ═══════════ RECENT NOTES ═══════════ */
+/* ═══════════ BACKLINKS ═══════════ */
+let _backlinksOpen=false;
+let _backlinksSectionId='_backlinks'; // virtual section id
+function toggleBacklinks(){
+  _backlinksOpen=!_backlinksOpen;
+  const btn=document.getElementById('backlinks-toggle');
+  if(btn)btn.classList.toggle('active',_backlinksOpen);
+  renderBacklinks();
+}
+function renderBacklinks(){
+  // Remove any existing backlinks panel wherever it is (right or left sections)
+  document.querySelectorAll('.backlinks-panel').forEach(el=>el.remove());
+  if(!_backlinksOpen)return;
+
+  // Determine current note: only show backlinks when viewing a note tab
+  const noteId=activeTab;
+  const note=db.entries.find(e=>e.id===noteId&&e.isNote);
+  if(!note){
+    // Not viewing a note — show panel with a message
+    _insertBacklinksPanel('<div class="backlinks-empty">Open a note to see its backlinks</div>');
+    return;
+  }
+
+  // Find all entries whose content contains [[noteTitle]] referencing this note
+  const stripT=s=>(s||'').replace(/#[a-zA-Z0-9_-]+/g,'').trim();
+  const title=stripT(note.noteTitle);
+  const rawTitle=(note.noteTitle||'').trim();
+  const firstLine=(note.content||'').split('\n')[0].replace(/^#+\s*/,'').trim();
+  if(!title&&!rawTitle&&!firstLine){
+    _insertBacklinksPanel('<div class="backlinks-empty">This note has no title — backlinks match by title</div>');
+    return;
+  }
+
+  // Collect matches: entries/notes that contain [[title]] in their content
+  const matches=[];
+  const titleLower=title.toLowerCase();
+  const rawTitleLower=rawTitle.toLowerCase();
+  const firstLineLower=firstLine.toLowerCase();
+  db.entries.forEach(e=>{
+    if(e.id===noteId)return; // skip self
+    if(!e.content)return;
+    if(e.eventType)return; // skip events
+    const content=e.content.toLowerCase();
+    // Find [[...]] patterns that match this note's title
+    const links=[...content.matchAll(/\[\[([^\]]+)\]\]/g)];
+    for(const m of links){
+      const linkText=m[1].trim();
+      if(linkText===titleLower||linkText===rawTitleLower||linkText===firstLineLower){
+        matches.push(e);
+        return; // one match per entry is enough
+      }
+    }
+  });
+
+  if(!matches.length){
+    _insertBacklinksPanel('<div class="backlinks-empty">No backlinks to this note</div>');
+    return;
+  }
+
+  // Sort newest first
+  matches.sort((a,b)=>(b.updatedTs||b.ts)-(a.updatedTs||a.ts));
+  const html=matches.map(e=>{
+    const t=stripT(e.noteTitle||'').replace(/^#+\s*/,'').trim()||'Untitled';
+    const preview=e.isNote?'':(e.content||'').slice(0,60);
+    return`<div class="backlinks-entry" onclick="openNoteTab('${e.id}')">
+      <span class="bl-time">${fmtShortDate(e.ts)}</span>
+      ${e.isNote?'<strong>'+escH(t.slice(0,35))+'</strong>':escH(preview)}
+    </div>`;
+  }).join('');
+  _insertBacklinksPanel(html);
+}
+function _insertBacklinksPanel(bodyHtml){
+  const panel=document.createElement('div');
+  panel.className='backlinks-panel';
+  panel.setAttribute('draggable','true');
+  panel.setAttribute('data-sid',_backlinksSectionId);
+  panel.innerHTML=`
+    <div class="backlinks-header">
+      <span class="backlinks-icon"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11.5 L6 14 A3.2 3.2 0 0 1 1.8 9.8 L5.5 6"/><path d="M11.5 8.5 L14 6 A3.2 3.2 0 0 1 18.2 10.2 L14.5 14"/><line x1="7.5" y1="12.5" x2="12.5" y2="7.5"/></svg></span>
+      <span class="backlinks-title">Backlinks</span>
+      <button class="backlinks-close" onclick="toggleBacklinks()" title="Close backlinks">&times;</button>
+    </div>
+    <div class="backlinks-body">${bodyHtml}</div>
+  `;
+  // Insert at the top of right-sections (before regular sections)
+  const container=document.getElementById('right-sections');
+  if(container)container.prepend(panel);
+}
+
 function renderRecent(){
   const el=document.getElementById('recent-list');
   if(!el)return;
@@ -4211,7 +4518,7 @@ function dragSecDrop(e,targetId){
 })();
 // Also allow dropping back to right sidebar header area
 (function(){
-  const rh=document.getElementById('right-header');
+  const rh=document.getElementById('right-toolbar');
   if(!rh)return;
   rh.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';});
   rh.addEventListener('drop',e=>{
@@ -5148,8 +5455,60 @@ function closeSettings(){
 }
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
-const APP_VERSION='1.6.0';
+const APP_VERSION='1.9.0';
 const CHANGELOG=[
+  {
+    version:'1.9.0',
+    date:'2026-04-11',
+    title:'Backlinks panel',
+    changes:[
+      'New **Backlinks** toggle button in the right sidebar bar above Sections',
+      'When viewing a note, the Backlinks panel shows all entries/notes that contain a `[[link]]` to the current note',
+      'Matches on note title (stripped, raw, and first-line) — same logic as cross-link navigation',
+      'Click any backlink to open that note in a tab',
+      'Panel is movable within the sidebar, closable via × or the toggle button',
+      'Shows "No backlinks to this note" or "Open a note to see its backlinks" when appropriate',
+      'Refreshes automatically on tab switch so the panel always reflects the currently-viewed note',
+      'Chain-link SVG icon matches the app\'s icon style (1.6 stroke, currentColor)'
+    ]
+  },
+  {
+    version:'1.8.0',
+    date:'2026-04-11',
+    title:'Tab indentation and nested lists',
+    changes:[
+      '**Tab** indents the current line (or all selected lines) by 5 spaces; **Shift-Tab** outdents',
+      'Inside fenced code blocks, Tab inserts 5 literal spaces at the cursor instead of indenting the line',
+      '**Enter preserves indent level** for plain text lines — not just bullets and lists',
+      'Indented blockquotes (`     > text`) now continue correctly on Enter',
+      '**Nested letter lists**: Tab-indent a numbered item (`2.`) to auto-convert to `a.`; Shift-Tab back to root converts to the next number',
+      'Letter list continuation: `a.` → Enter → `b.` → `c.` etc.',
+      'Outdenting a letter list picks up where the parent numbered list left off (not back to 1)',
+      'Wrapped long indented lines now visually align with the text start (hanging indent), not column 0'
+    ]
+  },
+  {
+    version:'1.7.0',
+    date:'2026-04-10',
+    title:'Image gallery, backup, and quality-of-life',
+    changes:[
+      'New **Image Gallery** tab — grid view of all images, newest first, with infinite scroll (30 at a time)',
+      'Click an image for a full-size modal; **Copy markdown** button copies `![](img_xxx)` to clipboard',
+      '**Image resize** in notes — drag the corner handle to set a per-note display width (stored as `|w=N` in the token)',
+      'Redesigned **Backup & Restore** settings: clear instructions, "What\'s in the backup" callout, and a color-coded **Last backup** indicator (green → red over 30 days)',
+      'Fixed export/import to include **people, theme, floating note settings, and image timestamps** — previously these were silently dropped',
+      '**Changelog** modal in settings with full version history',
+      '**Table Tab navigation**: Tab moves between cells; Tab on the last cell creates a new row',
+      'Copy/cut from notes expands `{{table:id}}` tokens to real markdown; pasting a markdown table auto-converts to an editable widget',
+      '`{{date}}`, `{{time}}`, `{{datetime}}` are now **live macros** — auto-expand when typed or pasted (templates exempt)',
+      '**@mention fix**: partial names (@j, @ja) no longer leak into the people list — mentions only register at commit points (tab switch, close, submit)',
+      'Section drag-and-drop: drop above or below any panel, or in empty space at the bottom of a column',
+      'Feed titles strip leading `#` markdown prefixes; template variables render with the note\'s creation date',
+      '`#template` tag stripping preserves other tags on the same line (e.g. `#template #meeting` → `#meeting`)',
+      'Orphaned help pages (like retired Pinned Items) are now auto-cleaned from IndexedDB',
+      'Floating-window image sync: main window now reloads `db.images` alongside entries so pasted images aren\'t lost'
+    ]
+  },
   {
     version:'1.6.0',
     date:'2026-04-08',
