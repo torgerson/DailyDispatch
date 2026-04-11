@@ -5141,7 +5141,44 @@ function noteContentChanged(id,val){
   // names (@j, @ja, @jan) when the user pauses mid-word. Mentions are only
   // registered at commit points: tab close, tab switch, entry submit, or
   // autocomplete select.
-  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderAllSections();},300);
+  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{
+    save();renderAllSections();
+    // Auto-sync checkboxes to tasks: scan content for [ ] and [x] patterns,
+    // create linked tasks for any that don't exist yet, sync completion state.
+    if(id&&e&&e.isNote){
+      syncNoteCheckboxes(id,val);
+    }
+  },800);
+}
+// Scan a note's content for checkbox patterns and create/sync linked tasks.
+function syncNoteCheckboxes(noteId,content){
+  if(!content)return;
+  const lines=content.split('\n');
+  const checkboxRe=/^(?:\s*(?:[-*]\s+)?)?\[([ x])\]\s+(.+)/;
+  let changed=false;
+  for(const line of lines){
+    const m=line.match(checkboxRe);
+    if(!m)continue;
+    const checked=m[1]==='x';
+    const title=m[2].trim();
+    if(!title)continue;
+    // Find existing linked task
+    let task=(db.tasks||[]).find(t=>t.note_id===noteId&&t.title===title);
+    if(!task){
+      // Create new task linked to this note
+      task=createTask({title,note_id:noteId});
+      changed=true;
+    }
+    // Sync completion state
+    if(task&&checked&&!task.completed){
+      completeTask(task.id,true);
+      changed=true;
+    } else if(task&&!checked&&task.completed){
+      completeTask(task.id,false);
+      changed=true;
+    }
+  }
+  if(changed){renderSidebar();}
 }
 function noteKey(e,noteId){
   // Autocomplete takes priority
