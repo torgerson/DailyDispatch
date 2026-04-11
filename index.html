@@ -1712,6 +1712,61 @@
   }
   .tl-hide-done:hover { text-decoration: underline; }
 
+  /* ═══ Task detail modal ═══ */
+  .task-modal-box { max-width: 480px !important; padding: 0 !important; }
+  .tm-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 18px 20px 14px; border-bottom: 1px solid var(--border-light);
+  }
+  .tm-chk {
+    width: 20px; height: 20px; border: 2px solid var(--border-strong); border-radius: 50%;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .tm-chk:hover { border-color: var(--green); }
+  .tm-chk.checked { background: var(--green); border-color: var(--green); }
+  .tm-chk.checked::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
+  .tm-title {
+    flex: 1; border: none; outline: none; font-size: 16px; font-weight: 700;
+    font-family: var(--sans); color: var(--text); background: transparent;
+  }
+  .tm-title:focus { border-bottom: 1px solid var(--accent); }
+  .tm-close {
+    background: none; border: none; color: var(--text3); font-size: 20px;
+    cursor: pointer; padding: 2px 6px; border-radius: 3px;
+  }
+  .tm-close:hover { color: var(--danger); }
+  .tm-fields { padding: 14px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .tm-field { display: flex; align-items: center; gap: 10px; }
+  .tm-field label {
+    font-size: 11px; font-weight: 600; color: var(--text2); min-width: 65px;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .tm-field select, .tm-field input[type="date"] {
+    flex: 1; padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 12px; font-family: var(--sans); color: var(--text); background: var(--surface);
+    outline: none;
+  }
+  .tm-field select:focus, .tm-field input:focus { border-color: var(--accent); }
+  .tm-note-link {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 20px; font-size: 12px; color: var(--blue); cursor: pointer;
+  }
+  .tm-note-link:hover { text-decoration: underline; }
+  .tm-meta {
+    padding: 8px 20px; font-size: 10px; color: var(--text3);
+    display: flex; gap: 4px;
+  }
+  .tm-actions {
+    padding: 10px 20px 16px; border-top: 1px solid var(--border-light);
+  }
+  .tm-delete {
+    background: none; border: 1px solid var(--border); color: var(--danger);
+    padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer;
+    font-size: 11px; font-family: var(--sans);
+  }
+  .tm-delete:hover { background: #fef2f2; border-color: var(--danger); }
+
   .summary-banner {
     display: flex; align-items: center; gap: 8px;
     padding: 8px 14px; margin-bottom: 12px;
@@ -1943,6 +1998,12 @@
       <button class="changelog-close" onclick="closeChangelog()">&times;</button>
     </div>
     <div id="changelog-body" class="changelog-body"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="task-modal" onclick="if(event.target===this)closeTaskModal()">
+  <div class="modal-box task-modal-box">
+    <div id="task-modal-content"></div>
   </div>
 </div>
 
@@ -3955,16 +4016,78 @@ class CmCheckboxWidget extends CM6.WidgetType{
     cb.className='cm-dd-checkbox';
     cb.addEventListener('mousedown',e=>{
       e.preventDefault();
-      // Toggle the checkbox in the document
       if(!cmEditorView)return;
       const line=cmEditorView.state.doc.line(this.lineNum);
       const text=line.text;
+      const nowChecked=!this.checked;
       const newText=this.checked?text.replace('[x]','[ ]'):text.replace('[ ]','[x]');
       cmEditorView.dispatch({changes:{from:line.from,to:line.to,insert:newText}});
+      // Sync with linked task if one exists for this note + checkbox text
+      if(cmNoteId)syncCheckboxToTask(cmNoteId,text,nowChecked);
     });
     return cb;
   }
   eq(other){return other.checked===this.checked&&other.lineNum===this.lineNum;}
+}
+/* ── Task-Note bidirectional sync ── */
+// Extract the task title from a checkbox line: "  - [ ] Do something" → "Do something"
+function extractCheckboxTitle(lineText){
+  const m=lineText.match(/^(?:\s*(?:[-*]\s+)?)?\[[ x]\]\s+(.*)/);
+  return m?m[1].trim():'';
+}
+// When a note checkbox is toggled, find or create a linked task
+function syncCheckboxToTask(noteId,lineText,checked){
+  const title=extractCheckboxTitle(lineText);
+  if(!title)return;
+  // Find existing task linked to this note with matching title
+  let task=(db.tasks||[]).find(t=>t.note_id===noteId&&t.title===title);
+  if(!task){
+    // Create a new task linked to this note
+    task=createTask({title,note_id:noteId});
+    if(!task)return;
+  }
+  // Sync completion state
+  if(checked&&!task.completed){
+    completeTask(task.id,true);
+  } else if(!checked&&task.completed){
+    completeTask(task.id,false);
+  }
+  renderSidebar();
+}
+// When a task is completed/uncompleted via Kanban/modal, update the note checkbox
+function syncTaskToNote(taskId){
+  const t=(db.tasks||[]).find(x=>x.id===taskId);
+  if(!t||!t.note_id)return;
+  const entry=db.entries.find(e=>e.id===t.note_id);
+  if(!entry||!entry.content)return;
+  // Find the checkbox line matching this task's title
+  const lines=entry.content.split('\n');
+  let changed=false;
+  for(let i=0;i<lines.length;i++){
+    const title=extractCheckboxTitle(lines[i]);
+    if(title===t.title){
+      if(t.completed&&lines[i].includes('[ ]')){
+        lines[i]=lines[i].replace('[ ]','[x]');
+        changed=true;
+      } else if(!t.completed&&lines[i].includes('[x]')){
+        lines[i]=lines[i].replace('[x]','[ ]');
+        changed=true;
+      }
+      break;
+    }
+  }
+  if(changed){
+    entry.content=lines.join('\n');
+    entry.updatedTs=Date.now();
+    save('entries');
+    // If this note is currently open in the CM6 editor, update the doc
+    if(cmEditorView&&cmNoteId===t.note_id){
+      const currentDoc=cmEditorView.state.doc.toString();
+      if(currentDoc!==entry.content){
+        cmEditorView.dispatch({changes:{from:0,to:currentDoc.length,insert:entry.content}});
+      }
+    }
+  }
 }
 // Widget for inline image ![](img_xxx) with optional |w=N display width.
 class CmImageWidget extends CM6.WidgetType{
@@ -6236,7 +6359,7 @@ document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key===';'){e.preventDefault();createNote();}
   if((e.metaKey||e.ctrlKey)&&e.shiftKey&&(e.key==='o'||e.key==='O')){e.preventDefault();openQuickOpen();}
   if((e.metaKey||e.ctrlKey)&&e.key==='d'&&activeTab!=='today'){e.preventDefault();closeTab(activeTab);}
-  if(e.key==='Escape'){closeSearch();closeAC();closeNoteDatePicker();closeQuickOpen();closeChangelog();closeImageModal();}
+  if(e.key==='Escape'){closeSearch();closeAC();closeNoteDatePicker();closeQuickOpen();closeChangelog();closeImageModal();closeTaskModal();}
 },true);
 
 /* ═══════════ QUICK OPEN MODAL (Cmd+Shift+O) ═══════════ */
@@ -6633,8 +6756,25 @@ function closeSettings(){
 }
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
-const APP_VERSION='2.2.0';
+const APP_VERSION='2.3.0';
 const CHANGELOG=[
+  {
+    version:'2.3.0',
+    date:'2026-04-11',
+    title:'Task detail modal + Note integration (Phases 6+7)',
+    changes:[
+      '**Task detail modal**: click any task card/row to open a full edit form — title, priority, due date, column, completion, note link, delete',
+      'All fields save immediately on change; modal updates Kanban/list/Today views in real time',
+      'Changing column to Done auto-completes; changing away uncompletes',
+      '**Delete task** with confirmation from the modal',
+      '**Bidirectional checkbox sync**: toggling `[ ]` in a note creates a linked task (or syncs an existing one)',
+      'Completing a task via Kanban/modal/list **updates the checkbox** in the linked note — `[ ]` becomes `[x]`',
+      'Unchecking a task reverts the note checkbox from `[x]` to `[ ]`',
+      'If the note is open in the CM6 editor, the checkbox toggles **live** without requiring a refresh',
+      'Task title extracted from checkbox line: `- [ ] Do something` → title = "Do something"',
+      'Linked tasks show a **📄 Open linked note** link in the modal'
+    ]
+  },
   {
     version:'2.2.0',
     date:'2026-04-11',
@@ -7919,12 +8059,49 @@ function quickAddTask(){
   renderSidebar();
 }
 function openTaskDetail(taskId){
-  // Phase 6 will implement a full modal. For now show a simple alert with task info.
   const t=(db.tasks||[]).find(x=>x.id===taskId);
   if(!t)return;
-  const col=getColumnName(t.column_id);
-  const msg=`${t.title}\n\nPriority: ${t.priority}\nColumn: ${col}\nDue: ${t.due_date||'none'}\nCompleted: ${t.completed?'Yes':'No'}`;
-  alert(msg);
+  const cols=(db.columns||[]).sort((a,b)=>a.order-b.order);
+  const modal=document.getElementById('task-modal');
+  const body=document.getElementById('task-modal-content');
+  const priOpts=['H','M','L'].map(p=>`<option value="${p}"${t.priority===p?' selected':''}>${p==='H'?'High':p==='M'?'Medium':'Low'}</option>`).join('');
+  const colOpts=cols.map(c=>`<option value="${c.id}"${t.column_id===c.id?' selected':''}>${escH(c.name)}</option>`).join('');
+  const createdDate=new Date(t.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const completedDate=t.completed_at?new Date(t.completed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+
+  body.innerHTML=`
+    <div class="tm-header">
+      <div class="tm-chk${t.completed?' checked':''}" onclick="completeTask('${t.id}',${!t.completed});openTaskDetail('${t.id}');renderActiveView();renderSidebar()"></div>
+      <input class="tm-title" value="${escH(t.title)}" onchange="updateTask('${t.id}',{title:this.value.trim()});renderActiveView();renderSidebar()">
+      <button class="tm-close" onclick="closeTaskModal()">&times;</button>
+    </div>
+    <div class="tm-fields">
+      <div class="tm-field">
+        <label>Priority</label>
+        <select onchange="updateTask('${t.id}',{priority:this.value});renderActiveView();renderSidebar()">${priOpts}</select>
+      </div>
+      <div class="tm-field">
+        <label>Due date</label>
+        <input type="date" value="${t.due_date||''}" onchange="updateTask('${t.id}',{due_date:this.value||null});renderActiveView();renderSidebar()">
+      </div>
+      <div class="tm-field">
+        <label>Column</label>
+        <select onchange="updateTask('${t.id}',{column_id:this.value});const dc=getDoneColumn();if(dc&&this.value===dc.id&&!db.tasks.find(x=>x.id==='${t.id}').completed){completeTask('${t.id}',true);}else if(dc&&this.value!==dc.id&&db.tasks.find(x=>x.id==='${t.id}').completed){completeTask('${t.id}',false);}renderActiveView();renderSidebar()">${colOpts}</select>
+      </div>
+    </div>
+    ${t.note_id?`<div class="tm-note-link" onclick="closeTaskModal();openAsNote('${t.note_id}')"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="13" y2="10"/></svg> Open linked note</div>`:''}
+    <div class="tm-meta">
+      <span>Created ${createdDate}</span>
+      ${completedDate?`<span>· Completed ${completedDate}</span>`:''}
+    </div>
+    <div class="tm-actions">
+      <button class="tm-delete" onclick="if(confirm('Delete this task?')){deleteTask('${t.id}');closeTaskModal();renderActiveView();renderSidebar();}">Delete task</button>
+    </div>
+  `;
+  modal.classList.add('open');
+}
+function closeTaskModal(){
+  document.getElementById('task-modal')?.classList.remove('open');
 }
 
 function ensureDefaultColumns(){
@@ -7988,6 +8165,8 @@ function completeTask(id,completed){
   }
   t.order=getNextTaskOrder(t.column_id);
   save('tasks');
+  // Sync the checkbox in the linked note (if any)
+  syncTaskToNote(id);
 }
 function deleteTask(id){
   db.tasks=(db.tasks||[]).filter(t=>t.id!==id);
