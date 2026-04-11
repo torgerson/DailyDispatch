@@ -2197,6 +2197,7 @@ async function loadDB(){
   db.homeShownOnce=s.homeShownOnce||false;
   db.floatingNote=s.floatingNote||{position:'right',width:300};
   db.lastBackupTs=s.lastBackupTs||0;
+  db.checkboxesMigrated=s.checkboxesMigrated||false;
   if(s.sbGroupState)sbGroupState=s.sbGroupState;
   // Restore tab session
   if(s.openTabs&&s.openTabs.length){
@@ -2287,7 +2288,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,sbGroupState,openTabs,activeTab,searchTabs}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,sbGroupState,openTabs,activeTab,searchTabs}]);
     } else if(store==='sections'&&db.sections){
       // Strip transient session-only flags and drop unsaved drafts
       const sanitized=db.sections
@@ -8206,6 +8207,37 @@ function ensureDefaultColumns(){
   ];
   save('columns');
 }
+// One-time migration: scan all existing notes for [ ] checkboxes and
+// create linked tasks for any that don't have one yet.
+function migrateExistingCheckboxes(){
+  if(db.checkboxesMigrated)return;
+  const notes=db.entries.filter(e=>e.isNote&&!e.isHelp&&!e.eventType&&e.content);
+  let created=0;
+  notes.forEach(n=>{
+    const lines=n.content.split('\n');
+    const re=/^(?:\s*(?:[-*]\s+)?)?\[([ x])\]\s+(.+)/;
+    lines.forEach(line=>{
+      const m=line.match(re);
+      if(!m)return;
+      const checked=m[1]==='x';
+      const title=m[2].trim();
+      if(!title)return;
+      // Skip if task already exists
+      if((db.tasks||[]).some(t=>t.note_id===n.id&&t.title===title))return;
+      const task=createTask({title,note_id:n.id});
+      if(task&&checked){
+        task.completed=true;
+        task.completed_at=Date.now();
+        const doneCol=getDoneColumn();
+        if(doneCol)task.column_id=doneCol.id;
+      }
+      created++;
+    });
+  });
+  db.checkboxesMigrated=true;
+  if(created)save('tasks');
+  save('settings');
+}
 function getDoneColumn(){
   return(db.columns||[]).find(c=>c.isDone)||null;
 }
@@ -8529,6 +8561,7 @@ async function init(){
   if(!db.tagColors)db.tagColors={};
   if(!db.people)db.people=[];
   ensureDefaultColumns();
+  migrateExistingCheckboxes();
   ensureHelpNotes();
   if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
   // First-launch: open the home tab once so new users get the landing page.
