@@ -1609,23 +1609,28 @@
     border-bottom: 1px solid var(--border-light); background: var(--surface); flex-shrink: 0;
   }
   .tasks-search {
-    flex: 1; max-width: 240px; padding: 5px 8px;
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    font-size: 11px; font-family: var(--sans); color: var(--text); outline: none; background: var(--bg);
+    flex: 0 1 180px; padding: 4px 8px;
+    border: 1px solid var(--border); border-radius: 12px;
+    font-size: 11px; font-family: var(--sans); color: var(--text); outline: none; background: transparent;
   }
   .tasks-search:focus { border-color: var(--accent); }
   .tasks-search::placeholder { color: var(--text3); }
-  .tasks-pri-pill {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;
-    cursor: pointer; user-select: none; border: 1px solid;
+  .seg-group {
+    display: flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
   }
-  .pri-dot { width: 6px; height: 6px; border-radius: 50%; }
-  .tasks-due-filter {
-    padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-    font-size: 10px; color: var(--text2); background: var(--surface);
-    cursor: pointer; font-family: var(--sans);
+  .seg-btn {
+    padding: 4px 10px; font-size: 10px; font-weight: 600; cursor: pointer;
+    border: none; background: transparent; color: var(--text3);
+    font-family: var(--sans); transition: all 0.1s;
+    border-right: 1px solid var(--border);
   }
+  .seg-btn:last-child { border-right: none; }
+  .seg-btn:hover { background: var(--bg); color: var(--text2); }
+  .seg-btn.on { color: #fff; }
+  .seg-btn.on.s-red { background: var(--danger); }
+  .seg-btn.on.s-amber { background: var(--amber); }
+  .seg-btn.on.s-gray { background: var(--border-strong); }
+  .seg-btn.on.s-accent { background: var(--accent); }
   .tasks-count { font-size: 10px; color: var(--text3); margin-left: auto; font-family: var(--mono); }
 
   /* ═══ Kanban board ═══ */
@@ -2729,19 +2734,22 @@ function renderTasksView(area){
 
   // Filter bar
   const priActive=p=>tasksFilter.priorities.includes(p);
+  const dueActive=v=>(tasksFilter.dueRange||'')===v;
   h+=`<div class="tasks-filters">
-    <input class="tasks-search" type="text" placeholder="Search tasks..." value="${escH(tasksFilter.search)}" oninput="tasksFilter.search=this.value;renderActiveView()">
-    <span class="tasks-pri-pill ${priActive('H')?'on':''}" style="${priActive('H')?'background:var(--danger);color:#fff;border-color:var(--danger)':'border-color:var(--border);color:var(--text3)'}" onclick="toggleTaskPriFilter('H')"><span class="pri-dot" style="background:${priActive('H')?'#fff':'var(--danger)'}"></span>High</span>
-    <span class="tasks-pri-pill ${priActive('M')?'on':''}" style="${priActive('M')?'background:var(--amber);color:#fff;border-color:var(--amber)':'border-color:var(--border);color:var(--text3)'}" onclick="toggleTaskPriFilter('M')"><span class="pri-dot" style="background:${priActive('M')?'#fff':'var(--amber)'}"></span>Med</span>
-    <span class="tasks-pri-pill ${priActive('L')?'on':''}" style="${priActive('L')?'background:var(--border-strong);color:#fff;border-color:var(--border-strong)':'border-color:var(--border);color:var(--text3)'}" onclick="toggleTaskPriFilter('L')"><span class="pri-dot" style="background:${priActive('L')?'#fff':'var(--border-strong)'}"></span>Low</span>
-    <select class="tasks-due-filter" onchange="tasksFilter.dueRange=this.value||null;renderActiveView()">
-      <option value="">All dates</option>
-      <option value="overdue"${tasksFilter.dueRange==='overdue'?' selected':''}>Overdue</option>
-      <option value="today"${tasksFilter.dueRange==='today'?' selected':''}>Today</option>
-      <option value="7d"${tasksFilter.dueRange==='7d'?' selected':''}>Next 7 days</option>
-      <option value="30d"${tasksFilter.dueRange==='30d'?' selected':''}>Next 30 days</option>
-      <option value="none"${tasksFilter.dueRange==='none'?' selected':''}>No due date</option>
-    </select>
+    <input class="tasks-search" type="text" placeholder="Search\u2026" value="${escH(tasksFilter.search)}" oninput="tasksFilter.search=this.value;renderActiveView()">
+    <div class="seg-group">
+      <button class="seg-btn${priActive('H')?' on s-red':''}" onclick="toggleTaskPriFilter('H')">High</button>
+      <button class="seg-btn${priActive('M')?' on s-amber':''}" onclick="toggleTaskPriFilter('M')">Med</button>
+      <button class="seg-btn${priActive('L')?' on s-gray':''}" onclick="toggleTaskPriFilter('L')">Low</button>
+    </div>
+    <div class="seg-group">
+      <button class="seg-btn${dueActive('')?' on s-accent':''}" onclick="tasksFilter.dueRange=null;renderActiveView()">All</button>
+      <button class="seg-btn${dueActive('overdue')?' on s-accent':''}" onclick="tasksFilter.dueRange='overdue';renderActiveView()">Overdue</button>
+      <button class="seg-btn${dueActive('today')?' on s-accent':''}" onclick="tasksFilter.dueRange='today';renderActiveView()">Today</button>
+      <button class="seg-btn${dueActive('7d')?' on s-accent':''}" onclick="tasksFilter.dueRange='7d';renderActiveView()">7d</button>
+      <button class="seg-btn${dueActive('30d')?' on s-accent':''}" onclick="tasksFilter.dueRange='30d';renderActiveView()">30d</button>
+      <button class="seg-btn${dueActive('none')?' on s-accent':''}" onclick="tasksFilter.dueRange='none';renderActiveView()">No date</button>
+    </div>
     <span class="tasks-count">${filtered.filter(t=>!t.completed).length} open · ${filtered.filter(t=>t.completed).length} done</span>
   </div>`;
 
