@@ -1520,28 +1520,63 @@
   .tl-star { font-size: 12px; }
   .tm-star { font-size: 18px; }
   .today-task-row.starred { border-left: 3px solid var(--amber); }
-  /* Quick add task */
-  .today-task-add {
-    display: flex; gap: 6px; align-items: center;
-    padding: 6px 0; margin-bottom: 16px;
+  /* Expanding task-add card */
+  .task-add-trigger {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; margin-bottom: 14px; cursor: pointer;
+    color: var(--text3); font-size: 13px; border-radius: var(--radius-md);
+    transition: all 0.12s;
   }
-  .today-task-add input[type="text"] {
-    flex: 1; padding: 6px 10px; border: 1px dashed var(--border-strong);
-    border-radius: var(--radius-sm); font-size: 12px; font-family: var(--sans);
-    color: var(--text); background: transparent; outline: none;
+  .task-add-trigger:hover { color: var(--accent); background: var(--accent-light); }
+  .task-add-plus { font-size: 16px; font-weight: 300; }
+  .task-add-label { font-weight: 500; }
+  .task-add-card {
+    background: var(--surface); border: 1px solid var(--accent);
+    border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
-  .today-task-add input[type="text"]:focus { border-style: solid; border-color: var(--accent); }
-  .today-task-add input[type="text"]::placeholder { color: var(--text3); }
-  .today-task-add select {
-    padding: 5px 6px; border: 1px solid var(--border); border-radius: 3px;
-    font-size: 10px; color: var(--text2); background: var(--surface);
-    font-family: var(--sans); cursor: pointer;
+  .task-add-title {
+    width: 100%; border: none; outline: none; font-size: 14px; font-weight: 500;
+    font-family: var(--sans); color: var(--text); background: transparent;
+    margin-bottom: 10px;
   }
-  .today-task-add input[type="date"] {
-    padding: 4px 6px; border: 1px solid var(--border); border-radius: 3px;
-    font-size: 10px; color: var(--text2); background: var(--surface);
-    font-family: var(--sans);
+  .task-add-title::placeholder { color: var(--text3); font-weight: 400; }
+  .task-add-options {
+    display: flex; align-items: center; gap: 8px;
   }
+  .task-add-pri { display: flex; gap: 3px; }
+  .tap-dot {
+    width: 22px; height: 22px; border-radius: 50%; font-size: 9px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: 2px solid transparent; transition: all 0.12s;
+    color: #fff; user-select: none;
+  }
+  .tap-dot.high { background: var(--danger); opacity: 0.35; }
+  .tap-dot.med { background: var(--amber); opacity: 0.35; }
+  .tap-dot.low { background: var(--border-strong); opacity: 0.35; }
+  .tap-dot.active { opacity: 1; border-color: var(--text); transform: scale(1.15); }
+  .tap-dot:hover { opacity: 0.8; }
+  .task-add-due-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 12px; font-size: 11px;
+    background: var(--sidebar-bg); border: 1px solid var(--border);
+    color: var(--text2); cursor: pointer; font-family: var(--sans);
+    position: relative;
+  }
+  .task-add-due-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .task-add-spacer { flex: 1; }
+  .task-add-submit {
+    padding: 4px 14px; border-radius: var(--radius-sm);
+    background: var(--accent); color: #fff; border: none;
+    font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--sans);
+  }
+  .task-add-submit:hover { filter: brightness(0.92); }
+  .task-add-cancel {
+    padding: 4px 10px; border-radius: var(--radius-sm);
+    background: transparent; color: var(--text3); border: 1px solid var(--border);
+    font-size: 11px; cursor: pointer; font-family: var(--sans);
+  }
+  .task-add-cancel:hover { color: var(--text); }
   /* ═══ Tasks toolbar & filters ═══ */
   .tasks-toolbar {
     display: flex; align-items: center; gap: 14px;
@@ -1636,6 +1671,11 @@
     font-size: 10px; cursor: pointer; background: transparent; font-family: var(--sans);
   }
   .kanban-col-add:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .kanban-inline-add input {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--accent);
+    border-radius: var(--radius-md); font-size: 12px; font-family: var(--sans);
+    color: var(--text); outline: none; background: var(--surface);
+  }
   .kanban-add-col {
     min-width: 40px; display: flex; align-items: flex-start; justify-content: center; padding-top: 12px;
   }
@@ -2891,11 +2931,26 @@ function showColMenu(colId,e){
   }
 }
 function quickAddToColumn(colId){
-  const title=prompt('Task title:');
-  if(!title||!title.trim())return;
-  createTask({title:title.trim(),column_id:colId});
-  renderActiveView();
-  renderSidebar();
+  // Inline input at the bottom of the column
+  const body=document.querySelector(`.kanban-col-body[data-col="${colId}"]`);
+  if(!body)return;
+  // Don't add twice
+  if(body.querySelector('.kanban-inline-add'))return;
+  const wrap=document.createElement('div');
+  wrap.className='kanban-inline-add';
+  wrap.innerHTML=`<input type="text" placeholder="Task title\u2026" autofocus>`;
+  const inp=wrap.querySelector('input');
+  inp.addEventListener('keydown',ev=>{
+    if(ev.key==='Enter'&&inp.value.trim()){
+      createTask({title:inp.value.trim(),column_id:colId});
+      wrap.remove();
+      renderActiveView();renderSidebar();
+    }
+    if(ev.key==='Escape')wrap.remove();
+  });
+  inp.addEventListener('blur',()=>{setTimeout(()=>wrap.remove(),150);});
+  body.appendChild(wrap);
+  setTimeout(()=>inp.focus(),10);
 }
 
 /* ── Task List View (Phase 5 stub — basic grouped table) ── */
@@ -2942,13 +2997,12 @@ function renderTaskList(tasks,cols){
 }
 
 function showNewTaskForm(){
-  const title=prompt('Task title:');
-  if(!title||!title.trim())return;
-  const pri=prompt('Priority (H/M/L):','L');
-  const due=prompt('Due date (YYYY-MM-DD or blank):','');
-  createTask({title:title.trim(),priority:(pri||'L').toUpperCase(),due_date:due||null});
-  renderActiveView();
-  renderSidebar();
+  // Switch to Today tab and expand the task-add card
+  switchTab('today');
+  setTimeout(()=>{
+    const trigger=document.querySelector('.task-add-trigger');
+    if(trigger)expandTaskAdd(trigger);
+  },50);
 }
 
 function renderToday(area){
@@ -3021,12 +3075,29 @@ function renderToday(area){
       </div>`;
     });
   }
-  // Quick add task — always show on today view
+  // Quick add task — clean expanding card
   if(viewingToday||selectedDate>=today){
-    h+=`<div class="today-task-add">
-      <input id="quick-task-input" type="text" placeholder="+ Add a task..." onkeydown="if(event.key==='Enter'){event.preventDefault();quickAddTask();}">
-      <select id="quick-task-priority"><option value="L">Low</option><option value="M">Med</option><option value="H">High</option></select>
-      <input id="quick-task-due" type="date" value="${viewingToday?'':selectedDate}" title="Due date (optional)">
+    h+=`<div class="task-add-trigger" onclick="expandTaskAdd(this)">
+      <span class="task-add-plus">+</span>
+      <span class="task-add-label">Add a task</span>
+    </div>
+    <div class="task-add-card" id="task-add-card" style="display:none">
+      <input id="task-add-title" class="task-add-title" type="text" placeholder="What needs to be done?" onkeydown="if(event.key==='Enter'){event.preventDefault();submitTaskAdd();}if(event.key==='Escape'){collapseTaskAdd();}">
+      <div class="task-add-options">
+        <div class="task-add-pri" id="task-add-pri" data-val="L">
+          <span class="tap-dot high" onclick="setTaskAddPri('H')" title="High">H</span>
+          <span class="tap-dot med" onclick="setTaskAddPri('M')" title="Medium">M</span>
+          <span class="tap-dot low active" onclick="setTaskAddPri('L')" title="Low">L</span>
+        </div>
+        <button class="task-add-due-btn" id="task-add-due-btn" onclick="toggleTaskAddDate()">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="12" rx="2"/><line x1="3" y1="9" x2="17" y2="9"/><line x1="7" y1="3" x2="7" y2="6"/><line x1="13" y1="3" x2="13" y2="6"/></svg>
+          <span id="task-add-due-label">No date</span>
+        </button>
+        <input type="date" id="task-add-due-input" style="display:none;position:absolute;opacity:0" onchange="setTaskAddDate(this.value)">
+        <div class="task-add-spacer"></div>
+        <button class="task-add-submit" onclick="submitTaskAdd()">Add</button>
+        <button class="task-add-cancel" onclick="collapseTaskAdd()">Cancel</button>
+      </div>
     </div>`;
   }
 
@@ -8136,17 +8207,53 @@ See also: [[Welcome to DailyDispatch]], [[Notes & Markdown Editor]], [[Slash Com
 ];
 
 /* ═══════════ TASKS ═══════════ */
-function quickAddTask(){
-  const inp=document.getElementById('quick-task-input');
-  const pri=document.getElementById('quick-task-priority');
-  const due=document.getElementById('quick-task-due');
-  if(!inp)return;
-  const title=inp.value.trim();
-  if(!title)return;
-  createTask({title,priority:pri?pri.value:'L',due_date:due&&due.value?due.value:null});
-  inp.value='';
-  if(pri)pri.value='L';
-  if(due)due.value='';
+/* ── Expanding task-add card ── */
+function expandTaskAdd(trigger){
+  if(trigger)trigger.style.display='none';
+  const card=document.getElementById('task-add-card');
+  if(card){card.style.display='';setTimeout(()=>{const inp=document.getElementById('task-add-title');if(inp)inp.focus();},30);}
+}
+function collapseTaskAdd(){
+  const card=document.getElementById('task-add-card');
+  if(card)card.style.display='none';
+  const trigger=document.querySelector('.task-add-trigger');
+  if(trigger)trigger.style.display='';
+  // Reset state
+  const inp=document.getElementById('task-add-title');if(inp)inp.value='';
+  setTaskAddPri('L');
+  const lbl=document.getElementById('task-add-due-label');if(lbl)lbl.textContent='No date';
+  const dinp=document.getElementById('task-add-due-input');if(dinp)dinp.value='';
+}
+function setTaskAddPri(p){
+  const wrap=document.getElementById('task-add-pri');
+  if(!wrap)return;
+  wrap.dataset.val=p;
+  wrap.querySelectorAll('.tap-dot').forEach(d=>{
+    d.classList.toggle('active',d.textContent===p);
+  });
+}
+function toggleTaskAddDate(){
+  const dinp=document.getElementById('task-add-due-input');
+  if(dinp){dinp.showPicker?dinp.showPicker():dinp.click();}
+}
+function setTaskAddDate(val){
+  const lbl=document.getElementById('task-add-due-label');
+  if(!val){if(lbl)lbl.textContent='No date';return;}
+  const d=new Date(val+'T12:00:00');
+  const label=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  if(lbl)lbl.textContent=label;
+}
+function submitTaskAdd(){
+  const inp=document.getElementById('task-add-title');
+  if(!inp||!inp.value.trim())return;
+  const priEl=document.getElementById('task-add-pri');
+  const dueInp=document.getElementById('task-add-due-input');
+  createTask({
+    title:inp.value.trim(),
+    priority:priEl?priEl.dataset.val:'L',
+    due_date:dueInp&&dueInp.value?dueInp.value:null
+  });
+  collapseTaskAdd();
   renderActiveView();
   renderSidebar();
 }
