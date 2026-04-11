@@ -1523,6 +1523,195 @@
     font-size: 10px; color: var(--text2); background: var(--surface);
     font-family: var(--sans);
   }
+  /* ═══ Tasks toolbar & filters ═══ */
+  .tasks-toolbar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 20px; border-bottom: 1px solid var(--border-light);
+    background: var(--surface); flex-shrink: 0;
+  }
+  .tasks-toolbar-title { font-size: 16px; font-weight: 700; flex: 1; }
+  .tasks-view-toggle {
+    display: flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
+  }
+  .tasks-view-toggle button {
+    padding: 4px 12px; font-size: 11px; font-weight: 600; cursor: pointer;
+    border: none; background: var(--surface); color: var(--text2);
+    font-family: var(--sans); transition: all 0.1s;
+  }
+  .tasks-view-toggle button.active { background: var(--accent); color: #fff; }
+  .tasks-view-toggle button:not(.active):hover { background: var(--bg); }
+  .tasks-view-toggle button:first-child { border-right: 1px solid var(--border); }
+  .tasks-new-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: var(--radius-md);
+    background: var(--accent); color: #fff; border: none;
+    font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--sans);
+  }
+  .tasks-new-btn:hover { filter: brightness(0.92); }
+  .tasks-filters {
+    display: flex; align-items: center; gap: 8px; padding: 8px 20px;
+    border-bottom: 1px solid var(--border-light); background: var(--surface); flex-shrink: 0;
+  }
+  .tasks-search {
+    flex: 1; max-width: 240px; padding: 5px 8px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 11px; font-family: var(--sans); color: var(--text); outline: none; background: var(--bg);
+  }
+  .tasks-search:focus { border-color: var(--accent); }
+  .tasks-search::placeholder { color: var(--text3); }
+  .tasks-pri-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;
+    cursor: pointer; user-select: none; border: 1px solid;
+  }
+  .pri-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .tasks-due-filter {
+    padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 10px; color: var(--text2); background: var(--surface);
+    cursor: pointer; font-family: var(--sans);
+  }
+  .tasks-count { font-size: 10px; color: var(--text3); margin-left: auto; font-family: var(--mono); }
+
+  /* ═══ Kanban board ═══ */
+  .kanban-board {
+    display: flex; gap: 12px; padding: 14px 16px;
+    overflow-x: auto; overflow-y: hidden; align-items: flex-start;
+    flex: 1;
+  }
+  .kanban-col {
+    min-width: 240px; max-width: 280px; flex: 1;
+    background: var(--sidebar-bg); border-radius: var(--radius-lg);
+    display: flex; flex-direction: column; max-height: calc(100vh - 140px);
+    border: 1px solid var(--border-light);
+  }
+  .kanban-col-done { min-width: 220px; max-width: 240px; flex: 0 0 auto; opacity: 0.85; }
+  .kanban-col-done:hover { opacity: 1; }
+  .kanban-col-hdr {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 12px 8px; flex-shrink: 0; cursor: grab;
+    border-bottom: 2px solid var(--accent);
+  }
+  .kanban-col-hdr:active { cursor: grabbing; }
+  .kanban-col-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; flex: 1; }
+  .kanban-col-count {
+    font-size: 9px; font-weight: 600; color: var(--text3);
+    background: var(--surface); padding: 1px 6px; border-radius: 8px;
+  }
+  .kanban-col-menu {
+    background: none; border: none; color: var(--text3); cursor: pointer;
+    font-size: 14px; padding: 0 2px; line-height: 1; opacity: 0;
+  }
+  .kanban-col-hdr:hover .kanban-col-menu { opacity: 1; }
+  .kanban-col-menu:hover { color: var(--text); }
+  .kanban-col-body {
+    flex: 1; overflow-y: auto; padding: 6px 6px 8px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .kanban-col-body.drag-over { background: var(--accent-light); }
+  .kanban-col-add {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    padding: 6px; margin: 0 6px 6px; border-radius: var(--radius-sm);
+    border: 1px dashed var(--border-strong); color: var(--text3);
+    font-size: 10px; cursor: pointer; background: transparent; font-family: var(--sans);
+  }
+  .kanban-col-add:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .kanban-add-col {
+    min-width: 40px; display: flex; align-items: flex-start; justify-content: center; padding-top: 12px;
+  }
+  .kanban-add-col button {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 2px dashed var(--border-strong); background: transparent;
+    color: var(--text3); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .kanban-add-col button:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .kanban-done-footer {
+    padding: 6px 10px; font-size: 10px; color: var(--text3); text-align: center;
+    border-top: 1px solid var(--border-light); font-style: italic;
+  }
+
+  /* ═══ Kanban card ═══ */
+  .kanban-card {
+    background: var(--surface); border-radius: var(--radius-md);
+    padding: 8px 10px; cursor: grab;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    transition: all 0.1s;
+  }
+  .kanban-card:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-color: var(--border); }
+  .kanban-card:active { cursor: grabbing; }
+  .kanban-card.dragging { opacity: 0.3; }
+  .kanban-card.done { opacity: 0.6; }
+  .kanban-card.pri-high { border-left: 3px solid var(--danger); }
+  .kanban-card.pri-med { border-left: 3px solid var(--amber); }
+  .kanban-card.pri-low { border-left: 3px solid var(--border-strong); }
+  .kc-top { display: flex; align-items: flex-start; gap: 7px; }
+  .kc-chk {
+    width: 14px; height: 14px; border: 2px solid var(--border-strong); border-radius: 50%;
+    cursor: pointer; flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .kc-chk:hover { border-color: var(--green); }
+  .kc-chk.checked { background: var(--green); border-color: var(--green); }
+  .kc-chk.checked::after { content: '✓'; color: #fff; font-size: 8px; font-weight: 700; }
+  .kc-title { flex: 1; font-size: 12px; font-weight: 500; line-height: 1.4; }
+  .kc-title.strikethrough { text-decoration: line-through; color: var(--text3); }
+  .kc-meta { display: flex; align-items: center; gap: 5px; margin-top: 4px; }
+  .kc-due {
+    font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 6px; white-space: nowrap;
+  }
+  .kc-due.overdue { background: #fef2f2; color: var(--danger); }
+  .kc-due.today { background: #fefce8; color: var(--amber); }
+  .kc-due.future { background: var(--bg); color: var(--text3); }
+  .kc-note { font-size: 9px; color: var(--blue); cursor: pointer; margin-left: auto; }
+  .kc-note:hover { text-decoration: underline; }
+
+  /* ═══ Task list view ═══ */
+  .task-list-view { padding: 8px 20px 40px; }
+  .tl-group-hdr {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 0 4px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px; color: var(--text2);
+  }
+  .tl-group-line { flex: 1; height: 1px; background: var(--border); }
+  .tl-group-count { font-size: 9px; color: var(--text3); font-family: var(--mono); }
+  .tl-group-toggle { font-size: 9px; color: var(--blue); cursor: pointer; font-weight: 500; text-transform: none; letter-spacing: 0; }
+  .tl-group-toggle:hover { text-decoration: underline; }
+  .tl-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 8px; border-bottom: 1px solid var(--border-light);
+    cursor: pointer; transition: background 0.1s;
+  }
+  .tl-row:hover { background: var(--surface); }
+  .tl-row.done { opacity: 0.5; }
+  .tl-chk {
+    width: 14px; height: 14px; border: 2px solid var(--border-strong); border-radius: 50%;
+    cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .tl-chk:hover { border-color: var(--green); }
+  .tl-chk.checked { background: var(--green); border-color: var(--green); }
+  .tl-chk.checked::after { content: '✓'; color: #fff; font-size: 8px; font-weight: 700; }
+  .tl-pri-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .tl-pri-dot.high { background: var(--danger); }
+  .tl-pri-dot.med { background: var(--amber); }
+  .tl-pri-dot.low { background: var(--border-strong); }
+  .tl-title { flex: 1; font-size: 12px; font-weight: 500; }
+  .tl-title.strikethrough { text-decoration: line-through; color: var(--text3); }
+  .tl-due { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 6px; white-space: nowrap; }
+  .tl-due.overdue { background: #fef2f2; color: var(--danger); }
+  .tl-due.today { background: #fefce8; color: var(--amber); }
+  .tl-due.future { background: var(--bg); color: var(--text3); }
+  .tl-due.none { color: var(--text3); font-style: italic; font-weight: 400; }
+  .tl-note { font-size: 9px; color: var(--blue); cursor: pointer; }
+  .tl-note:hover { text-decoration: underline; }
+  .tl-date { font-size: 9px; color: var(--text3); font-family: var(--mono); min-width: 40px; text-align: right; }
+  .tl-hide-done {
+    text-align: center; padding: 10px; font-size: 10px; color: var(--blue);
+    cursor: pointer; font-weight: 500;
+  }
+  .tl-hide-done:hover { text-decoration: underline; }
+
   .summary-banner {
     display: flex; align-items: center; gap: 8px;
     padding: 8px 14px; margin-bottom: 12px;
@@ -2371,16 +2560,306 @@ function getFeedTopDate(){
   return feedTopDate;
 }
 
-/* Tasks view stub — Phase 4 will implement the full Kanban/List board */
+/* ═══════════ TASKS VIEW (Kanban + List) ═══════════ */
+let tasksViewMode='kanban';
+let tasksFilter={search:'',priorities:[],dueRange:null,showDone:false};
+
 function renderTasksView(area){
-  area.innerHTML=`<div style="padding:60px 40px;text-align:center;color:var(--text3)">
-    <div style="font-size:48px;margin-bottom:16px">&#128203;</div>
-    <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">Tasks</div>
-    <div style="font-size:13px;max-width:400px;margin:0 auto;line-height:1.6">
-      The Kanban board and task list will appear here in Phase 4.<br>
-      For now, use the Today view for your journal and notes.
+  const allTasks=db.tasks||[];
+  const cols=(db.columns||[]).sort((a,b)=>a.order-b.order);
+
+  // Filter tasks
+  let filtered=allTasks;
+  if(tasksFilter.search){
+    const q=tasksFilter.search.toLowerCase();
+    filtered=filtered.filter(t=>t.title.toLowerCase().includes(q));
+  }
+  if(tasksFilter.priorities.length){
+    filtered=filtered.filter(t=>tasksFilter.priorities.includes(t.priority));
+  }
+  if(tasksFilter.dueRange){
+    const today=todayStr();
+    if(tasksFilter.dueRange==='overdue')filtered=filtered.filter(t=>t.due_date&&t.due_date<today&&!t.completed);
+    else if(tasksFilter.dueRange==='today')filtered=filtered.filter(t=>t.due_date===today);
+    else if(tasksFilter.dueRange==='7d'){const d=new Date();d.setDate(d.getDate()+7);const end=dateStr(d);filtered=filtered.filter(t=>t.due_date&&t.due_date<=end&&t.due_date>=today);}
+    else if(tasksFilter.dueRange==='30d'){const d=new Date();d.setDate(d.getDate()+30);const end=dateStr(d);filtered=filtered.filter(t=>t.due_date&&t.due_date<=end&&t.due_date>=today);}
+    else if(tasksFilter.dueRange==='none')filtered=filtered.filter(t=>!t.due_date);
+  }
+
+  // Toolbar
+  let h=`<div class="tasks-toolbar">
+    <span class="tasks-toolbar-title">Tasks</span>
+    <div class="tasks-view-toggle">
+      <button class="${tasksViewMode==='kanban'?'active':''}" onclick="tasksViewMode='kanban';renderActiveView()">Kanban</button>
+      <button class="${tasksViewMode==='list'?'active':''}" onclick="tasksViewMode='list';renderActiveView()">List</button>
     </div>
+    <button class="tasks-new-btn" onclick="showNewTaskForm()">
+      <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
+      New task
+    </button>
   </div>`;
+
+  // Filter bar
+  const priActive=p=>tasksFilter.priorities.includes(p);
+  h+=`<div class="tasks-filters">
+    <input class="tasks-search" type="text" placeholder="Search tasks..." value="${escH(tasksFilter.search)}" oninput="tasksFilter.search=this.value;renderActiveView()">
+    <span class="tasks-pri-pill ${priActive('H')?'on':''}" style="${priActive('H')?'background:var(--danger);color:#fff;border-color:var(--danger)':'border-color:var(--border);color:var(--text3)'}" onclick="toggleTaskPriFilter('H')"><span class="pri-dot" style="background:${priActive('H')?'#fff':'var(--danger)'}"></span>High</span>
+    <span class="tasks-pri-pill ${priActive('M')?'on':''}" style="${priActive('M')?'background:var(--amber);color:#fff;border-color:var(--amber)':'border-color:var(--border);color:var(--text3)'}" onclick="toggleTaskPriFilter('M')"><span class="pri-dot" style="background:${priActive('M')?'#fff':'var(--amber)'}"></span>Med</span>
+    <span class="tasks-pri-pill ${priActive('L')?'on':''}" style="${priActive('L')?'background:var(--border-strong);color:#fff;border-color:var(--border-strong)':'border-color:var(--border);color:var(--text3)'}" onclick="toggleTaskPriFilter('L')"><span class="pri-dot" style="background:${priActive('L')?'#fff':'var(--border-strong)'}"></span>Low</span>
+    <select class="tasks-due-filter" onchange="tasksFilter.dueRange=this.value||null;renderActiveView()">
+      <option value="">All dates</option>
+      <option value="overdue"${tasksFilter.dueRange==='overdue'?' selected':''}>Overdue</option>
+      <option value="today"${tasksFilter.dueRange==='today'?' selected':''}>Today</option>
+      <option value="7d"${tasksFilter.dueRange==='7d'?' selected':''}>Next 7 days</option>
+      <option value="30d"${tasksFilter.dueRange==='30d'?' selected':''}>Next 30 days</option>
+      <option value="none"${tasksFilter.dueRange==='none'?' selected':''}>No due date</option>
+    </select>
+    <span class="tasks-count">${filtered.filter(t=>!t.completed).length} open · ${filtered.filter(t=>t.completed).length} done</span>
+  </div>`;
+
+  if(tasksViewMode==='kanban'){
+    h+=renderKanbanBoard(filtered,cols);
+  } else {
+    h+=renderTaskList(filtered,cols);
+  }
+  area.innerHTML=h;
+}
+
+function toggleTaskPriFilter(p){
+  const i=tasksFilter.priorities.indexOf(p);
+  if(i>=0)tasksFilter.priorities.splice(i,1);
+  else tasksFilter.priorities.push(p);
+  renderActiveView();
+}
+
+function renderKanbanBoard(tasks,cols){
+  const today=todayStr();
+  const doneCol=cols.find(c=>c.isDone);
+  const nonDoneCols=cols.filter(c=>!c.isDone);
+  let h='<div class="kanban-board">';
+
+  // Regular columns
+  nonDoneCols.forEach(col=>{
+    const colTasks=tasks.filter(t=>t.column_id===col.id&&!t.completed).sort((a,b)=>(a.order||0)-(b.order||0));
+    h+=`<div class="kanban-col" data-col="${col.id}">
+      <div class="kanban-col-hdr" style="border-bottom-color:${col.color||'var(--accent)'}" draggable="true" ondragstart="kanbanColDragStart(event,'${col.id}')" ondragover="kanbanColDragOver(event)" ondrop="kanbanColDrop(event,'${col.id}')">
+        <span class="kanban-col-title">${escH(col.name)}</span>
+        <span class="kanban-col-count">${colTasks.length}</span>
+        <button class="kanban-col-menu" onclick="showColMenu('${col.id}',event)" title="Column options">&#8943;</button>
+      </div>
+      <div class="kanban-col-body" data-col="${col.id}" ondragover="kanbanCardDragOver(event)" ondrop="kanbanCardDrop(event,'${col.id}')">`;
+    colTasks.forEach(t=>{h+=renderKanbanCard(t,today);});
+    h+=`</div>
+      <button class="kanban-col-add" onclick="quickAddToColumn('${col.id}')">+ Add task</button>
+    </div>`;
+  });
+
+  // Done column (pinned right)
+  if(doneCol){
+    const doneTasks=tasks.filter(t=>t.column_id===doneCol.id||t.completed).sort((a,b)=>(b.completed_at||b.created_at)-(a.completed_at||a.created_at));
+    const shownDone=doneTasks.slice(0,10);
+    h+=`<div class="kanban-col kanban-col-done" data-col="${doneCol.id}">
+      <div class="kanban-col-hdr" style="border-bottom-color:${doneCol.color||'var(--green)'}">
+        <span class="kanban-col-title">${escH(doneCol.name)}</span>
+        <span class="kanban-col-count">${doneTasks.length}</span>
+      </div>
+      <div class="kanban-col-body" data-col="${doneCol.id}" ondragover="kanbanCardDragOver(event)" ondrop="kanbanCardDrop(event,'${doneCol.id}')">`;
+    shownDone.forEach(t=>{h+=renderKanbanCard(t,today);});
+    if(doneTasks.length>10){
+      h+=`<div class="kanban-done-footer">Showing ${shownDone.length} of ${doneTasks.length} — <span onclick="tasksFilter.showDone=true;tasksViewMode='list';renderActiveView()" style="color:var(--blue);cursor:pointer;text-decoration:underline">view all</span></div>`;
+    }
+    h+=`</div></div>`;
+  }
+
+  // Add column button
+  h+=`<div class="kanban-add-col"><button onclick="addKanbanColumn()" title="Add column">+</button></div>`;
+  h+=`</div>`;
+  return h;
+}
+
+function renderKanbanCard(t,today){
+  const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+  const isDone=t.completed;
+  const dueLabel=!t.due_date?''
+    :t.due_date<today&&!isDone?'overdue '+(()=>{const d=Math.ceil((new Date(today+'T12:00:00')-new Date(t.due_date+'T12:00:00'))/(24*3600*1000));return d+'d';})()
+    :t.due_date===today?'today'
+    :fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
+  const dueClass=!t.due_date?'':(t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':'future');
+  return`<div class="kanban-card${isDone?' done':''} pri-${pri}" draggable="true" data-task="${t.id}" ondragstart="kanbanCardDragStart(event,'${t.id}')" ondragend="kanbanCardDragEnd(event)" onclick="openTaskDetail('${t.id}')">
+    <div class="kc-top">
+      <div class="kc-chk${isDone?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!isDone});renderActiveView();renderSidebar()"></div>
+      <span class="kc-title${isDone?' strikethrough':''}">${escH(t.title)}</span>
+    </div>
+    ${t.due_date||t.note_id?`<div class="kc-meta">${dueLabel?`<span class="kc-due ${dueClass}">${dueLabel}</span>`:''}${t.note_id?`<span class="kc-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:''}</div>`:''}
+  </div>`;
+}
+
+/* ── Kanban drag-and-drop: cards ── */
+let _kanbanDragTaskId=null;
+function kanbanCardDragStart(e,taskId){
+  _kanbanDragTaskId=taskId;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',taskId);
+  setTimeout(()=>{const el=document.querySelector(`.kanban-card[data-task="${taskId}"]`);if(el)el.classList.add('dragging');},0);
+}
+function kanbanCardDragEnd(e){
+  _kanbanDragTaskId=null;
+  document.querySelectorAll('.kanban-card.dragging').forEach(c=>c.classList.remove('dragging'));
+  document.querySelectorAll('.kanban-col-body.drag-over').forEach(c=>c.classList.remove('drag-over'));
+}
+function kanbanCardDragOver(e){
+  if(!_kanbanDragTaskId)return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  const body=e.currentTarget;
+  document.querySelectorAll('.kanban-col-body.drag-over').forEach(c=>c.classList.remove('drag-over'));
+  body.classList.add('drag-over');
+}
+function kanbanCardDrop(e,colId){
+  e.preventDefault();
+  if(!_kanbanDragTaskId)return;
+  const t=(db.tasks||[]).find(x=>x.id===_kanbanDragTaskId);
+  if(!t)return;
+  const doneCol=getDoneColumn();
+  const wasDone=t.completed;
+  t.column_id=colId;
+  // Bidirectional sync: dragging to Done = complete; dragging out = uncomplete
+  if(doneCol&&colId===doneCol.id&&!t.completed){
+    t.completed=true;t.completed_at=Date.now();
+  } else if(doneCol&&colId!==doneCol.id&&t.completed){
+    t.completed=false;t.completed_at=null;
+  }
+  t.order=getNextTaskOrder(colId);
+  save('tasks');
+  _kanbanDragTaskId=null;
+  renderActiveView();
+  renderSidebar();
+}
+
+/* ── Kanban drag-and-drop: column headers (reorder) ── */
+let _kanbanDragColId=null;
+function kanbanColDragStart(e,colId){
+  const col=(db.columns||[]).find(c=>c.id===colId);
+  if(col&&col.isDone){e.preventDefault();return;} // Can't drag Done
+  _kanbanDragColId=colId;
+  e.dataTransfer.effectAllowed='move';
+}
+function kanbanColDragOver(e){if(_kanbanDragColId){e.preventDefault();e.dataTransfer.dropEffect='move';}}
+function kanbanColDrop(e,targetColId){
+  e.preventDefault();
+  if(!_kanbanDragColId||_kanbanDragColId===targetColId)return;
+  const cols=db.columns||[];
+  const tgt=cols.find(c=>c.id===targetColId);
+  if(tgt&&tgt.isDone){_kanbanDragColId=null;return;} // Can't drop onto Done position
+  const srcIdx=cols.findIndex(c=>c.id===_kanbanDragColId);
+  const tgtIdx=cols.findIndex(c=>c.id===targetColId);
+  if(srcIdx<0||tgtIdx<0){_kanbanDragColId=null;return;}
+  const [moved]=cols.splice(srcIdx,1);
+  cols.splice(tgtIdx,0,moved);
+  // Re-number order, keeping Done last
+  cols.filter(c=>!c.isDone).forEach((c,i)=>{c.order=i;});
+  const done=cols.find(c=>c.isDone);
+  if(done)done.order=cols.length;
+  save('columns');
+  _kanbanDragColId=null;
+  renderActiveView();
+}
+
+/* ── Column management ── */
+function addKanbanColumn(){
+  const name=prompt('New column name:');
+  if(!name||!name.trim())return;
+  const cols=db.columns||[];
+  const doneCol=cols.find(c=>c.isDone);
+  const maxOrder=Math.max(...cols.filter(c=>!c.isDone).map(c=>c.order||0),0);
+  const newCol={id:genId('col'),name:name.trim(),color:'#6b7280',order:maxOrder+1};
+  // Insert before Done
+  cols.push(newCol);
+  if(doneCol)doneCol.order=maxOrder+2;
+  save('columns');
+  renderActiveView();
+}
+function showColMenu(colId,e){
+  e.stopPropagation();
+  const col=(db.columns||[]).find(c=>c.id===colId);
+  if(!col)return;
+  // Simple prompt-based management for now. Phase 6 will add a proper dropdown.
+  const action=prompt(`Column: ${col.name}\n\nType:\n  "rename" to rename\n  "color" to change color\n  "delete" to delete\n  (Cancel to close)`);
+  if(!action)return;
+  const cmd=action.trim().toLowerCase();
+  if(cmd==='rename'){
+    const n=prompt('New name:',col.name);
+    if(n&&n.trim()){col.name=n.trim();save('columns');renderActiveView();}
+  } else if(cmd==='color'){
+    const c=prompt('Hex color (e.g. #3b82f6):',col.color);
+    if(c&&c.trim()){col.color=c.trim();save('columns');renderActiveView();}
+  } else if(cmd==='delete'){
+    if(col.isDone){alert('Cannot delete the Done column.');return;}
+    if(!confirm(`Delete column "${col.name}"? Tasks will move to Inbox.`))return;
+    const inbox=(db.columns||[]).find(c=>!c.isDone&&c.order===0);
+    (db.tasks||[]).filter(t=>t.column_id===colId).forEach(t=>{t.column_id=inbox?inbox.id:'col_inbox';});
+    db.columns=db.columns.filter(c=>c.id!==colId);
+    save('columns');save('tasks');renderActiveView();
+  }
+}
+function quickAddToColumn(colId){
+  const title=prompt('Task title:');
+  if(!title||!title.trim())return;
+  createTask({title:title.trim(),column_id:colId});
+  renderActiveView();
+  renderSidebar();
+}
+
+/* ── Task List View (Phase 5 stub — basic grouped table) ── */
+function renderTaskList(tasks,cols){
+  const today=todayStr();
+  let h='<div class="task-list-view">';
+  cols.forEach(col=>{
+    const colTasks=tasks.filter(t=>t.column_id===col.id).sort((a,b)=>{
+      if(a.completed!==b.completed)return a.completed?1:-1;
+      const pOrd={H:0,M:1,L:2};
+      return(pOrd[a.priority]||2)-(pOrd[b.priority]||2);
+    });
+    if(!colTasks.length&&!tasksFilter.showDone&&col.isDone)return;
+    if(col.isDone&&!tasksFilter.showDone){
+      // Show toggle instead of full list
+      const doneCount=tasks.filter(t=>t.completed).length;
+      if(doneCount){
+        h+=`<div class="tl-group-hdr"><span>${escH(col.name)}</span><span class="tl-group-line"></span><span class="tl-group-toggle" onclick="tasksFilter.showDone=true;renderActiveView()">Show ${doneCount} completed</span></div>`;
+      }
+      return;
+    }
+    h+=`<div class="tl-group-hdr"><span>${escH(col.name)}</span><span class="tl-group-line"></span><span class="tl-group-count">${colTasks.length}</span></div>`;
+    colTasks.forEach(t=>{
+      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+      const isDone=t.completed;
+      const dueLabel=!t.due_date?'':t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
+      const dueClass=!t.due_date?'none':(t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':'future');
+      h+=`<div class="tl-row${isDone?' done':''}" onclick="openTaskDetail('${t.id}')">
+        <div class="tl-chk${isDone?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!isDone});renderActiveView();renderSidebar()"></div>
+        <span class="tl-pri-dot ${pri}"></span>
+        <span class="tl-title${isDone?' strikethrough':''}">${escH(t.title)}</span>
+        ${dueLabel?`<span class="tl-due ${dueClass}">${dueLabel}</span>`:''}
+        ${t.note_id?`<span class="tl-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:''}
+        <span class="tl-date">${fmtShortDate(t.created_at)}</span>
+      </div>`;
+    });
+  });
+  if(tasksFilter.showDone){
+    h+=`<div class="tl-hide-done" onclick="tasksFilter.showDone=false;renderActiveView()">Hide completed tasks</div>`;
+  }
+  h+='</div>';
+  return h;
+}
+
+function showNewTaskForm(){
+  const title=prompt('Task title:');
+  if(!title||!title.trim())return;
+  const pri=prompt('Priority (H/M/L):','L');
+  const due=prompt('Due date (YYYY-MM-DD or blank):','');
+  createTask({title:title.trim(),priority:(pri||'L').toUpperCase(),due_date:due||null});
+  renderActiveView();
+  renderSidebar();
 }
 
 function renderToday(area){
@@ -6154,8 +6633,27 @@ function closeSettings(){
 }
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
-const APP_VERSION='2.1.0';
+const APP_VERSION='2.2.0';
 const CHANGELOG=[
+  {
+    version:'2.2.0',
+    date:'2026-04-11',
+    title:'Kanban board + List view (Phase 4+5)',
+    changes:[
+      '**Kanban board**: columns rendered horizontally with cards, drag-and-drop between columns',
+      'Cards show **priority stripe** (left edge), checkbox, due date badge, note link',
+      '**Done column** pinned right, shows last 10 completed, "view all" link switches to list view',
+      '**Bidirectional sync**: dragging a card to Done auto-completes it; dragging out uncompletes',
+      'Column management: **rename**, **change color**, **add**, **delete** (moves tasks to Inbox), **drag to reorder** headers',
+      'Per-column **"+ Add task"** button for quick creation',
+      '**Filter bar**: text search, priority toggle pills (H/M/L), due date range dropdown',
+      '**View toggle**: Kanban / List — filters apply to both views',
+      '**List view**: tasks grouped by column with expandable groups',
+      'Done visibility toggle: show/hide completed tasks in list view',
+      'View mode persists across tab switches (kanban/list)',
+      '**New task** button with prompt-based creation (Phase 6 will add a proper modal)'
+    ]
+  },
   {
     version:'2.1.0',
     date:'2026-04-11',
