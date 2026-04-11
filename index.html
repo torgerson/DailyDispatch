@@ -151,22 +151,17 @@
   .q-card:hover .q-del { display: block; }
   .q-del:hover { color: var(--danger); }
 
-  /* Pinned */
-  .pin-card {
+  /* Recent notes sidebar */
+  .recent-card {
     padding: 4px 0; font-size: 12px; line-height: 1.4; color: var(--text);
-    display: flex; align-items: flex-start; gap: 5px; position: relative;
+    display: flex; align-items: flex-start; gap: 5px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border); cursor: pointer;
   }
-  .pin-card:last-child { border-bottom: none; }
-  .pin-icon { font-size: 10px; flex-shrink: 0; margin-top: 1px; }
-  .pin-txt { flex: 1; overflow: hidden; text-overflow: ellipsis; }
-  .pin-del {
-    background: none; border: none; color: var(--text3); cursor: pointer;
-    font-size: 10px; display: none; flex-shrink: 0;
-  }
-  .pin-card:hover .pin-del { display: block; }
-  .pin-del:hover { color: var(--danger); }
+  .recent-card:last-child { border-bottom: none; }
+  .recent-card:hover { color: var(--accent); }
+  .recent-icon { font-size: 10px; flex-shrink: 0; margin-top: 1px; color: var(--text3); margin-right: 4px; }
+  .recent-txt { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 
   /* Tags */
   .tag-cloud { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -321,14 +316,9 @@
   .entry-meta {
     display: flex; align-items: center; gap: 5px; margin-left: auto; flex-shrink: 0;
   }
-  .entry-pinned {
-    font-size: 10px; color: var(--danger); font-weight: 500;
-    display: flex; align-items: center; gap: 2px;
-  }
   .entry-inline-tags {
     display: inline-flex; gap: 3px; flex-shrink: 0; margin-left: auto;
   }
-  .entry-pin { color: var(--danger); font-size: 11px; flex-shrink: 0; }
   .entry-content {
     font-size: 13px; line-height: 1.45; word-break: break-word;
     color: var(--text); flex: 1; min-width: 0;
@@ -340,9 +330,6 @@
   .entry-content pre code { background: none; border: none; padding: 0; }
   .entry-content ul { padding-left: 18px; margin: 3px 0; }
   .entry-content .crosslink { color: var(--blue); cursor: pointer; text-decoration: underline dotted; }
-
-  /* Pin indicator in feed (static, no interaction) */
-  .entry-pinned-dot { font-size: 10px; flex-shrink: 0; color: var(--danger); pointer-events: none; }
 
   .entry-edit-area { width: 100%; border: 1px solid var(--accent); border-radius: 4px; padding: 5px 7px; font-family: var(--sans); font-size: 13px; line-height: 1.55; resize: vertical; min-height: 40px; outline: none; }
   .entry-append {
@@ -447,6 +434,144 @@
   }
   .tab-ctx-item:hover .tab-ctx-icon { color: inherit; }
   .tab-ctx-sep { height: 1px; background: var(--border-light); margin: 4px 6px; }
+  /* Image gallery tab */
+  .gallery-tab { max-width: 1120px; margin: 0 auto; padding: 24px 24px 60px; }
+  .gallery-header {
+    display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--border-light);
+  }
+  .gallery-header h2 {
+    font-size: 20px; font-weight: 700; color: var(--text); margin: 0;
+  }
+  .gallery-count {
+    font-size: 12px; color: var(--text3); font-family: var(--mono);
+  }
+  .gallery-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .gallery-tile {
+    aspect-ratio: 1/1; background: var(--sidebar-bg);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    overflow: hidden; cursor: pointer; transition: all 0.15s;
+  }
+  .gallery-tile:hover {
+    border-color: var(--accent); transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .gallery-tile img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .gallery-footer {
+    text-align: center; padding: 20px 0 10px;
+    font-size: 11px; color: var(--text3);
+  }
+  .gallery-empty {
+    text-align: center; padding: 80px 20px;
+  }
+  .gallery-empty-icon { color: var(--text3); margin-bottom: 14px; display: inline-block; }
+  .gallery-empty-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .gallery-empty-sub { font-size: 12px; color: var(--text3); }
+
+  /* Image modal — full-size viewer */
+  .image-modal-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.75);
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+    animation: imgFadeIn 0.15s ease-out;
+  }
+  @keyframes imgFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .image-modal-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    max-width: 100%; max-height: 100%;
+  }
+  .image-modal-img {
+    max-width: 90vw; max-height: calc(90vh - 60px);
+    object-fit: contain; border-radius: 4px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    background: #fff;
+  }
+  .image-modal-bar {
+    display: flex; gap: 10px;
+  }
+  .image-modal-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.1); color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    font-family: var(--sans); font-size: 12px; font-weight: 600;
+    cursor: pointer; backdrop-filter: blur(6px);
+    transition: all 0.15s;
+  }
+  .image-modal-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4); }
+
+  /* Version row in settings */
+  .version-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    background: var(--sidebar-bg); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s; user-select: none;
+  }
+  .version-row:hover { border-color: var(--accent); background: var(--accent-light); }
+  .version-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .version-pill {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    color: var(--accent); background: var(--surface);
+    padding: 2px 8px; border-radius: 10px; border: 1px solid var(--accent);
+  }
+  .version-hint { margin-left: auto; font-size: 11px; color: var(--text3); }
+  .version-row:hover .version-hint { color: var(--accent); }
+  /* Changelog modal */
+  .changelog-box {
+    max-width: 640px !important; width: 90% !important; padding: 0 !important;
+    max-height: 80vh; display: flex; flex-direction: column;
+  }
+  .changelog-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px 12px; border-bottom: 1px solid var(--border-light);
+  }
+  .changelog-h-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .changelog-close {
+    background: none; border: none; color: var(--text3); font-size: 22px;
+    line-height: 1; cursor: pointer; padding: 2px 8px; border-radius: 3px;
+  }
+  .changelog-close:hover { color: var(--danger); background: var(--bg); }
+  .changelog-body {
+    padding: 16px 24px 24px; overflow-y: auto; flex: 1;
+  }
+  .changelog-entry {
+    padding: 16px 0; border-bottom: 1px solid var(--border-light);
+  }
+  .changelog-entry:last-child { border-bottom: none; padding-bottom: 0; }
+  .changelog-entry:first-child { padding-top: 0; }
+  .changelog-entry-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
+  }
+  .changelog-version {
+    font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--accent);
+  }
+  .changelog-badge {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
+    background: var(--accent); color: #fff; padding: 1px 7px; border-radius: 10px;
+  }
+  .changelog-date {
+    margin-left: auto; font-size: 11px; color: var(--text3);
+  }
+  .changelog-title {
+    font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px;
+  }
+  .changelog-list {
+    padding-left: 18px; margin: 0;
+  }
+  .changelog-list li {
+    font-size: 12px; color: var(--text2); line-height: 1.55; margin-bottom: 4px;
+  }
+  .changelog-list li code {
+    font-family: var(--mono); font-size: 11px; background: var(--sidebar-bg);
+    padding: 1px 5px; border-radius: 3px; color: var(--text);
+  }
+  .changelog-list li strong { color: var(--text); font-weight: 600; }
   /* Quick Open modal (Cmd+Shift+O) */
   .quick-open-overlay {
     position: fixed; inset: 0; z-index: 10000;
@@ -837,8 +962,17 @@
   #dd-toast.error { background: var(--danger); }
 
   /* Inline image widget inside CM6 editor */
-  .cm-dd-image { display: block; margin: 6px 0; }
+  .cm-dd-image { display: inline-block; margin: 6px 0; position: relative; }
   .cm-dd-image img { max-width: 100%; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; display: block; }
+  .cm-dd-image:hover .cm-dd-image-resize { opacity: 1; }
+  .cm-dd-image-resize {
+    position: absolute; right: -2px; bottom: -2px;
+    width: 14px; height: 14px; border-radius: 3px;
+    background: var(--accent); border: 2px solid var(--surface);
+    cursor: nwse-resize; opacity: 0; transition: opacity 0.12s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    z-index: 3;
+  }
   .cm-dd-image-missing { font-size: 10px; color: var(--text3); font-style: italic; }
 
   /* Feed card image thumbnails — wraps to own row, indented past the time column */
@@ -848,18 +982,6 @@
   /* Drag-over highlight */
   .cm-wrap.drag-over { border-color: var(--accent) !important; background: var(--accent-light); }
   #capture.drag-over { outline: 2px dashed var(--accent); outline-offset: -2px; border-radius: var(--radius-md); }
-
-  /* Pin toggle in note editor */
-  .pin-toggle {
-    font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 3px;
-    white-space: nowrap; cursor: pointer; border: 1px solid var(--border);
-    background: var(--surface); color: var(--text2);
-  }
-  .pin-toggle:hover { opacity: .8; }
-  .pin-toggle.pinned {
-    background: #fef3c712; border-color: #fbbf2430; color: #92400e;
-  }
-  .pin-toggle .pin-icon { font-size: 9px; }
 
   /* Settings tab */
   .settings-tab { padding: 0; }
@@ -951,7 +1073,11 @@
     margin-bottom: 8px;
   }
   .rs-panel.dragging { opacity: 0.4; }
-  .rs-panel.drag-over { border-top: 2px solid var(--accent); }
+  .rs-panel.drag-over-top { box-shadow: 0 -3px 0 0 var(--accent); }
+  .rs-panel.drag-over-bottom { box-shadow: 0 3px 0 0 var(--accent); }
+  #right-sections.drag-append-zone, #left-sections.drag-append-zone {
+    outline: 2px dashed var(--accent); outline-offset: -4px;
+  }
   .rs-header {
     display: flex; align-items: center; gap: 5px; padding: 6px 10px;
     flex-shrink: 0;
@@ -1294,12 +1420,6 @@
     </div>
   </div>
   <div class="sb-section">
-    <div class="sb-hdr" onclick="toggleSb(this)"><h3>Pinned</h3><span class="arrow">&#9660;</span></div>
-    <div class="sb-body">
-      <div id="pin-list"></div>
-    </div>
-  </div>
-  <div class="sb-section">
     <div class="sb-hdr" onclick="toggleSb(this)"><h3>Recent</h3><span class="arrow">&#9660;</span></div>
     <div class="sb-body">
       <div id="recent-list"></div>
@@ -1335,6 +1455,16 @@
 <div id="autocomplete"></div>
 
 <!-- DELETE MODAL -->
+<div class="modal-overlay" id="changelog-modal" onclick="if(event.target===this)closeChangelog()">
+  <div class="modal-box changelog-box">
+    <div class="changelog-header">
+      <div class="changelog-h-title">Version history</div>
+      <button class="changelog-close" onclick="closeChangelog()">&times;</button>
+    </div>
+    <div id="changelog-body" class="changelog-body"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="delete-modal" onclick="if(event.target===this)closeDeleteModal()">
   <div class="modal-box">
     <div class="modal-title">Delete Entry</div>
@@ -1355,7 +1485,7 @@
 <div class="modal-overlay" id="purge-modal" onclick="if(event.target===this)closePurge()">
   <div class="modal-box">
     <div class="modal-title" style="color:var(--danger)">&#9888; Purge All Data</div>
-    <div class="modal-msg">This will permanently delete <strong>all entries, notes, pinned items, sections, and settings</strong>. This cannot be undone.</div>
+    <div class="modal-msg">This will permanently delete <strong>all entries, notes, sections, and settings</strong>. This cannot be undone.</div>
     <div class="modal-msg">Type <strong>PURGE</strong> to confirm:</div>
     <input id="purge-input" style="width:100%;padding:8px 10px;border:2px solid var(--danger);border-radius:var(--radius-sm);font-family:var(--mono);font-size:14px;outline:none;text-align:center;margin-bottom:12px" placeholder="Type PURGE here" oninput="document.getElementById('purge-btn').disabled=this.value!=='PURGE'">
     <div class="modal-actions">
@@ -1388,7 +1518,7 @@
 /* ═══════════ DATA — IndexedDB ═══════════ */
 const DB_NAME='dailydispatch';
 const DB_VERSION=2;
-const COLLECTIONS=['entries','openItems','questions','contexts','sections','settings'];
+const COLLECTIONS=['entries','questions','contexts','sections','settings'];
 const genId=p=>p+'_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function dateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -1432,7 +1562,7 @@ function getAllPeople(){
 }
 
 // In-memory db object — same shape as before
-let db={entries:[],questions:[],openItems:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map(),defaultSectionsSeeded:false};
+let db={entries:[],questions:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map(),defaultSectionsSeeded:false};
 let idb=null; // IndexedDB handle
 
 function openIDB(){
@@ -1489,7 +1619,6 @@ function idbClearStore(store){
 async function loadDB(){
   await openIDB();
   db.entries=await idbGetAll('entries');
-  db.openItems=await idbGetAll('openItems');
   db.questions=await idbGetAll('questions');
   db.contexts=await idbGetAll('contexts');
   db.sections=await idbGetAll('sections');
@@ -1502,9 +1631,10 @@ async function loadDB(){
   db.startersSeeded=s.startersSeeded||false;
   db.homeShownOnce=s.homeShownOnce||false;
   db.floatingNote=s.floatingNote||{position:'right',width:300};
+  db.lastBackupTs=s.lastBackupTs||0;
   // Restore tab session
   if(s.openTabs&&s.openTabs.length){
-    const validId=id=>id==='feed'||id==='home'||id==='settings'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
+    const validId=id=>id==='feed'||id==='home'||id==='settings'||id==='gallery'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
     openTabs=s.openTabs.filter(validId);
     if(!openTabs.includes('feed'))openTabs.unshift('feed');
     activeTab=validId(s.activeTab)&&openTabs.includes(s.activeTab)?s.activeTab:openTabs[openTabs.length-1];
@@ -1513,7 +1643,7 @@ async function loadDB(){
 
   // Load images into fast in-memory map
   const imgRows=await idbGetAll('images');
-  db.images=new Map(imgRows.map(r=>[r.id,{data:r.data,mimeType:r.mimeType}]));
+  db.images=new Map(imgRows.map(r=>[r.id,{data:r.data,mimeType:r.mimeType,ts:r.ts||0}]));
   // Request persistent storage to protect against Safari 7-day eviction
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 
@@ -1539,7 +1669,6 @@ async function migrateFromLocalStorage(old){
     if(!e.contextId)e.contextId=null;
     return e;
   });
-  const openItems=(old.openItems||[]).map(o=>{if(!o.id)o.id=genId('oi');return o;});
   const questions=(old.questions||[]).map(q=>{if(!q.id)q.id=genId('q');return q;});
   const contexts=(old.contexts||[]).map(c=>{if(!c.id)c.id=genId('ctx');return c;});
   const sections=(old.sections||[]).map(s=>{if(!s.id)s.id=genId('sec');return s;});
@@ -1549,7 +1678,7 @@ async function migrateFromLocalStorage(old){
       entries.push({id:n.id||genId('e'),content:n.content||'',tags:n.tags||[],date:n.date,ts:n.ts||n.createdTs,isNote:true,noteTitle:n.title||'Untitled',contextId:null});
     });
   }
-  db.entries=entries;db.openItems=openItems;db.questions=questions;db.contexts=contexts;db.sections=sections;
+  db.entries=entries;db.questions=questions;db.contexts=contexts;db.sections=sections;
   db.tagColors=old.tagColors||{};
   await saveAll();
 }
@@ -1557,18 +1686,28 @@ async function migrateFromLocalStorage(old){
 // Save everything (used on migration and purge recovery)
 async function saveAll(){
   await idbPutAll('entries',db.entries);
-  await idbPutAll('openItems',db.openItems);
   await idbPutAll('questions',db.questions);
   await idbPutAll('contexts',db.contexts);
   await idbPutAll('sections',db.sections);
-  await idbPutAll('settings',[{id:'main',tagColors:db.tagColors}]);
+  await idbPutAll('settings',[{
+    id:'main',
+    tagColors:db.tagColors,
+    people:db.people||[],
+    theme:db.theme||'Warm Notion',
+    defaultSectionsSeeded:db.defaultSectionsSeeded||false,
+    startersSeeded:db.startersSeeded||false,
+    homeShownOnce:db.homeShownOnce||false,
+    floatingNote:db.floatingNote||{position:'right',width:300},
+    lastBackupTs:db.lastBackupTs||0,
+    openTabs,activeTab,searchTabs
+  }]);
 }
 
 // Incremental save — debounced, writes only changed collections
 let _dirtyStores=new Set();
 let _saveTimer=null;
 function save(...stores){
-  if(stores.length===0)stores=['entries','openItems','sections','settings'];
+  if(stores.length===0)stores=['entries','sections','settings'];
   stores.forEach(s=>_dirtyStores.add(s));
   if(stores.includes('entries')||stores.length===0)invalidateTagCache();
   clearTimeout(_saveTimer);
@@ -1579,7 +1718,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},openTabs,activeTab,searchTabs}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,openTabs,activeTab,searchTabs}]);
     } else if(store==='sections'&&db.sections){
       // Strip transient session-only flags and drop unsaved drafts
       const sanitized=db.sections
@@ -1632,8 +1771,9 @@ async function handleImageFile(file,insertFn){
 }
 
 async function saveImage(id,data,mimeType,size){
-  db.images.set(id,{data,mimeType});
-  await idbPutAll('images',[{id,data,mimeType,ts:Date.now(),size}]);
+  const ts=Date.now();
+  db.images.set(id,{data,mimeType,ts});
+  await idbPutAll('images',[{id,data,mimeType,ts,size}]);
 }
 
 function insertAtCursor(el,text){
@@ -1641,6 +1781,29 @@ function insertAtCursor(el,text){
   el.value=el.value.slice(0,s)+text+el.value.slice(e2);
   el.selectionStart=el.selectionEnd=s+text.length;
   autoGrow(el);
+}
+
+// Auto-expand macro tokens like {{date}} into their literal values.
+// Runs deferred (setTimeout) from the CM6 update listener so we don't
+// dispatch inside an active update cycle.
+function _expandMacrosInEditor(){
+  if(!cmEditorView)return;
+  const text=cmEditorView.state.doc.toString();
+  const macroRe=/\{\{(date|time|datetime)\}\}/gi;
+  const changes=[];
+  let m;
+  while((m=macroRe.exec(text))!==null){
+    const name=m[1].toLowerCase();
+    let val;
+    if(name==='date')val=todayStr();
+    else if(name==='time')val=fmtTime(Date.now());
+    else if(name==='datetime')val=todayStr()+' '+fmtTime(Date.now());
+    else continue;
+    changes.push({from:m.index,to:m.index+m[0].length,insert:val});
+  }
+  if(changes.length){
+    cmEditorView.dispatch({changes});
+  }
 }
 
 function insertIntoCM6(text){
@@ -1696,7 +1859,7 @@ function setupCMImageHandlers(){
 function renderNoteImages(content){
   const strip=document.getElementById('note-images');
   if(!strip)return;
-  const ids=[...content.matchAll(/!\[\]\((img_[a-z0-9_]+)\)/g)].map(m=>m[1]);
+  const ids=[...content.matchAll(/!\[\]\((img_[a-z0-9_]+)(?:\|w=\d+)?\)/g)].map(m=>m[1]);
   if(!ids.length){strip.innerHTML='';return;}
   strip.innerHTML=ids.map(id=>{
     const img=db.images.get(id);
@@ -1713,10 +1876,11 @@ let selectedDate=todayStr(), activeTab='feed', openTabs=['feed'], activeTagFilte
 function renderMd(raw){
   let t=escH(raw);
   // Substitute image tokens before any other transforms
-  t=t.replace(/!\[\]\((img_[a-z0-9_]+)\)/g,(m,id)=>{
+  t=t.replace(/!\[\]\((img_[a-z0-9_]+)(?:\|w=(\d+))?\)/g,(m,id,w)=>{
     const img=db.images.get(id);
     if(!img)return'';
-    return`<img src="${img.data}" style="max-width:100%;border-radius:3px;margin:4px 0;display:block;cursor:pointer" loading="lazy" onclick="window.open(this.src)" title="Click to open">`;
+    const widthStyle=w?`width:${w}px;`:'max-width:100%;';
+    return`<img src="${img.data}" style="${widthStyle}border-radius:3px;margin:4px 0;display:block;cursor:pointer" loading="lazy" onclick="window.open(this.src)" title="Click to open">`;
   });
   t=t.replace(/```([\s\S]*?)```/g,(_,c)=>'<pre><code>'+c.trim()+'</code></pre>');
   t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
@@ -1758,6 +1922,7 @@ function renderTabBar(){
     const dropTarget=tid==='feed'?` ondragover="tabDragOver(event)" ondrop="tabDrop(event,'${tid}')"`:''
     if(tid==='feed'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('feed')"${dropTarget}>&#128221; Feed</div>`;}
     else if(tid==='home'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('home')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg>Home<span class="tab-close" onclick="event.stopPropagation();closeTab('home')">&times;</span></div>`;}
+    else if(tid==='gallery'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('gallery')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg>Gallery<span class="tab-close" onclick="event.stopPropagation();closeTab('gallery')">&times;</span></div>`;}
     else if(tid==='settings'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('settings')"${drag}>&#9881; Settings<span class="tab-close" onclick="event.stopPropagation();closeTab('settings')">&times;</span></div>`;}
     else if(tid.startsWith('search_')){
       const st=searchTabs.find(s=>s.id===tid);
@@ -1774,6 +1939,7 @@ function renderTabBar(){
   h+=`<div id="tab-bar-icons">`;
   h+=`<button class="tab-icon-btn" onclick="openSearch()" title="Search (Cmd+K)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg></button>`;
   h+=`<button class="tab-icon-btn" onclick="openFloatingNote()" title="Floating note"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14"/><circle cx="5.5" cy="6" r="0.5" fill="currentColor"/><circle cx="7.5" cy="6" r="0.5" fill="currentColor"/><line x1="6" y1="11" x2="14" y2="11"/><line x1="6" y1="14" x2="11" y2="14"/></svg></button>`;
+  h+=`<button class="tab-icon-btn" onclick="openGallery()" title="Image gallery"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg></button>`;
   h+=`<button class="tab-icon-btn" onclick="openSettings()" title="Settings">&#9881;</button>`;
   h+=`</div>`;
   document.getElementById('tab-bar').innerHTML=h;
@@ -1847,12 +2013,26 @@ function tabGetId(tabEl){
   return m?m[1]:null;
 }
 
-function switchTab(t){activeTab=t;renderTabBar();renderActiveView();}
+function switchTab(t){
+  // Commit mentions from the note we're leaving — this is a "commit point"
+  // so partial @names typed mid-word never leak into the people list.
+  _commitMentionsForTab(activeTab);
+  activeTab=t;renderTabBar();renderActiveView();
+}
 function closeTab(t){
+  _commitMentionsForTab(t);
   openTabs=openTabs.filter(x=>x!==t);
   if(t.startsWith('search_'))searchTabs=searchTabs.filter(s=>s.id!==t);
   if(activeTab===t)activeTab=openTabs[openTabs.length-1]||'feed';
   renderTabBar();renderActiveView();
+}
+// Register mentions only at commit points (tab switch / close / submit).
+// This prevents partial @names from leaking into the people list when the
+// user pauses mid-word during typing.
+function _commitMentionsForTab(tabId){
+  if(!tabId||tabId==='feed'||tabId==='home'||tabId==='settings'||tabId==='gallery'||tabId.startsWith('search_'))return;
+  const entry=db.entries.find(e=>e.id===tabId);
+  if(entry){registerMentions(extractMentions(entry.content||''));}
 }
 
 /* ═══════════ ACTIVE VIEW ═══════════ */
@@ -1865,6 +2045,7 @@ function renderActiveView(){
   }
   if(activeTab==='feed')renderFeed(a);
   else if(activeTab==='home')renderHome(a);
+  else if(activeTab==='gallery')renderGallery(a);
   else if(activeTab==='settings')renderSettingsTab(a);
   else if(activeTab.startsWith('search_'))renderSearchTab(a,activeTab);
   else renderNoteEditor(a,activeTab);
@@ -1975,17 +2156,15 @@ function getEntryBorderColor(tags){
 }
 function renderEntryCard(e){
   const borderColor=getEntryBorderColor(e.tags);
-  const pinned=isEntryPinned(e.id);
   let h=`<div class="entry-card" data-id="${e.id}" data-action="open" style="border-left-color:${borderColor}">`;
   h+=`<span class="entry-time">${fmtTime(e.ts)}</span>`;
-  if(pinned){h+=`<span class="entry-pinned-dot" title="Pinned">&#128204;</span>`;}
   // Extract image IDs and strip tokens from display content
-  const imgIds=[...e.content.matchAll(/!\[\]\((img_[a-z0-9_]+)\)/g)].map(m=>m[1]);
-  const contentNoImgs=e.content.replace(/\n?!\[\]\(img_[a-z0-9_]+\)\n?/g,' ').trim();
+  const imgIds=[...e.content.matchAll(/!\[\]\((img_[a-z0-9_]+)(?:\|w=\d+)?\)/g)].map(m=>m[1]);
+  const contentNoImgs=e.content.replace(/\n?!\[\]\(img_[a-z0-9_]+(?:\|w=\d+)?\)\n?/g,' ').trim();
   // Content
   if(e.isNote){
-    const cleanTitle=(e.noteTitle||'Untitled').replace(/!\[\]\(img_[a-z0-9_]+\)/g,'').trim()||'Untitled';
-    const preview=contentNoImgs.replace(/#[a-zA-Z0-9_-]+/g,'').replace(/\[\[([^\]]+)\]\]/g,'$1').replace(/[*`_~#\[\]]/g,'').trim();
+    const cleanTitle=substituteTemplateVars((e.noteTitle||'Untitled').replace(/!\[\]\(img_[a-z0-9_]+(?:\|w=\d+)?\)/g,'').replace(/^#+\s+/,'').trim()||'Untitled',e.ts);
+    const preview=substituteTemplateVars(contentNoImgs.replace(/#[a-zA-Z0-9_-]+/g,'').replace(/\[\[([^\]]+)\]\]/g,'$1').replace(/[*`_~#\[\]]/g,'').trim(),e.ts);
     const titleText=escH(cleanTitle);
     const previewText=preview&&preview!==cleanTitle?(' — '+escH(preview.slice(0,80))+(preview.length>80?'...':'')):'';
     h+=`<span class="entry-content"><strong>${titleText}</strong>${previewText}</span>`;
@@ -2144,11 +2323,9 @@ function doDelete(){
   const id=pendingDeleteId;
   const entry=db.entries.find(e=>e.id===id);
   // Collect image IDs embedded in this entry before removing it
-  const deletedImgIds=entry?[...(entry.content||'').matchAll(/!\[\]\((img_[a-z0-9_]+)\)/g)].map(m=>m[1]):[];
+  const deletedImgIds=entry?[...(entry.content||'').matchAll(/!\[\]\((img_[a-z0-9_]+)(?:\|w=\d+)?\)/g)].map(m=>m[1]):[];
   // Close tab if open
   if(openTabs.includes(id)){openTabs=openTabs.filter(t=>t!==id);if(activeTab===id){activeTab='feed';}}
-  // Remove linked pins
-  db.openItems=db.openItems.filter(o=>o.entryId!==id);
   db.entries=db.entries.filter(e=>e.id!==id);
   // Delete images that are no longer referenced by any remaining entry
   if(deletedImgIds.length){
@@ -2160,7 +2337,7 @@ function doDelete(){
       }
     });
   }
-  save();closeDeleteModal();renderTabBar();renderActiveView();renderTagCloud();renderAllSections();renderPins();
+  save();closeDeleteModal();renderTabBar();renderActiveView();renderTagCloud();renderAllSections();
 }
 // Keep old name for any legacy calls
 function delEntry(id){confirmDelete(id);}
@@ -2312,16 +2489,12 @@ function renderNoteEditor(area,noteId){
   const entryDate=e.date||todayStr();
   const entryDt=new Date(e.ts);
   const entryTime=String(entryDt.getHours()).padStart(2,'0')+':'+String(entryDt.getMinutes()).padStart(2,'0');
-  const pinned=isEntryPinned(noteId);
   cmNoteId=noteId;
   // Destroy previous CM6 instance
   if(cmEditorView){cmEditorView.destroy();cmEditorView=null;}
   area.innerHTML=`<div class="note-editor">
     <div class="note-toolbar">
       <div class="spacer"></div>
-      <button class="pin-toggle${pinned?' pinned':''}" onclick="toggleNotePin('${noteId}')" title="${pinned?'Unpin this item':'Pin this item'}">
-        <span class="pin-icon">${pinned?'&#128204;':'&#128204;'}</span>${pinned?'Pinned':'Pin'}
-      </button>
       <button class="copy-btn" onclick="copyNoteAsMarkdown('${noteId}')">&#128203; Copy</button>
       <button class="copy-btn" onclick="copyNoteLink('${noteId}')">&#128279; Link</button>
       ${e.isHelp?'':'<button class="copy-btn danger" onclick="confirmDelete(\''+noteId+'\')">&#10005; Delete</button>'}
@@ -2382,6 +2555,50 @@ function renderNoteEditor(area,noteId){
       window.open(url,'_blank','noopener');
     }
   },true); // capture phase
+  // Manual copy / cut: expand {{table:id}} tokens in the selection to real
+  // markdown tables so the clipboard is portable to other markdown tools.
+  const copyHandler=(ev)=>{
+    try{
+      const sel=cmEditorView.state.selection.main;
+      if(sel.empty)return;
+      const raw=cmEditorView.state.doc.sliceString(sel.from,sel.to);
+      if(!/\{\{table:/i.test(raw))return; // no tokens — let default copy happen
+      const entry=db.entries.find(x=>x.id===cmNoteId);
+      if(!entry||!entry.tables)return;
+      const transformed=raw.replace(/\{\{table:([a-z0-9_]+)\}\}/gi,(m,id)=>{
+        const t=entry.tables[id];
+        return t?tableObjToMarkdown(t).trimEnd():m;
+      });
+      ev.clipboardData.setData('text/plain',transformed);
+      ev.preventDefault();
+    }catch(err){/* let default copy happen */}
+  };
+  cmEditorView.contentDOM.addEventListener('copy',copyHandler);
+  cmEditorView.contentDOM.addEventListener('cut',copyHandler);
+  // Paste: if the clipboard text contains a markdown table, convert it
+  // in-place to {{table:id}} tokens so pasted tables become editable widgets.
+  // Capture phase so we beat CM6's own paste handler.
+  cmEditorView.contentDOM.addEventListener('paste',ev=>{
+    try{
+      const text=ev.clipboardData&&ev.clipboardData.getData('text/plain');
+      if(!text)return;
+      // Fast path: only intercept if the text looks like it has at least one
+      // markdown table (a | row followed by a separator row).
+      if(!/^\s*\|.+\|\s*\n\s*\|[\s:|-]+\|/m.test(text))return;
+      const entry=db.entries.find(x=>x.id===cmNoteId);
+      if(!entry)return;
+      const {text:transformed,changed}=convertPastedMdTables(text,entry);
+      if(!changed)return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      const sel=cmEditorView.state.selection.main;
+      cmEditorView.dispatch({
+        changes:{from:sel.from,to:sel.to,insert:transformed},
+        selection:{anchor:sel.from+transformed.length}
+      });
+      save();
+    }catch(err){/* let default paste happen */}
+  },true);
 }
 
 /* ── Live Preview Decoration Plugin ── */
@@ -2472,10 +2689,13 @@ function cmDecorateLine(builder,line,Decoration){
   const claimed=[];
   function claim(f,t){if(claimed.some(([a,b])=>f<b&&t>a))return false;claimed.push([f,t]);return true;}
 
-  // Inline image: ![](img_xxx) — replace entire line with image widget
-  {const im=text.match(/^!\[\]\((img_[a-z0-9_]+)\)$/);
+  // Inline image: ![](img_xxx) or ![](img_xxx|w=400) — replace whole line.
+  // The optional |w=N suffix is a per-note display width in pixels, set by
+  // dragging the image's corner resize handle.
+  {const im=text.match(/^!\[\]\((img_[a-z0-9_]+)(?:\|w=(\d+))?\)$/);
   if(im&&claim(0,text.length)){
-    builder.push(Decoration.replace({widget:new CmImageWidget(im[1])}).range(from,from+text.length));
+    const w=im[2]?parseInt(im[2],10):0;
+    builder.push(Decoration.replace({widget:new CmImageWidget(im[1],w,line.number)}).range(from,from+text.length));
     return;
   }}
 
@@ -2618,29 +2838,81 @@ class CmCheckboxWidget extends CM6.WidgetType{
   }
   eq(other){return other.checked===this.checked&&other.lineNum===this.lineNum;}
 }
-// Widget for inline image ![](img_xxx)
+// Widget for inline image ![](img_xxx) with optional |w=N display width.
 class CmImageWidget extends CM6.WidgetType{
-  constructor(id){super();this.id=id;}
+  constructor(id,width,lineNum){
+    super();
+    this.id=id;
+    this.width=width||0; // 0 = natural size
+    this.lineNum=lineNum;
+  }
+  eq(other){return other.id===this.id&&other.width===this.width;}
+  ignoreEvent(){return true;}
   toDOM(){
     const wrap=document.createElement('span');
     wrap.className='cm-dd-image';
     const img=db.images.get(this.id);
-    if(img){
-      const el=document.createElement('img');
-      el.src=img.data;
-      el.title='Click to open full size';
-      el.addEventListener('click',()=>window.open(img.data));
-      wrap.appendChild(el);
-    } else {
+    if(!img){
       const sp=document.createElement('span');
       sp.className='cm-dd-image-missing';
       sp.textContent='⚠ Image not found';
       wrap.appendChild(sp);
+      return wrap;
     }
+    const el=document.createElement('img');
+    el.src=img.data;
+    if(this.width)el.style.width=this.width+'px';
+    el.title='Drag corner to resize';
+    wrap.appendChild(el);
+    // Resize handle at bottom-right corner
+    const handle=document.createElement('span');
+    handle.className='cm-dd-image-resize';
+    handle.title='Drag to resize';
+    handle.addEventListener('mousedown',ev=>this._startResize(ev,el));
+    wrap.appendChild(handle);
     return wrap;
   }
-  eq(other){return other.id===this.id;}
-  ignoreEvent(){return false;}
+  _startResize(ev,imgEl){
+    ev.preventDefault();
+    ev.stopPropagation();
+    const self=this;
+    const startX=ev.clientX;
+    const rect=imgEl.getBoundingClientRect();
+    const startW=rect.width;
+    const onMove=mv=>{
+      const nw=Math.max(40,Math.round(startW+(mv.clientX-startX)));
+      imgEl.style.width=nw+'px';
+    };
+    const onUp=()=>{
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',onUp);
+      const newW=Math.round(imgEl.getBoundingClientRect().width);
+      // Commit new width to the CM6 doc by rewriting the image line
+      if(!cmEditorView)return;
+      const doc=cmEditorView.state.doc;
+      const replacement='![]('+self.id+'|w='+newW+')';
+      // Prefer the line number captured at widget creation; verify the
+      // target line still matches this image id, and fall back to a search.
+      let targetLine=null;
+      if(self.lineNum&&self.lineNum<=doc.lines){
+        const ln=doc.line(self.lineNum);
+        const m=ln.text.match(/^!\[\]\((img_[a-z0-9_]+)(?:\|w=(\d+))?\)$/);
+        if(m&&m[1]===self.id)targetLine=ln;
+      }
+      if(!targetLine){
+        for(let n=1;n<=doc.lines;n++){
+          const ln=doc.line(n);
+          const m=ln.text.match(/^!\[\]\((img_[a-z0-9_]+)(?:\|w=(\d+))?\)$/);
+          if(m&&m[1]===self.id){targetLine=ln;break;}
+        }
+      }
+      if(targetLine){
+        cmEditorView.dispatch({changes:{from:targetLine.from,to:targetLine.to,insert:replacement}});
+      }
+    };
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  }
 }
 // Widget for horizontal rule
 class CmHRWidget extends CM6.WidgetType{
@@ -2722,6 +2994,26 @@ class CmTableWidget extends CM6.WidgetType{
           e.updatedTs=Date.now();
           clearTimeout(self._saveTimer);
           self._saveTimer=setTimeout(()=>save(),300);
+        });
+        // Tab / Shift-Tab navigates cells. Tab on the last cell creates a new row.
+        textEl.addEventListener('keydown',ev=>{
+          if(ev.key!=='Tab')return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          const d=self._getData();if(!d)return;
+          if(ev.shiftKey){
+            if(c>0){self._focusCell(wrap,rIdx,c-1);}
+            else if(rIdx>0){self._focusCell(wrap,rIdx-1,d.cols-1);}
+          } else {
+            if(c<d.cols-1){self._focusCell(wrap,rIdx,c+1);}
+            else if(rIdx<d.rows.length-1){self._focusCell(wrap,rIdx+1,0);}
+            else {
+              // Last cell — create a new row and drop into its first cell
+              self._insertRow(rIdx+1);
+              self._renderInto(wrap);
+              self._focusCell(wrap,rIdx+1,0);
+            }
+          }
         });
         cell.appendChild(textEl);
         // Right-click context menu on every cell
@@ -3061,9 +3353,10 @@ function _slashDate(view,a,b){return _slashInsertLiteral(todayStr())(view,a,b);}
 function _slashTime(view,a,b){return _slashInsertLiteral(fmtTime(Date.now()))(view,a,b);}
 function _slashDatetime(view,a,b){return _slashInsertLiteral(todayStr()+' '+fmtTime(Date.now()))(view,a,b);}
 // Template variable substitution
-function substituteTemplateVars(text){
-  const now=Date.now();
-  const date=todayStr();
+function substituteTemplateVars(text,ts){
+  const now=ts||Date.now();
+  const d=new Date(now);
+  const date=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   const time=fmtTime(now);
   const datetime=date+' '+time;
   return text
@@ -3228,27 +3521,24 @@ function noteContentToMarkdown(entry){
     return t?tableObjToMarkdown(t).trimEnd():m;
   });
 }
-// Scan content for raw markdown tables and convert them to {{table:id}} tokens.
-// Returns true if any conversion happened.
-function migrateMarkdownTables(entry){
-  if(!entry||!entry.content)return false;
-  const lines=entry.content.split('\n');
+// Core: walk a list of markdown lines, replace any tables with {{table:id}}
+// tokens, and create the matching table objects on the given entry. Returns
+// the new line array and whether anything changed. Shared between the
+// lazy-migration-on-load path and the paste-into-editor path.
+function _extractMdTablesToTokens(lines,entry){
   const isTableLine=t=>/^\s*\|.+\|\s*$/.test(t);
   const isSepLine=t=>/^\s*\|[\s:|-]+\|\s*$/.test(t);
   const out=[];
   let changed=false;
   let i=0;
-  // Skip lines that are inside fenced code blocks
   let inCode=false;
   while(i<lines.length){
     const ln=lines[i];
     if(/^```/.test(ln)){inCode=!inCode;out.push(ln);i++;continue;}
     if(inCode){out.push(ln);i++;continue;}
     if(isTableLine(ln)&&i+1<lines.length&&isSepLine(lines[i+1])){
-      // Collect full table
       let end=i+1;
       while(end+1<lines.length&&isTableLine(lines[end+1]))end++;
-      // Parse rows
       const rawRows=[];
       for(let j=i;j<=end;j++){
         if(j===i+1)continue; // skip separator
@@ -3258,7 +3548,6 @@ function migrateMarkdownTables(entry){
         rawRows.push(t.split('|').map(c=>c.trim()));
       }
       const cols=Math.max(...rawRows.map(r=>r.length));
-      // Pad rows to column count
       rawRows.forEach(r=>{while(r.length<cols)r.push('');});
       if(!entry.tables)entry.tables={};
       const tableId='tbl_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7);
@@ -3276,11 +3565,23 @@ function migrateMarkdownTables(entry){
     out.push(ln);
     i++;
   }
+  return {lines:out,changed};
+}
+// Scan an entire entry's content on load and convert tables in place.
+function migrateMarkdownTables(entry){
+  if(!entry||!entry.content)return false;
+  const {lines,changed}=_extractMdTablesToTokens(entry.content.split('\n'),entry);
   if(changed){
-    entry.content=out.join('\n');
+    entry.content=lines.join('\n');
     entry.updatedTs=Date.now();
   }
   return changed;
+}
+// Transform a chunk of pasted text: any markdown tables in it become tokens,
+// with the corresponding table objects added to `entry`.
+function convertPastedMdTables(text,entry){
+  const {lines,changed}=_extractMdTablesToTokens((text||'').split('\n'),entry);
+  return {text:lines.join('\n'),changed};
 }
 
 function insertTableAt(view,slashStart,slashEnd,rows,cols){
@@ -3365,8 +3666,9 @@ function noteChanged(id,field,val){
   e[field]=val;
   if(field==='content'){e.tags=extractTags(val);e.mentions=extractMentions(val);}
   if(field==='noteTitle')renderTabBar();
-  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{registerMentions(e.mentions);save();renderTagCloud();renderAllSections();},300);
+  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderTagCloud();renderAllSections();},300);
 }
+let _macroExpandPending=false;
 function noteContentChanged(id,val){
   const e=db.entries.find(x=>x.id===id);if(!e)return;
   e.content=val;
@@ -3378,15 +3680,34 @@ function noteContentChanged(id,val){
   const firstLine=(val.split('\n')[0]||'').trim().slice(0,80);
   e.noteTitle=firstLine||'Untitled';
   renderTabBar();
-  // Floating mode: persist immediately (no debounce) and broadcast to main window
+  // Auto-expand {{date}}, {{time}}, {{datetime}} macros — unless this is a
+  // template note (which keeps them as placeholders for /template insertion).
+  // Uses a flag to prevent recursion: the expansion dispatch triggers another
+  // noteContentChanged, but the flag is still true so we skip the second check.
+  if(!_macroExpandPending&&!(e.tags||[]).some(t=>t.toLowerCase()==='template')){
+    if(/\{\{(date|time|datetime)\}\}/i.test(val)){
+      _macroExpandPending=true;
+      setTimeout(()=>{
+        _expandMacrosInEditor();
+        _macroExpandPending=false;
+      },0);
+    }
+  }
+  // Floating mode: persist immediately (no debounce) and broadcast to main window.
+  // Do NOT register mentions here — they're registered on window close (see
+  // initFloatingMode's onClose handler) so partial names from mid-typing never
+  // leak into the people list.
   if(isFloatingMode()){
-    registerMentions(e.mentions);
     save();
     flushSave();
     try{if(window._ddBC)window._ddBC.postMessage({type:'note-saved',noteId:id});}catch(err){}
     return;
   }
-  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{registerMentions(e.mentions);save();renderTagCloud();renderAllSections();renderRecent();},300);
+  // Save on debounce but do NOT register mentions here — that causes partial
+  // names (@j, @ja, @jan) when the user pauses mid-word. Mentions are only
+  // registered at commit points: tab close, tab switch, entry submit, or
+  // autocomplete select.
+  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderTagCloud();renderAllSections();renderRecent();},300);
 }
 function noteKey(e,noteId){
   // Autocomplete takes priority
@@ -3596,37 +3917,6 @@ function toggleQStatus(id){const q=db.questions.find(x=>x.id===id);if(!q)return;
 function updateQ(id,field,val){const q=db.questions.find(x=>x.id===id);if(!q)return;if(field==='askedBy')q.askedBy=val.split(',').map(s=>s.trim()).filter(Boolean);else q[field]=val;save();renderQuestions();}
 function delQuestion(id){db.questions=db.questions.filter(q=>q.id!==id);save();renderQuestions();}
 
-/* ═══════════ PINNED ═══════════ */
-function addPin(text){
-  text=text.trim();if(!text)return;
-  db.openItems.push({id:genId('pin'),text,entryId:null,createdTs:Date.now()});
-  logEvent('pin',text,null);
-  save();renderPins();renderActiveView();renderAllSections();
-}
-function renderPins(){
-  const el=document.getElementById('pin-list');const items=db.openItems.sort((a,b)=>b.createdTs-a.createdTs);
-  if(!items.length){el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:4px">No pinned items</div>';return;}
-  el.innerHTML=items.map(o=>{
-    const clickAction=o.entryId?`onclick="openAsNote('${o.entryId}')"`:''
-    return`<div class="pin-card" style="${o.entryId?'cursor:pointer':''}" ${clickAction}><span class="pin-icon">&#128204;</span><span class="pin-txt">${escH(o.text)}</span><button class="pin-del" onclick="event.stopPropagation();unpinItem('${o.id}')">&times;</button></div>`;
-  }).join('');
-}
-function unpinItem(id){
-  const item=db.openItems.find(o=>o.id===id);
-  db.openItems=db.openItems.filter(o=>o.id!==id);
-  if(item)logEvent('unpin',item.text,item.entryId||null);
-  save();renderPins();renderActiveView();renderAllSections();
-}
-function pinEntry(id){
-  const e=db.entries.find(x=>x.id===id);if(!e)return;
-  if(db.openItems.some(o=>o.entryId===id))return;
-  const text=e.isNote?(e.noteTitle||e.content.slice(0,80)):e.content.slice(0,80);
-  db.openItems.push({id:genId('pin'),text,entryId:id,createdTs:Date.now()});
-  logEvent('pin',text,id);
-  save();renderPins();renderActiveView();renderAllSections();
-}
-function isEntryPinned(id){return db.openItems.some(o=>o.entryId===id);}
-
 /* Seed default sections once for brand-new users to encourage use. */
 function ensureHelpSection(){
   if(db.defaultSectionsSeeded)return;
@@ -3652,24 +3942,11 @@ function renderRecent(){
   if(!notes.length){el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:4px">No recent notes</div>';return;}
   el.innerHTML=notes.map(n=>{
     const title=escH((n.noteTitle||'Untitled').slice(0,40));
-    return`<div class="pin-card" style="cursor:pointer" onclick="openAsNote('${n.id}')"><span style="font-size:10px;margin-right:4px;color:var(--text3)">&#128196;</span><span class="pin-txt">${title}</span></div>`;
+    return`<div class="recent-card" onclick="openAsNote('${n.id}')"><span class="recent-icon">&#128196;</span><span class="recent-txt">${title}</span></div>`;
   }).join('');
-}
-function toggleNotePin(id){
-  if(isEntryPinned(id)){
-    // Unpin
-    const pin=db.openItems.find(o=>o.entryId===id);
-    if(pin)unpinItem(pin.id);
-  } else {
-    pinEntry(id);
-  }
-  // Re-render the note editor to update the toggle state
-  renderActiveView();
 }
 // Event types and their display config
 const EVENT_TYPES={
-  pin:   {icon:'📌', verb:'Pinned'},
-  unpin: {icon:'📌', verb:'Unpinned'},
   create:{icon:'✨', verb:'Created'},
   delete:{icon:'🗑️', verb:'Deleted'},
   section_create:{icon:'✨', verb:'New section'},
@@ -3881,32 +4158,40 @@ function dragSecStart(e,secId){
   },0);
 }
 function dragSecEnd(e){
-  document.querySelectorAll('.rs-panel').forEach(p=>{p.classList.remove('dragging','drag-over');});
+  document.querySelectorAll('.rs-panel').forEach(p=>{p.classList.remove('dragging','drag-over','drag-over-top','drag-over-bottom');});
+  document.querySelectorAll('.drag-append-zone').forEach(el=>el.classList.remove('drag-append-zone'));
   document.getElementById('left-drop-zone').classList.remove('visible');
   dragSecId=null;
 }
 function dragSecOver(e){
   e.preventDefault();
   e.dataTransfer.dropEffect='move';
-  // Highlight drop target
+  // Highlight drop target; decide whether drop lands ABOVE or BELOW based
+  // on cursor Y relative to the panel midpoint.
   const panel=e.currentTarget.closest('.rs-panel');
   if(panel&&panel.dataset.sid!==dragSecId){
-    document.querySelectorAll('.rs-panel.drag-over').forEach(p=>p.classList.remove('drag-over'));
-    panel.classList.add('drag-over');
+    document.querySelectorAll('.rs-panel.drag-over-top,.rs-panel.drag-over-bottom').forEach(p=>p.classList.remove('drag-over-top','drag-over-bottom'));
+    const rect=panel.getBoundingClientRect();
+    const mid=rect.top+rect.height/2;
+    panel.classList.add(e.clientY<mid?'drag-over-top':'drag-over-bottom');
   }
 }
 function dragSecDrop(e,targetId){
   e.preventDefault();
+  e.stopPropagation();
   if(!dragSecId||dragSecId===targetId)return;
+  const panel=e.currentTarget.closest('.rs-panel');
+  const insertAfter=panel&&panel.classList.contains('drag-over-bottom');
   const srcIdx=db.sections.findIndex(s=>s.id===dragSecId);
   const tgtIdx=db.sections.findIndex(s=>s.id===targetId);
   if(srcIdx<0||tgtIdx<0)return;
   // Move source to same column as target
   const tgtSec=db.sections[tgtIdx];
   db.sections[srcIdx].col=tgtSec.col;
-  // Reorder: remove src and insert before target
+  // Reorder: remove src and insert before or after target
   const [moved]=db.sections.splice(srcIdx,1);
-  const newTgtIdx=db.sections.findIndex(s=>s.id===targetId);
+  let newTgtIdx=db.sections.findIndex(s=>s.id===targetId);
+  if(insertAfter)newTgtIdx++;
   db.sections.splice(newTgtIdx,0,moved);
   save();renderAllSections();
 }
@@ -3934,6 +4219,43 @@ function dragSecDrop(e,targetId){
     if(!dragSecId)return;
     const sec=db.sections.find(s=>s.id===dragSecId);
     if(sec){sec.col='right';save();renderAllSections();}
+  });
+})();
+// Dropping on empty space inside #right-sections or #left-sections appends
+// the dragged section to the end of that column. Works for both reordering
+// and cross-column drops (bug fix: you couldn't drop at the bottom before).
+(function(){
+  ['right-sections','left-sections'].forEach(id=>{
+    const container=document.getElementById(id);
+    if(!container)return;
+    const targetCol=id==='right-sections'?'right':'left';
+    container.addEventListener('dragover',e=>{
+      if(!dragSecId)return;
+      // Only show append-zone when the cursor is not over a child panel
+      if(e.target.closest('.rs-panel'))return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      container.classList.add('drag-append-zone');
+    });
+    container.addEventListener('dragleave',e=>{
+      if(!container.contains(e.relatedTarget))container.classList.remove('drag-append-zone');
+    });
+    container.addEventListener('drop',e=>{
+      if(!dragSecId)return;
+      if(e.target.closest('.rs-panel'))return; // panel handler takes precedence
+      e.preventDefault();
+      container.classList.remove('drag-append-zone');
+      const sec=db.sections.find(s=>s.id===dragSecId);
+      if(!sec)return;
+      sec.col=targetCol;
+      // Move to end of db.sections so it renders last in its column
+      const idx=db.sections.findIndex(s=>s.id===dragSecId);
+      if(idx>=0){
+        const [moved]=db.sections.splice(idx,1);
+        db.sections.push(moved);
+      }
+      save();renderAllSections();
+    });
   });
 })();
 
@@ -4182,6 +4504,9 @@ async function initFloatingMode(){
   // Use localStorage (synchronous) — BroadcastChannel.postMessage is async and gets dropped
   // when the popup tears down on Ctrl-W / X.
   const onClose=()=>{
+    // Commit mentions now — the note is done being edited, so extract
+    // the final set of @names from the content (no partial mid-word names).
+    try{registerMentions(extractMentions(entry.content||''));}catch(e){}
     try{flushSave();}catch(e){}
     try{
       localStorage.setItem('dd_floating_closed',JSON.stringify({noteId:entry.id,ts:Date.now()}));
@@ -4351,7 +4676,6 @@ function generateWrapUp(){
   const quickEntries=allEntries.filter(e=>!e.isNote);
   const notes=allEntries.filter(e=>e.isNote);
   const notesEdited=db.entries.filter(e=>e.isNote&&!e.isHelp&&e.updatedTs&&dateStr(new Date(e.updatedTs))===d&&e.date!==d);
-  const pins=db.openItems;
   const allTags=new Set();allEntries.forEach(e=>(e.tags||[]).forEach(t=>allTags.add(t)));
   const allPeople=new Set();allEntries.forEach(e=>(e.mentions||[]).forEach(m=>allPeople.add(m)));
 
@@ -4362,7 +4686,6 @@ function generateWrapUp(){
   md+=`- **${allEntries.length}** total entries (${quickEntries.length} quick, ${notes.length} notes)\n`;
   if(allTags.size)md+=`- **${allTags.size}** tags used: ${[...allTags].map(t=>'#'+t).join(', ')}\n`;
   if(allPeople.size)md+=`- **${allPeople.size}** people mentioned: ${[...allPeople].map(p=>'@'+p).join(', ')}\n`;
-  if(pins.length)md+=`- **${pins.length}** pinned items\n`;
   md+='\n';
 
   // Timeline
@@ -4415,13 +4738,6 @@ function generateWrapUp(){
     });
   }
 
-  // Pinned items
-  if(pins.length){
-    md+=`## Pinned Items\n\n`;
-    pins.forEach(o=>md+=`- ${o.text}\n`);
-    md+='\n';
-  }
-
   const entry={id:genId('e'),content:md,tags:['daily-summary'],date:d,ts:Date.now(),isNote:true,noteTitle:`Summary — ${fmtDateLabel(d)}`,contextId:null};
   db.entries.push(entry);save();openNoteTab(entry.id);renderTagCloud();renderAllSections();renderRecent();
 }
@@ -4435,7 +4751,7 @@ document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='n'){e.preventDefault();createNote();}
   if((e.metaKey||e.ctrlKey)&&e.shiftKey&&(e.key==='o'||e.key==='O')){e.preventDefault();openQuickOpen();}
   if((e.metaKey||e.ctrlKey)&&e.key==='d'&&activeTab!=='feed'){e.preventDefault();closeTab(activeTab);}
-  if(e.key==='Escape'){closeSearch();closeAC();closeNoteDatePicker();closeQuickOpen();}
+  if(e.key==='Escape'){closeSearch();closeAC();closeNoteDatePicker();closeQuickOpen();closeChangelog();closeImageModal();}
 });
 
 /* ═══════════ QUICK OPEN MODAL (Cmd+Shift+O) ═══════════ */
@@ -4546,6 +4862,97 @@ function openHome(){
   activeTab='home';
   renderTabBar();renderActiveView();
   const c=document.getElementById('content-area');if(c)c.scrollTop=0;
+}
+function openGallery(){
+  if(!openTabs.includes('gallery'))openTabs.push('gallery');
+  activeTab='gallery';
+  _galleryShown=GALLERY_PAGE;
+  renderTabBar();renderActiveView();
+  const c=document.getElementById('content-area');if(c)c.scrollTop=0;
+}
+
+/* ═══════════ IMAGE GALLERY ═══════════ */
+const GALLERY_PAGE=30;
+let _galleryShown=GALLERY_PAGE;
+let _galleryObserver=null;
+function renderGallery(area){
+  const all=[...db.images.entries()]
+    .map(([id,v])=>({id,data:v.data,mimeType:v.mimeType,ts:v.ts||0}))
+    .sort((a,b)=>b.ts-a.ts);
+  const total=all.length;
+  const shown=Math.min(_galleryShown,total);
+  const visible=all.slice(0,shown);
+  let h=`<div class="gallery-tab">
+    <div class="gallery-header">
+      <h2>Image gallery</h2>
+      <span class="gallery-count">${total} image${total===1?'':'s'}</span>
+    </div>`;
+  if(!total){
+    h+=`<div class="gallery-empty">
+      <div class="gallery-empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="10" r="1.5"/><path d="M3 16 L8 11 L14 17 L18 13 L21 16 L21 20 L3 20 Z"/></svg></div>
+      <div class="gallery-empty-title">No images yet</div>
+      <div class="gallery-empty-sub">Paste or drop images into a note or the capture rail to add them here.</div>
+    </div>`;
+  } else {
+    h+=`<div class="gallery-grid">`;
+    visible.forEach(img=>{
+      h+=`<div class="gallery-tile" onclick="showImageModal('${img.id}')">
+        <img src="${img.data}" alt="" loading="lazy">
+      </div>`;
+    });
+    h+=`</div>`;
+    if(shown<total){
+      h+=`<div id="gallery-sentinel" style="height:1px"></div>`;
+      h+=`<div class="gallery-footer">Showing ${shown} of ${total} — scroll for more</div>`;
+    } else if(total>GALLERY_PAGE){
+      h+=`<div class="gallery-footer">All ${total} images loaded</div>`;
+    }
+  }
+  h+=`</div>`;
+  area.innerHTML=h;
+  // Infinite scroll observer
+  if(_galleryObserver){_galleryObserver.disconnect();_galleryObserver=null;}
+  const sentinel=document.getElementById('gallery-sentinel');
+  if(sentinel){
+    const container=document.getElementById('content-area');
+    _galleryObserver=new IntersectionObserver(entries=>{
+      if(entries[0].isIntersecting){
+        _galleryShown+=GALLERY_PAGE;
+        renderGallery(area);
+      }
+    },{root:container,rootMargin:'300px'});
+    _galleryObserver.observe(sentinel);
+  }
+}
+function showImageModal(id){
+  const img=db.images.get(id);
+  if(!img)return;
+  closeImageModal();
+  const overlay=document.createElement('div');
+  overlay.id='image-modal-overlay';
+  overlay.className='image-modal-overlay';
+  overlay.innerHTML=`<div class="image-modal-wrap">
+    <img class="image-modal-img" src="${img.data}" alt="">
+    <div class="image-modal-bar">
+      <button class="image-modal-btn" onclick="copyImageMarkdown('${id}')" title="Copy as markdown"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6 L12 2 L17 7 L13 11"/><path d="M12 12 L8 16 L3 11 L7 7"/></svg> Copy markdown</button>
+      <button class="image-modal-btn" onclick="closeImageModal()">&times; Close</button>
+    </div>
+  </div>`;
+  overlay.addEventListener('mousedown',ev=>{if(ev.target===overlay)closeImageModal();});
+  document.body.appendChild(overlay);
+  document.addEventListener('keydown',_imgModalKey,true);
+}
+function _imgModalKey(e){if(e.key==='Escape'){e.preventDefault();closeImageModal();}}
+function closeImageModal(){
+  const o=document.getElementById('image-modal-overlay');
+  if(o)o.remove();
+  document.removeEventListener('keydown',_imgModalKey,true);
+}
+function copyImageMarkdown(id){
+  const md=`![](${id})`;
+  navigator.clipboard.writeText(md).then(()=>{
+    if(typeof showToast==='function')showToast('Image markdown copied','info');
+  });
 }
 
 /* ═══════════ HOME / LANDING PAGE ═══════════ */
@@ -4740,6 +5147,122 @@ function closeSettings(){
   renderTagCloud();renderAllSections();
 }
 /* ═══════════ THEMES ═══════════ */
+/* ═══════════ CHANGELOG ═══════════ */
+const APP_VERSION='1.6.0';
+const CHANGELOG=[
+  {
+    version:'1.6.0',
+    date:'2026-04-08',
+    title:'Pinned items removed',
+    changes:[
+      'Removed the Pinned Items feature entirely — sections are a strictly better primitive for "things I want to keep in front of me"',
+      'Pinned sidebar section, pin toggle in the note toolbar, pin dot on feed entries, and pin/unpin feed events are all gone',
+      'Stale capture-mode documentation in the Themes & Settings help page cleaned up'
+    ]
+  },
+  {
+    version:'1.5.0',
+    date:'2026-04-08',
+    title:'Home, quick open, and templates',
+    changes:[
+      'New **Home** landing page accessible from the 🏠 icon next to the logo — hero, feature spotlights for Sections and Search Tabs, and a call to action',
+      '**Cmd+Shift+O** opens an Obsidian-style quick-open modal with live filter by note title',
+      '**/template** slash command inserts from any note tagged `#template`; three starters seeded (Meeting notes, Daily journal, 1:1 notes)',
+      '**/date**, **/time**, **/datetime** slash commands insert the current value as literal text',
+      'Template variable substitution: `{{date}}`, `{{time}}`, `{{datetime}}`',
+      'Tab bar fixed: tabs now scroll horizontally behind a pinned icon strip, no more overlap',
+      'Section entries show short date ("8 Apr") instead of time — better for scanning older items',
+      'Removed Bottom Dock and Ghost Input capture modes — Input Rail is the only style now',
+      'Floating Note Window settings moved into the right settings column above Danger Zone'
+    ]
+  },
+  {
+    version:'1.4.0',
+    date:'2026-04-07',
+    title:'Editable tables as first-class widgets',
+    changes:[
+      'Tables are now structured data on the note (`entry.tables`), not markdown — referenced by a single-line `{{table:id}}` token',
+      'Lazy migration converts existing markdown tables to editable widgets on note open',
+      'Notion-style inline **+ column** and **+ row** buttons on hover',
+      'Right-click any cell for insert/delete/delete-table context menu',
+      'Every column (including the last) has a drag-to-resize handle',
+      'Copy note exports tables back to portable markdown'
+    ]
+  },
+  {
+    version:'1.3.0',
+    date:'2026-04-06',
+    title:'Guided Setup and Help as a section',
+    changes:[
+      'New section creation opens a **Guided Setup Card** with labeled Section name and Filter fields — discoverable, not hidden',
+      'Pencil edit / double-click name / click query row all reopen the setup card',
+      'Help is now a normal section filtered by `#DailyDispatchHelp` (removed the dedicated sidebar widget)',
+      'Default Meetings section seeded on first launch',
+      'Five new themes: Solarized Light, Nordic, Sepia, Lavender, Midnight Blue'
+    ]
+  },
+  {
+    version:'1.2.0',
+    date:'2026-04-05',
+    title:'Floating meeting notes',
+    changes:[
+      'New 📝 floating note button opens a narrow popup window pinned to the screen edge',
+      'Settings for floating note position (left/right) and width (220–800px)',
+      'Close the floating window → the note auto-opens as a tab in the main window',
+      'Right-click any note tab for "Open in floating window" / "Close tab" context menu',
+      'Modern SVG icons for search and floating note (matching style)'
+    ]
+  },
+  {
+    version:'1.1.0',
+    date:'2026-04-03',
+    title:'Slash commands and power search',
+    changes:[
+      'Slash command menu in notes: /h1–/h3, /bullet, /numbered, /blockquote, /divider, /code, /table',
+      '/table opens a visual 8×8 grid picker to insert a sized markdown table',
+      'Fenced code blocks render with monospace font, light background, and a left border',
+      'URLs in notes are clickable (plain `https://…` or markdown links)',
+      'Numbered lists support `1)` style in addition to `1.`',
+      'Checkbox lines continue on Enter, with or without a bullet prefix',
+      'Search supports quoted phrases (`"[ ]"` for open todos) and `line:` scope',
+      'Search tips panel on empty search tab'
+    ]
+  },
+  {
+    version:'1.0.0',
+    date:'2026-04-01',
+    title:'Initial release',
+    changes:[
+      'Feed with quick entries, markdown notes, and the CM6 live-preview editor',
+      'Tag cloud, sections, search tabs',
+      'Calendar navigation with entry indicators',
+      'Local-only IndexedDB storage, JSON export/import',
+      'Single HTML file, no account, no cloud'
+    ]
+  }
+];
+function showChangelog(){
+  const modal=document.getElementById('changelog-modal');
+  if(!modal)return;
+  const body=document.getElementById('changelog-body');
+  const fmtInline=s=>escH(s).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>');
+  body.innerHTML=CHANGELOG.map((v,i)=>`
+    <div class="changelog-entry${i===0?' latest':''}">
+      <div class="changelog-entry-head">
+        <span class="changelog-version">v${v.version}</span>
+        ${i===0?'<span class="changelog-badge">Current</span>':''}
+        <span class="changelog-date">${v.date}</span>
+      </div>
+      <div class="changelog-title">${escH(v.title)}</div>
+      <ul class="changelog-list">
+        ${v.changes.map(c=>`<li>${fmtInline(c)}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+  modal.classList.add('open');
+}
+function closeChangelog(){document.getElementById('changelog-modal').classList.remove('open');}
+
 const THEMES={
   'Warm Notion':{
     bg:'#faf8f5',surface:'#fff','surface-hover':'#f5f2ed','sidebar-bg':'#f5f2ed',
@@ -4857,7 +5380,7 @@ function applyTheme(name){
 }
 
 function renderSettingsTab(area){
-  const stats=`${db.entries.filter(e=>!e.eventType&&!e.isHelp).length} entries, ${db.openItems.length} pinned items, ${db.sections.length} sections, ${(db.people||[]).length} people`;
+  const stats=`${db.entries.filter(e=>!e.eventType&&!e.isHelp).length} entries, ${db.sections.length} sections, ${(db.people||[]).length} people`;
   area.innerHTML=`<div class="settings-tab">
     <div class="settings-grid">
       <div class="settings-col">
@@ -4867,12 +5390,38 @@ function renderSettingsTab(area){
           <p style="color:var(--text3)">${stats}</p>
         </div>
         <div class="settings-section">
-          <h2>Data</h2>
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+            <h2 style="margin:0">Backup &amp; Restore</h2>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+              ${(()=>{
+                const s=fmtBackupStatus(db.lastBackupTs);
+                return `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${s.color}18;color:${s.color};border:1px solid ${s.color}66;white-space:nowrap"><span style="width:8px;height:8px;border-radius:50%;background:${s.color}"></span>Last backup: ${s.text}</span>`;
+              })()}
+            </div>
+          </div>
+          <p style="color:var(--text2);font-size:12px;line-height:1.55;margin:0 0 8px">
+            Your data never leaves your machine automatically. Export a JSON file to back it up to Dropbox, iCloud, a USB drive, anywhere.
+            We recommend exporting at least once a week.
+          </p>
+          <div style="background:var(--sidebar-bg);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);font-weight:600;margin-bottom:6px">What's in the backup</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.7">
+              All <strong>entries</strong> and <strong>notes</strong> (including tables and help pages) &middot;
+              all <strong>sections</strong> &middot;
+              all <strong>tags</strong> with their colors &middot;
+              your <strong>people</strong> list &middot;
+              your <strong>theme</strong> and <strong>floating note</strong> settings &middot;
+              every <strong>image</strong> you've pasted or dropped in
+            </div>
+          </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="modal-btn" onclick="exportData()">&#128229; Export JSON Backup</button>
-            <button class="modal-btn" onclick="document.getElementById('import-file').click()">&#128228; Import JSON Backup</button>
+            <button class="modal-btn" onclick="exportData()" title="Download a JSON file with all your data">&#128229; Export JSON backup</button>
+            <button class="modal-btn" onclick="document.getElementById('import-file').click()" title="Replace all current data with the contents of a backup file">&#128228; Import JSON backup</button>
             <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
           </div>
+          <p style="color:var(--text3);font-size:11px;line-height:1.5;margin:8px 0 0">
+            <strong style="color:var(--danger)">Heads up:</strong> importing <em>replaces</em> all of your current data. Export first if you want to keep what you have.
+          </p>
         </div>
         <div class="settings-section">
           <h2>Tags</h2>
@@ -4906,6 +5455,14 @@ function renderSettingsTab(area){
             <label style="font-size:12px;display:flex;align-items:center;gap:6px">Width (px)
               <input type="number" min="220" max="800" step="10" value="${(db.floatingNote&&db.floatingNote.width)||300}" onchange="setFloatingNoteOption('width',parseInt(this.value,10))" style="width:80px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--surface);color:var(--text)">
             </label>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h2>Version</h2>
+          <div class="version-row" onclick="showChangelog()" title="Click to see version history">
+            <span class="version-label">DailyDispatch</span>
+            <span class="version-pill">v${APP_VERSION}</span>
+            <span class="version-hint">Click for changelog &rarr;</span>
           </div>
         </div>
         <div class="settings-section" style="border:2px solid var(--danger);border-radius:var(--radius-md);padding:16px">
@@ -5058,18 +5615,36 @@ async function doPurge(){
   localStorage.removeItem('dailydispatch_v1');
   localStorage.removeItem('dailydispatch_v2');
   // Reset in-memory state
-  db={entries:[],questions:[],openItems:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map()};
+  db={entries:[],questions:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map()};
   // Reopen fresh database
   await openIDB();
   closePurge();closeSettings();
   openTabs=['feed'];activeTab='feed';activeTagFilters=[];
-  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderAllSections();
+  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderRecent();renderTagCloud();renderAllSections();
 }
 function exportData(){
-  const out={...db,images:[...db.images.entries()].map(([id,v])=>({id,data:v.data,mimeType:v.mimeType}))};
+  const out={
+    version:APP_VERSION,
+    exportedAt:Date.now(),
+    entries:db.entries,
+    questions:db.questions||[],
+    contexts:db.contexts||[],
+    sections:db.sections||[],
+    tagColors:db.tagColors||{},
+    people:db.people||[],
+    theme:db.theme||'Warm Notion',
+    floatingNote:db.floatingNote||{position:'right',width:300},
+    images:[...db.images.entries()].map(([id,v])=>({id,data:v.data,mimeType:v.mimeType,ts:v.ts||0}))
+  };
   const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='dailydispatch-backup-'+todayStr()+'.json';a.click();URL.revokeObjectURL(a.href);
+  // Record the backup time
+  db.lastBackupTs=Date.now();
+  save('settings');
+  if(typeof showToast==='function')showToast('Backup exported','info');
+  // Refresh settings view so the "last backup" indicator updates immediately
+  if(activeTab==='settings')renderActiveView();
 }
 function importData(e){
   const file=e.target.files[0];if(!file)return;
@@ -5077,32 +5652,70 @@ function importData(e){
   reader.onload=async ev=>{
     try{
       const data=JSON.parse(ev.target.result);
-      if(data.entries){
-        db.entries=data.entries||[];db.openItems=data.openItems||[];db.questions=data.questions||[];
-        db.contexts=data.contexts||[];db.sections=data.sections||[];db.tagColors=data.tagColors||{};
-        // Restore images
-        if(data.images&&data.images.length){
-          await idbClearStore('images');
-          await idbPutAll('images',data.images.map(i=>({id:i.id,data:i.data,mimeType:i.mimeType,ts:Date.now(),size:0})));
-          db.images=new Map(data.images.map(i=>[i.id,{data:i.data,mimeType:i.mimeType}]));
-        } else {
-          db.images=new Map();
-        }
-        await saveAll();
-        closeSettings();
-        openTabs=['feed'];activeTab='feed';
-        updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderAllSections();
-      } else {alert('Invalid backup file');}
+      if(!data.entries){alert('Invalid backup file — missing entries.');return;}
+      if(!confirm('Importing will REPLACE all your current data. Export first if you want to keep it. Continue?'))return;
+      // Data collections
+      db.entries=data.entries||[];
+      db.questions=data.questions||[];
+      db.contexts=data.contexts||[];
+      db.sections=data.sections||[];
+      // Settings
+      db.tagColors=data.tagColors||{};
+      db.people=data.people||[];
+      if(data.theme)db.theme=data.theme;
+      if(data.floatingNote)db.floatingNote=data.floatingNote;
+      // Reset the first-launch seeding flags so they're respected next time
+      db.defaultSectionsSeeded=true;
+      db.startersSeeded=true;
+      db.homeShownOnce=true;
+      db.lastBackupTs=Date.now();
+      // Images — preserve timestamps from the backup so gallery ordering is correct
+      if(data.images&&data.images.length){
+        await idbClearStore('images');
+        await idbPutAll('images',data.images.map(i=>({id:i.id,data:i.data,mimeType:i.mimeType,ts:i.ts||Date.now(),size:0})));
+        db.images=new Map(data.images.map(i=>[i.id,{data:i.data,mimeType:i.mimeType,ts:i.ts||0}]));
+      } else {
+        await idbClearStore('images');
+        db.images=new Map();
+      }
+      await saveAll();
+      if(db.theme)applyTheme(db.theme);
+      closeSettings();
+      openTabs=['feed'];activeTab='feed';
+      updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderRecent();renderTagCloud();renderAllSections();
+      if(typeof showToast==='function')showToast('Backup imported','info');
     }catch(err){alert('Failed to parse file: '+err.message);}
   };
   reader.readAsText(file);e.target.value='';
+}
+// Human-readable "last backup" status with color coding.
+function fmtBackupStatus(ts){
+  if(!ts)return {text:'Never backed up',color:'#e16259'};
+  const ms=Date.now()-ts;
+  const days=Math.floor(ms/(24*3600*1000));
+  let color;
+  if(days<7)color='#4daa57';           // green — within a week
+  else if(days<14)color='#8fa83a';     // yellow-green
+  else if(days<21)color='#d49a20';     // amber
+  else if(days<30)color='#e08020';     // orange
+  else color='#e16259';                // red — overdue
+  let text;
+  if(days===0){
+    const hrs=Math.floor(ms/(3600*1000));
+    text=hrs<1?'Just now':hrs+' hour'+(hrs===1?'':'s')+' ago';
+  }
+  else if(days===1)text='Yesterday';
+  else if(days<30)text=days+' days ago';
+  else if(days<60)text='Over a month ago';
+  else text='Over '+Math.floor(days/30)+' months ago';
+  return {text,color};
 }
 
 /* ═══════════ HELP NOTES ═══════════ */
 const HELP_NOTES=[
 {id:'help_welcome',noteTitle:'Welcome to DailyDispatch',content:`# Welcome to DailyDispatch
 
-DailyDispatch is your personal daily work journal — a fast, local, offline-first tool for capturing what you work on, tracking open items, and finding things later.
+DailyDispatch is your personal daily work journal — a fast, local, offline-first tool for capturing what you work on, organizing it with sections, and finding things later.
 
 Everything lives in your browser's IndexedDB. No server, no internet, no account needed.
 
@@ -5113,11 +5726,12 @@ Everything lives in your browser's IndexedDB. No server, no internet, no account
 - Use **@mentions** to reference people: @Sarah, @Dave
 - Click any entry to open it as a full note with the markdown editor
 - In notes, type \`/\` to open slash commands (headings, tables, code blocks, dividers, etc.)
-- Pin important items by hovering and clicking the 📌 icon
+- Create sections to build live dashboards of whatever matters to you
 
 ## Key Shortcuts
 
 - **Cmd+K** — Open a search tab
+- **Cmd+Shift+O** — Quick-open a note by title
 - **Cmd+N** — Create a new note
 - **Cmd+D** — Close the current tab
 - **Cmd+Enter** — Submit a quick entry
@@ -5131,7 +5745,6 @@ See these guides for more detail:
 - [[Tags & Filtering]]
 - [[Sections & Custom Views]]
 - [[Search Tabs & Boolean Queries]]
-- [[Pinned Items]]
 - [[Floating Note Window]]
 - [[Events & Activity Log]]
 - [[People & Mentions]]
@@ -5149,11 +5762,6 @@ See these guides for more detail:
 The capture box at the top of the Feed tab is your quick-entry point. Type anything and press **Cmd+Enter** or click **Add**.
 
 Entries are timestamped with the current time and land on today's date — even if you're viewing an older day in the feed. Clicking anywhere in the capture rail focuses the input.
-
-The capture box has three visual styles (Settings → Capture Style):
-- **Input Rail** — sits at the top with a warm left margin, scrolls with content
-- **Bottom Dock** — pinned to the bottom of the feed, always visible
-- **Ghost Input** — a subtle dashed line that expands on click
 
 ## Markdown in Entries
 
@@ -5234,12 +5842,12 @@ Plain \`https://...\` URLs in a note become clickable. Place your cursor on a di
 
 The first line of your note becomes the tab title automatically.
 
-## Pin & Date
+## Toolbar
 
 Use the toolbar above the editor to:
-- **Pin/Unpin** the note
 - Change the **date** and **time**
-- **Copy** the raw markdown
+- **Copy** the raw markdown (tables are exported as markdown)
+- **Link** — copy a deep link to this note
 - **Delete** the note
 
 See also: [[Slash Commands]], [[Tags & Filtering]], [[Quick Entries & Feed]]
@@ -5427,33 +6035,6 @@ See also: [[Sections & Custom Views]], [[Tags & Filtering]], [[Events & Activity
 ---
 #DailyDispatchHelp`},
 
-{id:'help_pins',noteTitle:'Pinned Items',content:`# Pinned Items
-
-## What Are Pinned Items?
-
-Pinned items are entries you want to keep visible in the left sidebar for quick access. Think of them as bookmarks for important notes or follow-ups.
-
-## Pinning an Entry
-
-Hover over any entry in the feed and click the 📌 icon on the left side. The pin icon is always visible on already-pinned entries.
-
-## Pinning from a Note
-
-In the note editor toolbar, click the **Pin** button to pin/unpin the current note.
-
-## The Pinned Section
-
-Pinned items appear in the left sidebar under **PINNED**. Click any pinned item to open it as a note. Click the × to unpin.
-
-## Pin Events
-
-Pinning and unpinning are logged as events in the feed, so you have a record of when items were pinned — see [[Events & Activity Log]].
-
-See also: [[Quick Entries & Feed]], [[Notes & Markdown Editor]]
-
----
-#DailyDispatchHelp`},
-
 {id:'help_floating',noteTitle:'Floating Note Window',content:`# Floating Note Window
 
 The floating note button (📝 icon in the tab bar) opens a **small popup window** pinned to the edge of your screen. It's a brand-new note ready to type — perfect for capture that needs to stay visible while you're working on something else.
@@ -5502,13 +6083,12 @@ See also: [[Notes & Markdown Editor]], [[Slash Commands]]
 
 {id:'help_events',noteTitle:'Events & Activity Log',content:`# Events & Activity Log
 
-Events are small activity-log items that appear **inline in your feed**. They record things that happened — pins, section changes, searches — so you have a record of your activity alongside the entries you wrote.
+Events are small activity-log items that appear **inline in your feed**. They record things that happened — section changes and searches — so you have a record of your activity alongside the entries you wrote.
 
 ## Event Types
 
 | Icon | Event | When it fires |
 |---|---|---|
-| 📌 | **Pinned / Unpinned** | You pin or unpin an entry or note |
 | ✨ | **New section** | You create a filter section |
 | ✏️ | **Renamed section** | You change a section's name |
 | 🔧 | **Section filter** | You change a section's filter query |
@@ -5520,10 +6100,6 @@ Events are small activity-log items that appear **inline in your feed**. They re
 When you type a query in a search tab, DailyDispatch debounces for 1.5 seconds, then writes a **Search** event to the feed with the query text. If you keep editing the same search tab, it updates the same event rather than creating a new one. Clear the query and the event is removed.
 
 Each search event in the feed has a **"reopen"** link — click it to spawn a new search tab pre-filled with that query. Great for rerunning a research query you did yesterday.
-
-## Pin Events
-
-Pinning an entry pushes a 📌 event into the feed with the text of the pinned item. Unpin and you'll see the matching unpin event later.
 
 ## Section Events
 
@@ -5537,7 +6113,7 @@ This means your feed doubles as a history of how your dashboards evolved.
 
 Events are excluded from search and section queries — they only appear in the feed. If you apply any tag filter, events are hidden automatically so the feed stays focused on matching entries.
 
-See also: [[Search Tabs & Boolean Queries]], [[Pinned Items]], [[Sections & Custom Views]]
+See also: [[Search Tabs & Boolean Queries]], [[Sections & Custom Views]]
 
 ---
 #DailyDispatchHelp`},
@@ -5623,13 +6199,6 @@ Choose from 9 built-in themes (Settings → Theme):
 
 Your theme choice is saved and persists across sessions.
 
-## Capture Style
-
-Choose how the quick-capture input appears on the feed:
-- **Input Rail** — at the top, warm left margin, scrolls with content
-- **Bottom Dock** — pinned to the bottom, always visible
-- **Ghost Input** — dashed hint that expands on click
-
 ## Floating Note Window
 
 Configure the floating popup's edge position (left/right) and width (220–800px). See [[Floating Note Window]].
@@ -5704,6 +6273,7 @@ See also: [[Welcome to DailyDispatch]], [[Notes & Markdown Editor]], [[Slash Com
 
 function ensureHelpNotes(){
   let changed=false;
+  const validIds=new Set(HELP_NOTES.map(h=>h.id));
   HELP_NOTES.forEach(h=>{
     const existing=db.entries.find(e=>e.id===h.id);
     const tags=['DailyDispatchHelp'];
@@ -5720,6 +6290,11 @@ function ensureHelpNotes(){
       changed=true;
     }
   });
+  // Remove orphaned help notes — entries marked isHelp but no longer in HELP_NOTES
+  // (e.g. help pages retired in a newer version of the app).
+  const before=db.entries.length;
+  db.entries=db.entries.filter(e=>!e.isHelp||validIds.has(e.id));
+  if(db.entries.length!==before)changed=true;
   if(changed)save();
   ensureHelpSection();
   ensureStarterTemplates();
@@ -5932,7 +6507,6 @@ async function init(){
   console.log('[DD-INIT] DB loaded:', db.entries.length, 'entries');
   if(!db.sections)db.sections=[];
   if(!db.entries)db.entries=[];
-  if(!db.openItems)db.openItems=[];
   if(!db.tagColors)db.tagColors={};
   if(!db.people)db.people=[];
   ensureHelpNotes();
@@ -5945,15 +6519,23 @@ async function init(){
     db.homeShownOnce=true;
     save('settings');
   }
-  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderPins();renderRecent();renderTagCloud();renderAllSections();
+  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderRecent();renderTagCloud();renderAllSections();
+  // Reload entries AND images from IDB. Floating-window image pastes are
+  // persisted directly to the images store, but the main window's in-memory
+  // db.images Map is stale until we re-read it — otherwise pasted images
+  // show as "missing image" after the floating window closes.
+  async function _ddReloadFromIDB(){
+    const [fresh,imgRows]=await Promise.all([idbGetAll('entries'),idbGetAll('images')]);
+    db.entries=fresh;
+    db.images=new Map(imgRows.map(r=>[r.id,{data:r.data,mimeType:r.mimeType,ts:r.ts||0}]));
+  }
   // Cross-window sync via BroadcastChannel — used while floating window is alive
   try{
     window._ddBC=new BroadcastChannel('dailydispatch');
     window._ddBC.addEventListener('message',async e=>{
       if(!e.data)return;
       if(e.data.type==='note-saved'){
-        const fresh=await idbGetAll('entries');
-        db.entries=fresh;
+        await _ddReloadFromIDB();
         renderActiveView();renderTagCloud();renderAllSections();renderRecent();renderTabBar();
       }
     });
@@ -5962,8 +6544,7 @@ async function init(){
   // BroadcastChannel.postMessage is async and gets dropped during teardown, so we
   // use localStorage which is synchronous and fires the storage event reliably.
   async function _ddOpenFloatingClosedNote(noteId){
-    const fresh=await idbGetAll('entries');
-    db.entries=fresh;
+    await _ddReloadFromIDB();
     const note=db.entries.find(x=>x.id===noteId&&x.isNote);
     if(note)openNoteTab(note.id);
     renderTagCloud();renderAllSections();renderRecent();
