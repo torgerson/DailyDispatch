@@ -21,7 +21,7 @@
     --radius-sm: 4px; --radius-md: 6px; --radius-lg: 10px;
     --sans: 'Inter', -apple-system, sans-serif;
     --mono: 'JetBrains Mono', monospace;
-    --left-w: 230px; --right-w: 240px; --topbar-h: 44px; --tabbar-h: 36px;
+    --sidebar-w: 240px; --tabbar-h: 36px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -29,54 +29,124 @@
     color: var(--text); background: var(--bg);
     height: 100vh; overflow: hidden;
     display: grid;
-    grid-template-rows: var(--topbar-h) 1fr;
-    grid-template-columns: var(--left-w) minmax(0, 1fr) var(--right-w);
-    grid-template-areas: "topbar topbar topbar" "left center right";
+    grid-template-rows: 1fr;
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+    grid-template-areas: "sidebar main";
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ── TOPBAR ── */
-  #topbar {
-    grid-area: topbar; background: var(--surface);
-    border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: center; padding: 0 14px; gap: 8px; z-index: 100;
+  /* ── SIDEBAR ── */
+  #sidebar {
+    grid-area: sidebar; background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-light);
+    display: flex; flex-direction: column; overflow: hidden;
+    user-select: none;
   }
-  .logo { font-weight: 700; font-size: 14px; letter-spacing: -0.2px; color: var(--brown); cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; }
-  .logo:hover { color: var(--accent); }
-  .logo span { color: var(--accent); }
-  .logo-home-icon { display: inline-flex; align-items: center; color: var(--text3); }
-  .logo:hover .logo-home-icon { color: var(--accent); }
-  .top-sep { width: 1px; height: 20px; background: var(--border-light); margin: 0 4px; }
-  .date-nav { display: flex; align-items: center; gap: 4px; }
+  .sb-brand {
+    padding: 12px 14px 10px; border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+  }
+  .sb-brand .logo {
+    font-weight: 700; font-size: 14px; letter-spacing: -0.2px; color: var(--brown);
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+  }
+  .sb-brand .logo:hover { color: var(--accent); }
+  .sb-brand .logo span { color: var(--accent); }
+  /* Primary nav */
+  .sb-nav { padding: 8px 8px 4px; flex-shrink: 0; }
+  .sb-nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 10px; border-radius: var(--radius-md); cursor: pointer;
+    font-size: 13px; font-weight: 500; color: var(--text2); transition: all 0.1s;
+  }
+  .sb-nav-item:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+  .sb-nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+  .sb-nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .sb-nav-badge {
+    margin-left: auto; font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 8px; min-width: 18px; text-align: center;
+  }
+  .sb-nav-badge-accent { background: var(--accent-light); color: var(--accent); }
+  .sb-nav-badge-count { background: var(--border); color: var(--text3); }
+  .sb-divider { height: 1px; background: var(--border-light); margin: 4px 14px; flex-shrink: 0; }
+  /* Collapsible groups */
+  .sb-groups-scroll { flex: 1; overflow-y: auto; }
+  .sb-group { flex-shrink: 0; }
+  .sb-group-hdr {
+    display: flex; align-items: center; gap: 6px; padding: 8px 14px 3px;
+    cursor: pointer; font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--text3);
+  }
+  .sb-group-hdr:hover { color: var(--text2); }
+  .sb-chevron {
+    font-size: 8px; transition: transform 0.15s; display: inline-block;
+    width: 10px; text-align: center;
+  }
+  .sb-chevron.collapsed { transform: rotate(-90deg); }
+  .sb-group-hdr .sb-group-title { flex: 1; }
+  .sb-group-btn {
+    background: none; border: none; color: var(--text3); cursor: pointer;
+    font-size: 12px; line-height: 1; padding: 0 2px; opacity: 0;
+  }
+  .sb-group-hdr:hover .sb-group-btn { opacity: 1; }
+  .sb-group-btn:hover { color: var(--accent); }
+  .sb-group-body { overflow: hidden; }
+  .sb-group-body.collapsed { display: none; }
+  /* Date nav (inside calendar group) */
+  .date-nav { display: flex; align-items: center; gap: 4px; padding: 2px 12px 4px; }
   .dn-btn {
-    width: 22px; height: 22px; border: 1px solid var(--border-light); border-radius: 3px;
+    width: 20px; height: 20px; border: 1px solid var(--border-light); border-radius: 3px;
     background: var(--surface); cursor: pointer; display: flex; align-items: center;
-    justify-content: center; color: var(--text2); font-size: 9px;
+    justify-content: center; color: var(--text2); font-size: 8px;
   }
-  .dn-btn:hover { background: var(--sidebar-bg); color: var(--text); }
-  #date-label { font-weight: 600; font-size: 12px; padding: 0 4px; white-space: nowrap; color: var(--text); }
+  .dn-btn:hover { background: var(--bg); color: var(--text); }
+  #date-label { font-weight: 600; font-size: 11px; padding: 0 3px; white-space: nowrap; color: var(--text); }
   #today-btn {
-    font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    font-size: 9px; padding: 2px 6px; border-radius: 8px;
     background: var(--accent-light); color: #a07325; border: none;
-    cursor: pointer; font-weight: 500; display: none;
+    cursor: pointer; font-weight: 500; display: none; margin-left: auto;
   }
   #today-btn:hover { background: var(--accent); color: #fff; }
-  .top-spacer { flex: 1; }
-  .top-btn {
-    width: 28px; height: 28px; border: 1px solid var(--border-light); border-radius: 3px;
-    background: var(--surface); cursor: pointer; display: flex; align-items: center;
-    justify-content: center; color: var(--text2); font-size: 13px; position: relative;
+  /* Sidebar notes list */
+  .sb-note-list { padding: 2px 8px 4px; }
+  .sb-note-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 8px; border-radius: var(--radius-sm); cursor: pointer;
+    font-size: 11px; color: var(--text2);
   }
-  .top-btn:hover { background: var(--sidebar-bg); color: var(--text); }
-  .badge {
-    position: absolute; top: -3px; right: -3px; background: var(--accent); color: #fff;
-    font-size: 8px; font-weight: 700; min-width: 13px; height: 13px; border-radius: 7px;
-    display: flex; align-items: center; justify-content: center; padding: 0 3px;
+  .sb-note-item:hover { background: rgba(0,0,0,0.03); color: var(--text); }
+  .sb-note-item .sb-note-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sb-note-item .sb-note-date { font-size: 9px; color: var(--text3); font-family: var(--mono); }
+  .sb-note-item .sb-note-icon { font-size: 9px; color: var(--text3); }
+  /* Sidebar sections list */
+  .sb-sec-list { padding: 2px 8px 4px; }
+  .sb-sec-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 8px; border-radius: var(--radius-sm); cursor: pointer;
+    font-size: 11px; color: var(--text2);
   }
+  .sb-sec-item:hover { background: rgba(0,0,0,0.03); color: var(--text); }
+  .sb-sec-item .sb-sec-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sb-sec-item .sb-sec-count { font-size: 9px; color: var(--text3); font-family: var(--mono); }
+  .sb-sec-expanded { padding: 0 8px 4px; }
+  .sb-sec-expanded .rs-entry { font-size: 11px; }
+  /* Sidebar tags */
+  .sb-tag-cloud { padding: 4px 12px 6px; display: flex; flex-wrap: wrap; gap: 3px; }
+  /* Sidebar footer */
+  .sb-footer {
+    border-top: 1px solid var(--border-light); padding: 6px 10px;
+    display: flex; gap: 2px; justify-content: center; flex-shrink: 0;
+  }
+  .sb-footer-btn {
+    width: 28px; height: 26px; display: flex; align-items: center; justify-content: center;
+    background: none; border: none; color: var(--text3); cursor: pointer; border-radius: 3px;
+  }
+  .sb-footer-btn:hover { color: var(--accent); background: var(--accent-light); }
+  .sb-footer-btn svg { width: 14px; height: 14px; }
 
-  /* ── LEFT SIDEBAR ── */
-  #left {
-    grid-area: left; background: var(--sidebar-bg); border-right: 1px solid var(--border-light);
+  /* ── MAIN AREA (was #center) ── */
+  #left { /* Legacy — replaced by #sidebar */
+    display: none; grid-area: sidebar; background: var(--sidebar-bg); border-right: 1px solid var(--border-light);
     overflow-y: auto; display: flex; flex-direction: column; min-width: 0; max-width: var(--left-w);
     padding: 12px 0;
   }
@@ -179,7 +249,7 @@
 
   /* ── CENTER ── */
   #center {
-    grid-area: center; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
+    grid-area: main; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
     background: var(--surface);
   }
   #tab-bar {
@@ -936,14 +1006,12 @@
   body.floating-mode {
     grid-template-columns: 1fr !important;
     grid-template-rows: 1fr !important;
-    grid-template-areas: "center" !important;
+    grid-template-areas: "main" !important;
   }
-  body.floating-mode #topbar,
-  body.floating-mode #left,
-  body.floating-mode #right,
+  body.floating-mode #sidebar,
   body.floating-mode #tab-bar,
   body.floating-mode #capture-top { display: none !important; }
-  body.floating-mode #center { grid-area: center; }
+  body.floating-mode #center { grid-area: main; }
   body.floating-mode #content-area { padding: 10px !important; height: 100vh; overflow-y: auto; }
   /* Fenced code block lines */
   .cm-dd-code-block-line {
@@ -1134,8 +1202,8 @@
   .note-toolbar .spacer { flex: 1; }
 
   /* ── RIGHT SIDEBAR ── */
-  #right {
-    grid-area: right; background: var(--sidebar-bg); border-left: 1px solid var(--border-light);
+  #right { /* Legacy — replaced by sidebar sections. Hidden. */
+    display: none; grid-area: unset; background: var(--sidebar-bg); border-left: 1px solid var(--border-light);
     display: flex; flex-direction: column; overflow: hidden; min-width: 0; max-width: var(--right-w);
   }
   /* Right sidebar toolbar — matches the tab-bar icon strip visually */
@@ -1518,54 +1586,100 @@
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div id="topbar">
-  <div class="logo" onclick="openHome()" title="Home">
-    <span class="logo-home-icon"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg></span>
-    Daily<span>Dispatch</span>
-  </div>
-  <div class="top-sep"></div>
-  <div class="date-nav">
-    <button class="dn-btn" onclick="navDay(-1)">&#9664;</button>
-    <span id="date-label"></span>
-    <button class="dn-btn" onclick="navDay(1)">&#9654;</button>
-    <button id="today-btn" onclick="goToday()">Today</button>
-  </div>
-  <div class="top-spacer"></div>
-</div>
-
-<!-- LEFT SIDEBAR -->
-<div id="left">
-  <div class="sb-section">
-    <div class="sb-hdr" onclick="toggleSb(this)"><h3>Calendar</h3><span class="arrow">&#9660;</span></div>
-    <div class="sb-body">
-      <div class="cal-nav">
-        <button class="dn-btn" onclick="navMonth(-1)" style="width:20px;height:20px;font-size:8px">&#9664;</button>
-        <span id="cal-month"></span>
-        <button class="dn-btn" onclick="navMonth(1)" style="width:20px;height:20px;font-size:8px">&#9654;</button>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-brand">
+    <div class="logo" onclick="openHome()" title="Home">
+      <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg>
+      Daily<span>Dispatch</span>
     </div>
   </div>
-  <div id="left-drop-zone">Drop section here</div>
-  <div id="left-sections"></div>
+  <div class="sb-nav">
+    <div class="sb-nav-item active" id="nav-today" onclick="switchToNav('today')">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>
+      <span>Today</span>
+    </div>
+    <div class="sb-nav-item" id="nav-tasks" onclick="switchToNav('tasks')">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>
+      <span>Tasks</span>
+      <span class="sb-nav-badge sb-nav-badge-count" id="nav-tasks-count" style="display:none">0</span>
+    </div>
+    <div class="sb-nav-item" id="nav-search" onclick="openSearch()">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg>
+      <span>Search</span>
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+  <div class="sb-groups-scroll">
+    <!-- Calendar -->
+    <div class="sb-group" id="sb-calendar">
+      <div class="sb-group-hdr" onclick="toggleSbGroup('calendar')">
+        <span class="sb-chevron" id="chev-calendar">&#9660;</span>
+        <span class="sb-group-title">Calendar</span>
+      </div>
+      <div class="sb-group-body" id="body-calendar">
+        <div class="date-nav">
+          <button class="dn-btn" onclick="navDay(-1)">&#9664;</button>
+          <span id="date-label"></span>
+          <button class="dn-btn" onclick="navDay(1)">&#9654;</button>
+          <button id="today-btn" onclick="goToday()">Today</button>
+        </div>
+        <div style="padding:0 12px 6px">
+          <div class="cal-nav">
+            <button class="dn-btn" onclick="navMonth(-1)" style="width:18px;height:18px;font-size:7px">&#9664;</button>
+            <span id="cal-month" style="font-size:10px"></span>
+            <button class="dn-btn" onclick="navMonth(1)" style="width:18px;height:18px;font-size:7px">&#9654;</button>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Notes -->
+    <div class="sb-group" id="sb-notes">
+      <div class="sb-group-hdr" onclick="toggleSbGroup('notes')">
+        <span class="sb-chevron" id="chev-notes">&#9660;</span>
+        <span class="sb-group-title">Notes</span>
+        <button class="sb-group-btn" onclick="event.stopPropagation();createNote()" title="New note (Cmd+;)">+</button>
+      </div>
+      <div class="sb-group-body" id="body-notes">
+        <div class="sb-note-list" id="sb-notes-list"></div>
+      </div>
+    </div>
+    <!-- Sections -->
+    <div class="sb-group" id="sb-sections">
+      <div class="sb-group-hdr" onclick="toggleSbGroup('sections')">
+        <span class="sb-chevron" id="chev-sections">&#9660;</span>
+        <span class="sb-group-title">Sections</span>
+        <button class="sb-group-btn" id="backlinks-toggle" onclick="event.stopPropagation();toggleBacklinks()" title="Backlinks"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11.5 L6 14 A3.2 3.2 0 0 1 1.8 9.8 L5.5 6"/><path d="M11.5 8.5 L14 6 A3.2 3.2 0 0 1 18.2 10.2 L14.5 14"/><line x1="7.5" y1="12.5" x2="12.5" y2="7.5"/></svg></button>
+        <button class="sb-group-btn" onclick="event.stopPropagation();addSection()" title="Add section">+</button>
+      </div>
+      <div class="sb-group-body" id="body-sections">
+        <div id="sb-sections-body"></div>
+      </div>
+    </div>
+    <!-- Tags -->
+    <div class="sb-group" id="sb-tags">
+      <div class="sb-group-hdr" onclick="toggleSbGroup('tags')">
+        <span class="sb-chevron" id="chev-tags">&#9660;</span>
+        <span class="sb-group-title">Tags</span>
+      </div>
+      <div class="sb-group-body" id="body-tags">
+        <div class="sb-tag-cloud" id="sb-tags-cloud"></div>
+      </div>
+    </div>
+  </div>
+  <div class="sb-footer">
+    <button class="sb-footer-btn" onclick="openFloatingNote()" title="Floating note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14"/><circle cx="5.5" cy="6" r="0.5" fill="currentColor"/><circle cx="7.5" cy="6" r="0.5" fill="currentColor"/><line x1="6" y1="11" x2="14" y2="11"/><line x1="6" y1="14" x2="11" y2="14"/></svg></button>
+    <button class="sb-footer-btn" onclick="openGallery()" title="Image gallery"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg></button>
+    <button class="sb-footer-btn" onclick="openSettings()" title="Settings"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.8"/><path d="M10 2 v2.5 M10 15.5 v2.5 M2 10 h2.5 M15.5 10 h2.5 M4.4 4.4 l1.8 1.8 M13.8 13.8 l1.8 1.8 M15.6 4.4 l-1.8 1.8 M6.2 13.8 l-1.8 1.8"/></svg></button>
+  </div>
 </div>
 
-<!-- CENTER -->
+<!-- MAIN -->
 <div id="center">
   <div id="tab-bar"></div>
   <div id="capture-top"></div>
   <div id="content-area"></div>
-</div>
-
-<!-- RIGHT SIDEBAR -->
-<div id="right">
-  <div id="right-toolbar">
-    <h3>Sections</h3>
-    <button class="tab-icon-btn" id="backlinks-toggle" onclick="toggleBacklinks()" title="Backlinks"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11.5 L6 14 A3.2 3.2 0 0 1 1.8 9.8 L5.5 6"/><path d="M11.5 8.5 L14 6 A3.2 3.2 0 0 1 18.2 10.2 L14.5 14"/><line x1="7.5" y1="12.5" x2="12.5" y2="7.5"/></svg></button>
-    <button class="tab-icon-btn" onclick="addSection()" title="Add section"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></button>
-  </div>
-  <div id="right-sections"></div>
 </div>
 
 <!-- AUTOCOMPLETE -->
@@ -1749,12 +1863,12 @@ async function loadDB(){
   db.homeShownOnce=s.homeShownOnce||false;
   db.floatingNote=s.floatingNote||{position:'right',width:300};
   db.lastBackupTs=s.lastBackupTs||0;
-  db.virtualPanels=s.virtualPanels||{recent:{col:'left',order:0},tags:{col:'left',order:1}};
+  if(s.sbGroupState)sbGroupState=s.sbGroupState;
   // Restore tab session
   if(s.openTabs&&s.openTabs.length){
-    const validId=id=>id==='feed'||id==='home'||id==='settings'||id==='gallery'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
+    const validId=id=>id==='today'||id==='feed'||id==='home'||id==='tasks'||id==='settings'||id==='gallery'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
     openTabs=s.openTabs.filter(validId);
-    if(!openTabs.includes('feed'))openTabs.unshift('feed');
+    openTabs=openTabs.map(id=>id==='feed'?'today':id);if(!openTabs.includes('today'))openTabs.unshift('today');
     activeTab=validId(s.activeTab)&&openTabs.includes(s.activeTab)?s.activeTab:openTabs[openTabs.length-1];
     if(s.searchTabs)searchTabs=s.searchTabs;
   }
@@ -1837,7 +1951,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,virtualPanels:db.virtualPanels||{recent:{col:'left',order:0},tags:{col:'left',order:1}},openTabs,activeTab,searchTabs}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,sbGroupState,openTabs,activeTab,searchTabs}]);
     } else if(store==='sections'&&db.sections){
       // Strip transient session-only flags and drop unsaved drafts
       const sanitized=db.sections
@@ -1988,7 +2102,7 @@ function renderNoteImages(content){
 }
 
 /* ═══════════ STATE ═══════════ */
-let selectedDate=todayStr(), activeTab='feed', openTabs=['feed'], activeTagFilters=[], calViewDate=new Date(), acState=null, saveTimeout=null;
+let selectedDate=todayStr(), activeTab='today', openTabs=['today'], activeTagFilters=[], calViewDate=new Date(), acState=null, saveTimeout=null;
 // saveTimeout is still used by noteChanged for debounced saves
 
 /* ═══════════ MARKDOWN ═══════════ */
@@ -2041,10 +2155,11 @@ function renderTabBar(){
   let tabsHtml='';
   openTabs.forEach(tid=>{
     const isA=tid===activeTab;
-    const drag=tid!=='feed'?` draggable="true" ondragstart="tabDragStart(event,'${tid}')" ondragover="tabDragOver(event)" ondrop="tabDrop(event,'${tid}')" ondragend="tabDragEnd(event)"`:'';
-    const dropTarget=tid==='feed'?` ondragover="tabDragOver(event)" ondrop="tabDrop(event,'${tid}')"`:''
-    if(tid==='feed'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('feed')"${dropTarget}>&#128221; Feed</div>`;}
+    const drag=tid!=='today'?` draggable="true" ondragstart="tabDragStart(event,'${tid}')" ondragover="tabDragOver(event)" ondrop="tabDrop(event,'${tid}')" ondragend="tabDragEnd(event)"`:'';
+    const dropTarget=tid==='today'?` ondragover="tabDragOver(event)" ondrop="tabDrop(event,'${tid}')"`:''
+    if(tid==='today'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('today')"${dropTarget}><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>`;}
     else if(tid==='home'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('home')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg>Home<span class="tab-close" onclick="event.stopPropagation();closeTab('home')">&times;</span></div>`;}
+    else if(tid==='tasks'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('tasks')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>Tasks<span class="tab-close" onclick="event.stopPropagation();closeTab('tasks')">&times;</span></div>`;}
     else if(tid==='gallery'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('gallery')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg>Gallery<span class="tab-close" onclick="event.stopPropagation();closeTab('gallery')">&times;</span></div>`;}
     else if(tid==='settings'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('settings')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><circle cx="10" cy="10" r="2.8"/><path d="M10 2 v2.5 M10 15.5 v2.5 M2 10 h2.5 M15.5 10 h2.5 M4.4 4.4 l1.8 1.8 M13.8 13.8 l1.8 1.8 M15.6 4.4 l-1.8 1.8 M6.2 13.8 l-1.8 1.8"/></svg>Settings<span class="tab-close" onclick="event.stopPropagation();closeTab('settings')">&times;</span></div>`;}
     else if(tid.startsWith('search_')){
@@ -2059,11 +2174,9 @@ function renderTabBar(){
   // Tabs scroll in their own container; icons sit in a fixed-width strip to the right
   // so they can't be overlapped when there are many tabs open.
   let h=`<div id="tab-bar-tabs">${tabsHtml}</div>`;
+  // Icons in the tab bar — just search; gallery/floating/settings are in sidebar footer
   h+=`<div id="tab-bar-icons">`;
   h+=`<button class="tab-icon-btn" onclick="openSearch()" title="Search (Cmd+K)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg></button>`;
-  h+=`<button class="tab-icon-btn" onclick="openFloatingNote()" title="Floating note"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14"/><circle cx="5.5" cy="6" r="0.5" fill="currentColor"/><circle cx="7.5" cy="6" r="0.5" fill="currentColor"/><line x1="6" y1="11" x2="14" y2="11"/><line x1="6" y1="14" x2="11" y2="14"/></svg></button>`;
-  h+=`<button class="tab-icon-btn" onclick="openGallery()" title="Image gallery"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg></button>`;
-  h+=`<button class="tab-icon-btn" onclick="openSettings()" title="Settings"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.8"/><path d="M10 2 v2.5 M10 15.5 v2.5 M2 10 h2.5 M15.5 10 h2.5 M4.4 4.4 l1.8 1.8 M13.8 13.8 l1.8 1.8 M15.6 4.4 l-1.8 1.8 M6.2 13.8 l-1.8 1.8"/></svg></button>`;
   h+=`</div>`;
   document.getElementById('tab-bar').innerHTML=h;
   save('settings');
@@ -2141,19 +2254,20 @@ function switchTab(t){
   // so partial @names typed mid-word never leak into the people list.
   _commitMentionsForTab(activeTab);
   activeTab=t;renderTabBar();renderActiveView();
+  updateSidebarNav();
 }
 function closeTab(t){
   _commitMentionsForTab(t);
   openTabs=openTabs.filter(x=>x!==t);
   if(t.startsWith('search_'))searchTabs=searchTabs.filter(s=>s.id!==t);
-  if(activeTab===t)activeTab=openTabs[openTabs.length-1]||'feed';
+  if(activeTab===t)activeTab=openTabs[openTabs.length-1]||'today';
   renderTabBar();renderActiveView();
 }
 // Register mentions only at commit points (tab switch / close / submit).
 // This prevents partial @names from leaking into the people list when the
 // user pauses mid-word during typing.
 function _commitMentionsForTab(tabId){
-  if(!tabId||tabId==='feed'||tabId==='home'||tabId==='settings'||tabId==='gallery'||tabId.startsWith('search_'))return;
+  if(!tabId||tabId==='today'||tabId==='home'||tabId==='settings'||tabId==='gallery'||tabId.startsWith('search_'))return;
   const entry=db.entries.find(e=>e.id===tabId);
   if(entry){registerMentions(extractMentions(entry.content||''));}
 }
@@ -2163,11 +2277,12 @@ function renderActiveView(){
   const a=document.getElementById('content-area');
   if(cmEditorView&&activeTab!==cmNoteId){cmEditorView.destroy();cmEditorView=null;cmNoteId=null;}
   // Hide capture rail when not on feed
-  if(activeTab!=='feed'){
+  if(activeTab!=='today'){
     const t=document.getElementById('capture-top');if(t){t.classList.remove('visible');t.innerHTML='';}
   }
-  if(activeTab==='feed')renderFeed(a);
+  if(activeTab==='today')renderToday(a);
   else if(activeTab==='home')renderHome(a);
+  else if(activeTab==='tasks')renderTasksView(a);
   else if(activeTab==='gallery')renderGallery(a);
   else if(activeTab==='settings')renderSettingsTab(a);
   else if(activeTab.startsWith('search_'))renderSearchTab(a,activeTab);
@@ -2191,7 +2306,19 @@ function getFeedTopDate(){
   return feedTopDate;
 }
 
-function renderFeed(area){
+/* Tasks view stub — Phase 4 will implement the full Kanban/List board */
+function renderTasksView(area){
+  area.innerHTML=`<div style="padding:60px 40px;text-align:center;color:var(--text3)">
+    <div style="font-size:48px;margin-bottom:16px">&#128203;</div>
+    <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">Tasks</div>
+    <div style="font-size:13px;max-width:400px;margin:0 auto;line-height:1.6">
+      The Kanban board and task list will appear here in Phase 4.<br>
+      For now, use the Today view for your journal and notes.
+    </div>
+  </div>`;
+}
+
+function renderToday(area){
   const selD=new Date(getFeedTopDate()+'T12:00:00');
   const dates=[];
   for(let i=0;i<feedDaysLoaded;i++){
@@ -2445,7 +2572,7 @@ function submitEntry(){
   const mentions=extractMentions(content);
   db.entries.push({id:genId('e'),content,tags:extractTags(content),mentions,date:todayStr(),ts,isNote:false,noteTitle:'',contextId:null});
   registerMentions(mentions);
-  save();inp.value='';inp.style.height='auto';renderActiveView();renderTagCloud();renderAllSections();
+  save();inp.value='';inp.style.height='auto';renderActiveView();renderAllSections();
   // Re-focus capture input so user can keep typing
   setTimeout(()=>{const el=document.getElementById('capture-input');if(el)el.focus();},10);
 }
@@ -2467,7 +2594,7 @@ function doDelete(){
   // Collect image IDs embedded in this entry before removing it
   const deletedImgIds=entry?[...(entry.content||'').matchAll(/!\[\]\((img_[a-z0-9_]+)(?:\|w=\d+)?\)/g)].map(m=>m[1]):[];
   // Close tab if open
-  if(openTabs.includes(id)){openTabs=openTabs.filter(t=>t!==id);if(activeTab===id){activeTab='feed';}}
+  if(openTabs.includes(id)){openTabs=openTabs.filter(t=>t!==id);if(activeTab===id){activeTab='today';}}
   db.entries=db.entries.filter(e=>e.id!==id);
   // Delete images that are no longer referenced by any remaining entry
   if(deletedImgIds.length){
@@ -2479,7 +2606,7 @@ function doDelete(){
       }
     });
   }
-  save();closeDeleteModal();renderTabBar();renderActiveView();renderTagCloud();renderAllSections();
+  save();closeDeleteModal();renderTabBar();renderActiveView();renderAllSections();
 }
 // Keep old name for any legacy calls
 function delEntry(id){confirmDelete(id);}
@@ -2513,7 +2640,7 @@ function saveAppend(id){
   if(!add){closeAppend();return;}
   entry.content=entry.content+(entry.content?'\n':'')+add;
   entry.tags=extractTags(entry.content);
-  save();appendingId=null;renderActiveView();renderTagCloud();renderAllSections();
+  save();appendingId=null;renderActiveView();renderAllSections();
 }
 function closeAppend(){
   if(!appendingId)return;
@@ -2736,7 +2863,7 @@ function renderHelpInline(text){
 
 function renderNoteEditor(area,noteId){
   const e=db.entries.find(x=>x.id===noteId);
-  if(!e||!e.isNote){switchTab('feed');return;}
+  if(!e||!e.isNote){switchTab('today');return;}
   // Help notes: read-only rendered view
   if(e.isHelp){renderHelpViewer(area,e);return;}
   // Lazy migration: convert any raw markdown tables into {{table:id}} tokens
@@ -4226,7 +4353,7 @@ function noteChanged(id,field,val){
   e[field]=val;
   if(field==='content'){e.tags=extractTags(val);e.mentions=extractMentions(val);}
   if(field==='noteTitle')renderTabBar();
-  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderTagCloud();renderAllSections();},300);
+  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderAllSections();},300);
 }
 let _macroExpandPending=false;
 function noteContentChanged(id,val){
@@ -4267,7 +4394,7 @@ function noteContentChanged(id,val){
   // names (@j, @ja, @jan) when the user pauses mid-word. Mentions are only
   // registered at commit points: tab close, tab switch, entry submit, or
   // autocomplete select.
-  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderTagCloud();renderAllSections();renderRecent();},300);
+  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderAllSections();},300);
 }
 function noteKey(e,noteId){
   // Autocomplete takes priority
@@ -4484,7 +4611,7 @@ function renderQuestions(){
   el.innerHTML=qs.map(q=>`<div class="q-card ${q.status}" data-qid="${q.id}" onclick="toggleQExpand('${q.id}')"><span class="q-status" onclick="event.stopPropagation();toggleQStatus('${q.id}')">${q.status}</span><button class="q-del" onclick="event.stopPropagation();delQuestion('${q.id}')">&times;</button><div class="q-text">${escH(q.question)}</div><div class="q-meta">${q.askedBy.length?'By: '+escH(q.askedBy.join(', ')):''} ${q.date}</div><div class="q-answer-area"><input class="q-askedby-input" placeholder="Asked by..." value="${escH(q.askedBy.join(', '))}" onclick="event.stopPropagation()" onchange="updateQ('${q.id}','askedBy',this.value)"><textarea class="q-answer-input" placeholder="Answer..." onclick="event.stopPropagation()" onchange="updateQ('${q.id}','answer',this.value)">${escH(q.answer)}</textarea></div></div>`).join('');
 }
 function toggleQExpand(id){const c=document.querySelector(`.q-card[data-qid="${id}"]`);if(c)c.classList.toggle('expanded');}
-function toggleQStatus(id){const q=db.questions.find(x=>x.id===id);if(!q)return;q.status=q.status==='open'?'answered':'open';if(q.status==='answered'&&q.answer){db.entries.push({id:genId('e'),content:`Answered: ${q.question} — ${q.answer}`,tags:[...(q.tags||[]),'answered'],date:todayStr(),ts:Date.now(),isNote:false,noteTitle:'',contextId:null});}save();renderQuestions();renderActiveView();renderTagCloud();renderAllSections();}
+function toggleQStatus(id){const q=db.questions.find(x=>x.id===id);if(!q)return;q.status=q.status==='open'?'answered':'open';if(q.status==='answered'&&q.answer){db.entries.push({id:genId('e'),content:`Answered: ${q.question} — ${q.answer}`,tags:[...(q.tags||[]),'answered'],date:todayStr(),ts:Date.now(),isNote:false,noteTitle:'',contextId:null});}save();renderQuestions();renderActiveView();renderAllSections();}
 function updateQ(id,field,val){const q=db.questions.find(x=>x.id===id);if(!q)return;if(field==='askedBy')q.askedBy=val.split(',').map(s=>s.trim()).filter(Boolean);else q[field]=val;save();renderQuestions();}
 function delQuestion(id){db.questions=db.questions.filter(q=>q.id!==id);save();renderQuestions();}
 
@@ -4588,8 +4715,8 @@ function _insertBacklinksPanel(bodyHtml){
     </div>
     <div class="backlinks-body">${bodyHtml}</div>
   `;
-  // Insert at the top of right-sections (before regular sections)
-  const container=document.getElementById('right-sections');
+  // Insert at the top of sections body in sidebar (before regular sections)
+  const container=document.getElementById('sb-sections-body');
   if(container)container.prepend(panel);
 }
 
@@ -4635,7 +4762,7 @@ function renderCalendar(){
   grid.innerHTML=h;
 }
 function navMonth(d){calViewDate.setMonth(calViewDate.getMonth()+d);renderCalendar();}
-function selCalDay(ds){selectedDate=ds;feedTopDate=ds>=todayStr()?null:ds;feedDaysLoaded=7;feedDayShowMore={};activeTab='feed';updateDateBar();renderTabBar();renderActiveView();renderCalendar();const c=document.getElementById('content-area');if(c)c.scrollTop=0;}
+function selCalDay(ds){selectedDate=ds;feedTopDate=ds>=todayStr()?null:ds;feedDaysLoaded=7;feedDayShowMore={};activeTab='today';updateDateBar();renderTabBar();renderActiveView();renderCalendar();const c=document.getElementById('content-area');if(c)c.scrollTop=0;}
 
 /* ═══════════ RIGHT SIDEBAR: CUSTOM SECTIONS ═══════════ */
 function addSection(){
@@ -4788,28 +4915,11 @@ function renderAllSections(){
   _sectionRenderTimer=setTimeout(_doRenderAllSections,50);
 }
 function _doRenderAllSections(){
-  db.sections.forEach(s=>{if(!s.col)s.col='right';});
-  if(!db.virtualPanels)db.virtualPanels={recent:{col:'left',order:0},tags:{col:'left',order:1}};
-  const rightSecs=db.sections.filter(s=>s.col==='right');
-  const leftSecs=db.sections.filter(s=>s.col==='left');
-  const rContainer=document.getElementById('right-sections');
-  const lContainer=document.getElementById('left-sections');
-  if(!rightSecs.length){rContainer.innerHTML='<div class="empty">Click + to add a filter section<br><br><span style="font-size:9px">Examples:<br>#meeting<br>#api -draft<br>#question open</span></div>';}
-  else{rContainer.innerHTML=rightSecs.map(sec=>renderSectionPanel(sec)).join('');}
-  // Left: virtual panels (Recent, Tags) + regular sections
-  let leftHtml='';
-  const vPanels=Object.entries(db.virtualPanels).filter(([,v])=>v.col==='left').sort((a,b)=>(a[1].order||0)-(b[1].order||0));
-  const rPanels=Object.entries(db.virtualPanels).filter(([,v])=>v.col==='right').sort((a,b)=>(a[1].order||0)-(b[1].order||0));
-  // Render left virtual panels + sections
-  leftHtml+=vPanels.map(([id])=>_renderVirtualPanel(id)).join('');
-  leftHtml+=leftSecs.map(sec=>renderSectionPanel(sec)).join('');
-  lContainer.innerHTML=leftHtml;
-  // Append right virtual panels after right sections
-  rPanels.forEach(([id])=>{rContainer.innerHTML+=_renderVirtualPanel(id);});
-  // Re-render backlinks AFTER sections so the panel isn't destroyed by innerHTML
-  if(_backlinksOpen)renderBacklinks();
-  const btn=document.getElementById('backlinks-toggle');
-  if(btn)btn.classList.toggle('active',_backlinksOpen);
+  // In the new sidebar layout, sections render into #sb-sections-body (single column).
+  // This function is now a redirect to renderSidebarSections + sidebar updates.
+  renderSidebarSections();
+  renderSidebarNotes();
+  renderSidebarTags();
 }
 function _renderVirtualPanel(id){
   if(id==='recent')return _renderRecentPanel();
@@ -4868,13 +4978,12 @@ function dragSecStart(e,secId){
   setTimeout(()=>{
     const el=document.querySelector(`.rs-panel[data-sid="${secId}"]`);
     if(el)el.classList.add('dragging');
-    document.getElementById('left-drop-zone').classList.add('visible');
+    // left-drop-zone removed in v2 sidebar layout
   },0);
 }
 function dragSecEnd(e){
   document.querySelectorAll('.rs-panel').forEach(p=>{p.classList.remove('dragging','drag-over','drag-over-top','drag-over-bottom');});
   document.querySelectorAll('.drag-append-zone').forEach(el=>el.classList.remove('drag-append-zone'));
-  document.getElementById('left-drop-zone').classList.remove('visible');
   dragSecId=null;
 }
 function dragSecOver(e){
@@ -4928,40 +5037,13 @@ function dragSecDrop(e,targetId){
   db.sections.splice(newTgtIdx,0,moved);
   save();renderAllSections();
 }
-// Drop zone for left sidebar
+// Section drop zone — now a single sidebar container (#sb-sections-body).
+// No more left/right column distinction.
 (function(){
-  const dz=document.getElementById('left-drop-zone');
-  if(!dz)return;
-  dz.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';dz.style.borderColor='var(--accent)';dz.style.background='var(--accent-light)';});
-  dz.addEventListener('dragleave',()=>{dz.style.borderColor='';dz.style.background='';});
-  dz.addEventListener('drop',e=>{
-    e.preventDefault();
-    if(!dragSecId)return;
-    const sec=db.sections.find(s=>s.id===dragSecId);
-    if(sec){sec.col='left';save();renderAllSections();}
-    dz.classList.remove('visible');
-  });
-})();
-// Also allow dropping back to right sidebar header area
-(function(){
-  const rh=document.getElementById('right-toolbar');
-  if(!rh)return;
-  rh.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';});
-  rh.addEventListener('drop',e=>{
-    e.preventDefault();
-    if(!dragSecId)return;
-    const sec=db.sections.find(s=>s.id===dragSecId);
-    if(sec){sec.col='right';save();renderAllSections();}
-  });
-})();
-// Dropping on empty space inside #right-sections or #left-sections appends
-// the dragged section to the end of that column. Works for both reordering
-// and cross-column drops (bug fix: you couldn't drop at the bottom before).
-(function(){
-  ['right-sections','left-sections'].forEach(id=>{
+  ['sb-sections-body'].forEach(id=>{
     const container=document.getElementById(id);
     if(!container)return;
-    const targetCol=id==='right-sections'?'right':'left';
+    const targetCol='right'; // single column, keep 'right' as default
     container.addEventListener('dragover',e=>{
       if(!dragSecId)return;
       // Only show append-zone when the cursor is not over a child panel
@@ -5149,7 +5231,7 @@ function openFloatingNoteFor(id){
   if(!win)return; // blocked — leave the main tab alone
   if(openTabs.includes(id)){
     openTabs=openTabs.filter(x=>x!==id);
-    if(activeTab===id)activeTab=openTabs[openTabs.length-1]||'feed';
+    if(activeTab===id)activeTab=openTabs[openTabs.length-1]||'today';
     renderTabBar();renderActiveView();
   }
 }
@@ -5472,11 +5554,87 @@ function generateWrapUp(){
   }
 
   const entry={id:genId('e'),content:md,tags:['daily-summary'],date:d,ts:Date.now(),isNote:true,noteTitle:`Summary — ${fmtDateLabel(d)}`,contextId:null};
-  db.entries.push(entry);save();openNoteTab(entry.id);renderTagCloud();renderAllSections();renderRecent();
+  db.entries.push(entry);save();openNoteTab(entry.id);renderAllSections();
 }
 
 /* ═══════════ SIDEBAR TOGGLE ═══════════ */
 function toggleSb(hdr){hdr.classList.toggle('collapsed');}
+
+/* ═══════════ NEW SIDEBAR ═══════════ */
+let sbGroupState={calendar:true,notes:true,sections:true,tags:false};
+function toggleSbGroup(groupId){
+  sbGroupState[groupId]=!sbGroupState[groupId];
+  const body=document.getElementById('body-'+groupId);
+  const chev=document.getElementById('chev-'+groupId);
+  if(body)body.classList.toggle('collapsed',!sbGroupState[groupId]);
+  if(chev)chev.classList.toggle('collapsed',!sbGroupState[groupId]);
+  save('settings');
+}
+function switchToNav(view){
+  if(view==='today'){switchTab('today');}
+  else if(view==='tasks'){
+    // Tasks tab — stub for Phase 4. For now just show a placeholder.
+    if(!openTabs.includes('tasks'))openTabs.push('tasks');
+    activeTab='tasks';
+    renderTabBar();renderActiveView();
+  }
+  updateSidebarNav();
+}
+function updateSidebarNav(){
+  document.querySelectorAll('.sb-nav-item').forEach(el=>el.classList.remove('active'));
+  if(activeTab==='today')document.getElementById('nav-today')?.classList.add('active');
+  else if(activeTab==='tasks')document.getElementById('nav-tasks')?.classList.add('active');
+}
+function renderSidebar(){
+  renderCalendar();
+  renderSidebarNotes();
+  renderSidebarSections();
+  renderSidebarTags();
+  updateSidebarNav();
+  // Restore collapse state
+  Object.entries(sbGroupState).forEach(([id,open])=>{
+    const body=document.getElementById('body-'+id);
+    const chev=document.getElementById('chev-'+id);
+    if(body)body.classList.toggle('collapsed',!open);
+    if(chev)chev.classList.toggle('collapsed',!open);
+  });
+}
+function renderSidebarNotes(){
+  const el=document.getElementById('sb-notes-list');
+  if(!el)return;
+  const notes=db.entries.filter(e=>e.isNote&&!e.eventType&&!e.isHelp)
+    .sort((a,b)=>(b.updatedTs||b.ts)-(a.updatedTs||a.ts))
+    .slice(0,12);
+  if(!notes.length){el.innerHTML='<div style="padding:6px 8px;font-size:10px;color:var(--text3)">No notes yet</div>';return;}
+  el.innerHTML=notes.map(n=>{
+    const title=escH((n.noteTitle||'Untitled').replace(/^#+\s+/,'').slice(0,35));
+    return`<div class="sb-note-item" onclick="openAsNote('${n.id}')"><span class="sb-note-icon">&#128196;</span><span class="sb-note-title">${title}</span><span class="sb-note-date">${fmtShortDate(n.updatedTs||n.ts)}</span></div>`;
+  }).join('');
+}
+function renderSidebarSections(){
+  const el=document.getElementById('sb-sections-body');
+  if(!el)return;
+  const secs=db.sections||[];
+  if(!secs.length){el.innerHTML='<div style="padding:6px 8px;font-size:10px;color:var(--text3)">No sections yet. Click + to add.</div>';return;}
+  el.innerHTML=secs.map(sec=>renderSectionPanel(sec)).join('');
+  if(_backlinksOpen)renderBacklinks();
+  const btn=document.getElementById('backlinks-toggle');
+  if(btn)btn.classList.toggle('active',_backlinksOpen);
+}
+function renderSidebarTags(){
+  const el=document.getElementById('sb-tags-cloud');
+  if(!el)return;
+  const counts=getAllTags();
+  if(!Object.keys(counts).length){el.innerHTML='<div style="padding:6px 0;font-size:10px;color:var(--text3)">No tags yet</div>';return;}
+  const sorted=Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0]));
+  let h='';
+  sorted.forEach(([tag,cnt])=>{
+    const c=getTagColor(tag),isA=activeTagFilters.includes(tag);
+    h+=`<span class="tag-cloud-item${isA?' active':''}" style="${isA?'background:'+c+';color:#fff;border-color:'+c:'color:'+c+';border-color:'+c+'40'}" onclick="toggleFilter('${escH(tag)}')">#${escH(tag)} <span class="tag-cnt">${cnt}</span></span>`;
+  });
+  if(activeTagFilters.length>0)h+=`<button class="clear-filters" onclick="clearFilters()">Clear</button>`;
+  el.innerHTML=h;
+}
 
 /* ═══════════ KEYBOARD ═══════════ */
 // Global keyboard shortcuts — capture phase so they fire even when focus is
@@ -5485,7 +5643,7 @@ document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}
   if((e.metaKey||e.ctrlKey)&&e.key===';'){e.preventDefault();createNote();}
   if((e.metaKey||e.ctrlKey)&&e.shiftKey&&(e.key==='o'||e.key==='O')){e.preventDefault();openQuickOpen();}
-  if((e.metaKey||e.ctrlKey)&&e.key==='d'&&activeTab!=='feed'){e.preventDefault();closeTab(activeTab);}
+  if((e.metaKey||e.ctrlKey)&&e.key==='d'&&activeTab!=='today'){e.preventDefault();closeTab(activeTab);}
   if(e.key==='Escape'){closeSearch();closeAC();closeNoteDatePicker();closeQuickOpen();closeChangelog();closeImageModal();}
 },true);
 
@@ -5711,7 +5869,7 @@ function renderHome(area){
       <h1 class="home-hero-title">Your thoughts, indexed.<br>Searchable. Private.</h1>
       <p class="home-hero-tag">A local-first work journal for tech-forward knowledge workers who don't want their thinking on someone else's server.</p>
       <div class="home-hero-actions">
-        <button onclick="switchTab('feed')" class="home-btn primary">Start writing &rarr;</button>
+        <button onclick="switchTab('today')" class="home-btn primary">Start writing &rarr;</button>
         <button onclick="closeTab('home')" class="home-btn secondary">Close welcome</button>
       </div>
       <div class="home-hero-badges">
@@ -5871,7 +6029,7 @@ function renderHome(area){
     <section class="home-cta">
       <h2>Ready?</h2>
       <p>Click <strong>Feed</strong> and type your first thing.</p>
-      <button onclick="switchTab('feed')" class="home-btn primary big">Go to feed &rarr;</button>
+      <button onclick="switchTab('today')" class="home-btn primary big">Go to Today &rarr;</button>
       <p class="home-cta-footnote">You can reopen this welcome any time from the home icon next to the logo.</p>
     </section>
 
@@ -5879,12 +6037,30 @@ function renderHome(area){
 }
 function closeSettings(){
   closeTab('settings');
-  renderTagCloud();renderAllSections();
+  renderAllSections();
 }
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
-const APP_VERSION='1.11.0';
+const APP_VERSION='2.0.0';
 const CHANGELOG=[
+  {
+    version:'2.0.0',
+    date:'2026-04-11',
+    title:'Sidebar-first layout (Phase 1)',
+    changes:[
+      'Major layout refactor: 3-column topbar layout → 2-column sidebar-first layout',
+      'New **left sidebar** with collapsible groups: Calendar, Notes, Sections, Tags',
+      'Primary navigation: **Today**, **Tasks** (stub), **Search** in sidebar nav',
+      '**Today replaces Feed** as the permanent leftmost tab — same journal content, new name',
+      'Footer icons: Floating note, Gallery, Settings tucked at bottom of sidebar',
+      'Tab bar simplified: only Search icon remains in the tab icon strip',
+      'Sections, Notes, and Tags render in sidebar groups instead of separate right sidebar panels',
+      'Backlinks toggle relocated to Sections group header',
+      'All existing features preserved: notes, CM6 editor, slash commands, templates, tables, search, themes',
+      'Sidebar group collapse state persists across sessions via `sbGroupState` in settings',
+      'Tasks view shows a placeholder — full Kanban/List board coming in Phase 4'
+    ]
+  },
   {
     version:'1.11.0',
     date:'2026-04-11',
@@ -6443,8 +6619,8 @@ async function doPurge(){
   // Reopen fresh database
   await openIDB();
   closePurge();closeSettings();
-  openTabs=['feed'];activeTab='feed';activeTagFilters=[];
-  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderRecent();renderTagCloud();renderAllSections();
+  openTabs=['today'];activeTab='today';activeTagFilters=[];
+  updateDateBar();renderTabBar();renderActiveView();renderSidebar();
 }
 function exportData(){
   const out={
@@ -6505,8 +6681,8 @@ function importData(e){
       await saveAll();
       if(db.theme)applyTheme(db.theme);
       closeSettings();
-      openTabs=['feed'];activeTab='feed';
-      updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderRecent();renderTagCloud();renderAllSections();
+      openTabs=['today'];activeTab='today';
+      updateDateBar();renderTabBar();renderActiveView();renderSidebar();
       if(typeof showToast==='function')showToast('Backup imported','info');
     }catch(err){alert('Failed to parse file: '+err.message);}
   };
@@ -7343,7 +7519,7 @@ async function init(){
     db.homeShownOnce=true;
     save('settings');
   }
-  updateDateBar();renderTabBar();renderActiveView();renderCalendar();renderRecent();renderTagCloud();renderAllSections();
+  updateDateBar();renderTabBar();renderActiveView();renderSidebar();
   // Reload entries AND images from IDB. Floating-window image pastes are
   // persisted directly to the images store, but the main window's in-memory
   // db.images Map is stale until we re-read it — otherwise pasted images
@@ -7360,7 +7536,7 @@ async function init(){
       if(!e.data)return;
       if(e.data.type==='note-saved'){
         await _ddReloadFromIDB();
-        renderActiveView();renderTagCloud();renderAllSections();renderRecent();renderTabBar();
+        renderActiveView();renderAllSections();renderTabBar();
       }
     });
   }catch(err){}
@@ -7371,7 +7547,7 @@ async function init(){
     await _ddReloadFromIDB();
     const note=db.entries.find(x=>x.id===noteId&&x.isNote);
     if(note)openNoteTab(note.id);
-    renderTagCloud();renderAllSections();renderRecent();
+    renderAllSections();
   }
   window.addEventListener('storage',e=>{
     if(e.key!=='dd_floating_closed'||!e.newValue)return;

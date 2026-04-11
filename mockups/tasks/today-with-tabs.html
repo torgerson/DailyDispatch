@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DailyDispatch — Today + Tabs Hybrid</title>
+<style>
+  :root {
+    --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+    --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+    --text:#37352f; --text2:#787774; --text3:#9b9a97;
+    --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+    --danger:#e16259; --green:#16a34a; --amber:#d97706; --blue:#5b9bd5;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --radius-sm:4px; --radius-md:6px; --radius-lg:8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans); font-size: 13px; color: var(--text);
+    background: var(--bg); height: 100vh; overflow: hidden;
+    display: grid; grid-template-columns: 220px 1fr;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══ SIDEBAR ═══ */
+  #sidebar {
+    background: var(--sidebar-bg); border-right: 1px solid var(--border-light);
+    display: flex; flex-direction: column; overflow: hidden; user-select: none;
+  }
+  .sb-logo {
+    padding: 14px 16px 10px; font-weight: 700; font-size: 14px; color: var(--text);
+    letter-spacing: -0.3px; display: flex; align-items: center; gap: 7px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .sb-logo span { color: var(--accent); }
+  .sb-logo-icon { color: var(--text3); display: inline-flex; cursor: pointer; }
+  .sb-logo-icon:hover { color: var(--accent); }
+
+  .sb-nav { padding: 8px 8px 4px; }
+  .sb-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 10px; border-radius: var(--radius-md); cursor: pointer;
+    font-size: 13px; font-weight: 500; color: var(--text2); transition: all 0.1s;
+  }
+  .sb-item:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+  .sb-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+  .sb-item .ic { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sb-item .ic svg { width: 15px; height: 15px; }
+  .sb-item .badge {
+    margin-left: auto; font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 8px; min-width: 18px; text-align: center;
+  }
+  .sb-item .badge-amber { background: var(--accent-light); color: var(--accent); }
+  .sb-item .badge-count { background: var(--border); color: var(--text3); }
+  .sb-item.active .badge-count { background: var(--accent); color: #fff; }
+
+  .sb-divider { height: 1px; background: var(--border-light); margin: 6px 16px; }
+
+  .sb-hdr {
+    padding: 10px 16px 3px; font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sb-hdr button {
+    background: none; border: none; color: var(--text3); cursor: pointer;
+    font-size: 13px; line-height: 1; padding: 0 2px;
+  }
+  .sb-hdr button:hover { color: var(--accent); }
+
+  /* Calendar mini */
+  .sb-cal { padding: 4px 12px 8px; }
+  .sb-cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 4px; font-size: 10px; font-weight: 600; color: var(--text2);
+  }
+  .sb-cal-header button { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 9px; padding: 2px 4px; }
+  .sb-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 0; text-align: center; font-size: 9px; color: var(--text2); }
+  .sb-cal-dow { font-weight: 700; color: var(--text3); padding: 2px 0; font-size: 8px; }
+  .sb-cal-day { padding: 2px 0; border-radius: 3px; cursor: pointer; line-height: 1.6; }
+  .sb-cal-day:hover { background: var(--accent-light); }
+  .sb-cal-day.today { background: var(--accent); color: #fff; font-weight: 700; border-radius: 50%; }
+  .sb-cal-day.has { font-weight: 700; color: var(--text); }
+  .sb-cal-day.dim { opacity: 0.35; }
+
+  /* Notes list */
+  .sb-notes { flex: 1; overflow-y: auto; padding: 2px 8px; }
+  .sb-note {
+    display: flex; align-items: center; gap: 7px;
+    padding: 5px 8px; border-radius: var(--radius-sm); cursor: pointer;
+    font-size: 11px; color: var(--text2);
+  }
+  .sb-note:hover { background: rgba(0,0,0,0.03); color: var(--text); }
+  .sb-note.active { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .sb-note-icon { font-size: 9px; color: var(--text3); flex-shrink: 0; }
+  .sb-note-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sb-note-date { font-size: 9px; color: var(--text3); font-family: var(--mono); }
+
+  /* Tags */
+  .sb-tags { padding: 4px 12px 12px; display: flex; flex-wrap: wrap; gap: 3px; }
+  .sb-tag { font-size: 9px; padding: 1px 6px; border-radius: 3px; cursor: pointer; border: 1px solid; }
+
+  /* Settings/Gallery footer */
+  .sb-footer {
+    border-top: 1px solid var(--border-light); padding: 8px 12px;
+    display: flex; gap: 4px; justify-content: center;
+  }
+  .sb-footer-btn {
+    width: 30px; height: 28px; display: flex; align-items: center; justify-content: center;
+    background: none; border: none; color: var(--text3); cursor: pointer;
+    border-radius: var(--radius-sm);
+  }
+  .sb-footer-btn:hover { color: var(--accent); background: var(--accent-light); }
+  .sb-footer-btn svg { width: 15px; height: 15px; }
+
+  /* ═══ MAIN AREA ═══ */
+  #main {
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  /* TAB BAR — preserved from current DailyDispatch */
+  #tab-bar {
+    height: 34px; background: var(--surface); border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: stretch; padding: 0; overflow: hidden; flex-shrink: 0;
+  }
+  #tab-bar-tabs {
+    flex: 1; min-width: 0; display: flex; align-items: stretch; overflow-x: auto;
+  }
+  .tab {
+    display: flex; align-items: center; gap: 4px; padding: 0 14px;
+    font-size: 11px; font-weight: 500; color: var(--text2); cursor: pointer;
+    border-bottom: 2px solid transparent; white-space: nowrap;
+    border-right: 1px solid var(--border-light); transition: all 0.1s;
+  }
+  .tab:hover { color: var(--text); background: rgba(203,145,47,0.03); }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab .tab-close {
+    font-size: 8px; width: 14px; height: 14px; display: flex; align-items: center;
+    justify-content: center; border-radius: 3px; opacity: 0; margin-left: 4px;
+  }
+  .tab:hover .tab-close { opacity: 0.5; }
+  .tab .tab-close:hover { opacity: 1; background: var(--border-light); color: var(--danger); }
+  .tab-new {
+    width: 28px; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--text3); cursor: pointer; background: none; border: none;
+    flex-shrink: 0;
+  }
+  .tab-new:hover { color: var(--accent); }
+  #tab-bar-icons {
+    flex-shrink: 0; display: flex; align-items: stretch; gap: 2px;
+    padding: 0 8px; margin-left: 4px; border-left: 1px solid var(--border-light);
+  }
+  .tb-icon {
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    color: var(--text3); cursor: pointer; background: none; border: none;
+    border-radius: 3px; margin: auto 0;
+  }
+  .tb-icon:hover { color: var(--accent); background: var(--accent-light); }
+  .tb-icon svg { width: 14px; height: 14px; }
+
+  /* ═══ CONTENT AREA ═══ */
+  #content { flex: 1; overflow-y: auto; }
+
+  /* ═══ TODAY VIEW ═══ */
+  .today-view { max-width: 720px; margin: 0 auto; padding: 24px 28px 80px; }
+  .today-header {
+    display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px;
+  }
+  .today-header h1 { font-size: 22px; font-weight: 800; color: var(--text); }
+  .today-header .today-date { font-size: 13px; color: var(--text3); }
+
+  /* Quick capture — the Input Rail */
+  .capture-rail {
+    background: var(--surface); border: 1px solid var(--border-light);
+    border-left: 3px solid var(--accent); border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 10px 14px; margin-bottom: 24px;
+  }
+  .capture-input {
+    width: 100%; border: none; outline: none; font-family: var(--sans);
+    font-size: 13px; color: var(--text); background: transparent;
+    resize: none; min-height: 20px;
+  }
+  .capture-input::placeholder { color: var(--text3); }
+  .capture-bar { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .capture-bar .spacer { flex: 1; }
+  .capture-hint { font-size: 9px; color: var(--text3); }
+  .capture-submit {
+    padding: 3px 12px; border-radius: var(--radius-sm); background: var(--accent);
+    color: #fff; border: none; font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: var(--sans);
+  }
+
+  /* Section divider */
+  .section-hdr {
+    display: flex; align-items: center; gap: 10px; margin: 24px 0 10px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px;
+    color: var(--text3);
+  }
+  .section-hdr .line { flex: 1; height: 1px; background: var(--border); }
+
+  /* Tasks due today */
+  .today-task {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; margin-bottom: 4px;
+    background: var(--surface); border-radius: var(--radius-md);
+    border: 1px solid var(--border-light); cursor: pointer;
+    transition: all 0.12s;
+  }
+  .today-task:hover { border-color: var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+  .today-task.completed { opacity: 0.5; }
+  .today-task.completed .tt-title { text-decoration: line-through; color: var(--text3); }
+  .tt-check {
+    width: 16px; height: 16px; border: 2px solid var(--border-strong); border-radius: 50%;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .tt-check:hover { border-color: var(--green); }
+  .tt-check.done { background: var(--green); border-color: var(--green); }
+  .tt-check.done::after { content: '✓'; color: #fff; font-size: 9px; font-weight: 700; }
+  .tt-stripe {
+    width: 3px; height: 24px; border-radius: 2px; flex-shrink: 0;
+  }
+  .tt-stripe.high { background: var(--danger); }
+  .tt-stripe.med { background: var(--amber); }
+  .tt-stripe.low { background: var(--border-strong); }
+  .tt-title { flex: 1; font-size: 13px; font-weight: 500; }
+  .tt-due {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 8px;
+    white-space: nowrap;
+  }
+  .tt-due.overdue { background: #fef2f2; color: var(--danger); }
+  .tt-due.today { background: #fefce8; color: var(--amber); }
+  .tt-col {
+    font-size: 9px; color: var(--text3); padding: 2px 7px; border-radius: 4px;
+    background: var(--sidebar-bg); white-space: nowrap;
+  }
+  .tt-note-link {
+    font-size: 9px; color: var(--blue); cursor: pointer; white-space: nowrap;
+  }
+
+  /* Feed entries (journal) */
+  .feed-entry {
+    display: flex; gap: 10px; padding: 6px 0;
+    border-top: 1px solid var(--border-light);
+  }
+  .feed-entry:first-child { border-top: none; }
+  .feed-time { font-size: 10px; color: var(--text3); font-family: var(--mono); min-width: 52px; padding-top: 2px; }
+  .feed-content { font-size: 13px; line-height: 1.55; color: var(--text); flex: 1; }
+  .feed-content .tag { font-size: 11px; font-weight: 500; cursor: pointer; }
+  .feed-content strong { font-weight: 600; }
+
+  /* Day divider */
+  .day-divider {
+    display: flex; align-items: center; gap: 10px; margin: 20px 0 8px;
+  }
+  .day-divider .day-line { flex: 1; height: 1px; background: var(--border); }
+  .day-divider .day-label { font-size: 11px; font-weight: 700; color: var(--text2); }
+  .day-divider .day-sub { font-size: 10px; color: var(--text3); }
+
+  /* ═══ OPEN QUESTIONS ═══ */
+  .oq {
+    position: fixed; bottom: 16px; right: 16px; max-width: 400px;
+    background: #fffbeb; border: 1px solid #fcd34d; border-radius: var(--radius-md);
+    padding: 14px 16px; font-size: 11px; color: #92400e; line-height: 1.55;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 100;
+  }
+  .oq h4 { font-size: 10px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .oq ul { padding-left: 14px; margin: 0; }
+  .oq li { margin-bottom: 3px; }
+  .oq .cx { position: absolute; top: 8px; right: 10px; background: none; border: none; color: #92400e; cursor: pointer; font-size: 14px; }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-logo">
+    <span class="sb-logo-icon"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg></span>
+    Daily<span>Dispatch</span>
+  </div>
+
+  <div class="sb-nav">
+    <div class="sb-item active" onclick="activateNav(this)">
+      <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg></span>
+      Today
+      <span class="badge badge-amber">3</span>
+    </div>
+    <div class="sb-item" onclick="activateNav(this)">
+      <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg></span>
+      Tasks
+      <span class="badge badge-count">12</span>
+    </div>
+    <div class="sb-item" onclick="activateNav(this)">
+      <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg></span>
+      Search
+    </div>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <div class="sb-hdr">Calendar</div>
+  <div class="sb-cal">
+    <div class="sb-cal-header">
+      <button>&#9664;</button><span>Apr 2026</span><button>&#9654;</button>
+    </div>
+    <div class="sb-cal-grid" id="cal"></div>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <div class="sb-hdr">Notes <button title="New note (Cmd+;)">+</button></div>
+  <div class="sb-notes">
+    <div class="sb-note active" onclick="activateNote(this)">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">Q1 Planning</span>
+      <span class="sb-note-date">8 Apr</span>
+    </div>
+    <div class="sb-note" onclick="activateNote(this)">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">API Design Review</span>
+      <span class="sb-note-date">7 Apr</span>
+    </div>
+    <div class="sb-note" onclick="activateNote(this)">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">1:1 with Sarah</span>
+      <span class="sb-note-date">6 Apr</span>
+    </div>
+    <div class="sb-note" onclick="activateNote(this)">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">Sprint Retro</span>
+      <span class="sb-note-date">4 Apr</span>
+    </div>
+    <div class="sb-note" onclick="activateNote(this)">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">Architecture Decisions</span>
+      <span class="sb-note-date">3 Apr</span>
+    </div>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <div class="sb-hdr">Tags</div>
+  <div class="sb-tags" id="tags"></div>
+
+  <div class="sb-footer">
+    <button class="sb-footer-btn" title="Floating note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14"/><line x1="6" y1="11" x2="14" y2="11"/><line x1="6" y1="14" x2="11" y2="14"/></svg></button>
+    <button class="sb-footer-btn" title="Image gallery"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg></button>
+    <button class="sb-footer-btn" title="Settings"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.8"/><path d="M10 2 v2.5 M10 15.5 v2.5 M2 10 h2.5 M15.5 10 h2.5 M4.4 4.4 l1.8 1.8 M13.8 13.8 l1.8 1.8 M15.6 4.4 l-1.8 1.8 M6.2 13.8 l-1.8 1.8"/></svg></button>
+  </div>
+</div>
+
+<!-- MAIN AREA -->
+<div id="main">
+  <!-- TAB BAR — same model as current DailyDispatch -->
+  <div id="tab-bar">
+    <div id="tab-bar-tabs">
+      <div class="tab active" onclick="activateTab(this)">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>
+        Today
+      </div>
+      <div class="tab" onclick="activateTab(this)">
+        Q1 Planning
+        <span class="tab-close" onclick="event.stopPropagation()">&times;</span>
+      </div>
+      <div class="tab" onclick="activateTab(this)">
+        API Design Review
+        <span class="tab-close" onclick="event.stopPropagation()">&times;</span>
+      </div>
+      <button class="tab-new" title="New note (Cmd+;)">+</button>
+    </div>
+    <div id="tab-bar-icons">
+      <button class="tb-icon" title="Search (Cmd+K)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg></button>
+      <button class="tb-icon" title="Floating note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14"/><line x1="6" y1="11" x2="14" y2="11"/><line x1="6" y1="14" x2="11" y2="14"/></svg></button>
+    </div>
+  </div>
+
+  <!-- CONTENT — Today view shown -->
+  <div id="content">
+    <div class="today-view">
+
+      <!-- Header -->
+      <div class="today-header">
+        <h1>Today</h1>
+        <span class="today-date">Friday, April 11, 2026</span>
+      </div>
+
+      <!-- Quick Capture (the Input Rail) -->
+      <div class="capture-rail">
+        <textarea class="capture-input" placeholder="What's happening? (#tags supported)" rows="1"></textarea>
+        <div class="capture-bar">
+          <div class="spacer"></div>
+          <span class="capture-hint">&#8984;Enter</span>
+          <button class="capture-submit">Add</button>
+        </div>
+      </div>
+
+      <!-- Tasks due today -->
+      <div class="section-hdr">
+        <span>Tasks due today</span>
+        <span class="line"></span>
+        <span style="font-size:9px;color:var(--text3)">3 tasks</span>
+      </div>
+
+      <div class="today-task" onclick="this.querySelector('.tt-check').classList.toggle('done');this.classList.toggle('completed')">
+        <div class="tt-check"></div>
+        <div class="tt-stripe high"></div>
+        <span class="tt-title">Review mobile wireframes from Dave</span>
+        <span class="tt-due overdue">overdue 2d</span>
+        <span class="tt-col">Inbox</span>
+        <span class="tt-note-link">&#128196; Q1 Planning</span>
+      </div>
+
+      <div class="today-task" onclick="this.querySelector('.tt-check').classList.toggle('done');this.classList.toggle('completed')">
+        <div class="tt-check"></div>
+        <div class="tt-stripe high"></div>
+        <span class="tt-title">Fix login redirect bug</span>
+        <span class="tt-due today">today</span>
+        <span class="tt-col">Inbox</span>
+      </div>
+
+      <div class="today-task" onclick="this.querySelector('.tt-check').classList.toggle('done');this.classList.toggle('completed')">
+        <div class="tt-check"></div>
+        <div class="tt-stripe med"></div>
+        <span class="tt-title">Update onboarding flow copy</span>
+        <span class="tt-due today">today</span>
+        <span class="tt-col">Inbox</span>
+      </div>
+
+      <!-- Today's journal entries (the Feed) -->
+      <div class="section-hdr">
+        <span>Journal</span>
+        <span class="line"></span>
+      </div>
+
+      <div class="feed-entry">
+        <span class="feed-time">10:35 AM</span>
+        <div class="feed-content">Standup — discussed rollout timeline with the team. @dave flagged a concern about the migration path. <span class="tag" style="color:var(--accent)">#meeting</span></div>
+      </div>
+
+      <div class="feed-entry">
+        <span class="feed-time">9:12 AM</span>
+        <div class="feed-content">Reviewed PR #482 — looks good, minor naming nits. Approved. <span class="tag" style="color:#7c3aed">#api</span></div>
+      </div>
+
+      <div class="feed-entry">
+        <span class="feed-time">8:45 AM</span>
+        <div class="feed-content"><strong>Morning focus:</strong> Get the payment webhook deployed before noon. Need to test with staging credentials first.</div>
+      </div>
+
+      <!-- Previous day (scrolled into view) -->
+      <div class="day-divider">
+        <span class="day-line"></span>
+        <span class="day-label">Yesterday</span>
+        <span class="day-sub">— Thu, Apr 10</span>
+        <span class="day-line"></span>
+      </div>
+
+      <div class="feed-entry">
+        <span class="feed-time">4:22 PM</span>
+        <div class="feed-content">Wrapped up the SSO research doc. Three viable options — will present Monday. <span class="tag" style="color:#5b9bd5">#research</span></div>
+      </div>
+
+      <div class="feed-entry">
+        <span class="feed-time">2:14 PM</span>
+        <div class="feed-content">1:1 with @sarah — aligned on API v2 scope. She'll start the proposal draft this week. <span class="tag" style="color:var(--accent)">#meeting</span> <span class="tag" style="color:#5b9bd5">#api</span></div>
+      </div>
+
+      <div class="feed-entry">
+        <span class="feed-time">9:00 AM</span>
+        <div class="feed-content">Planning sprint 14. Carried over 3 items from last sprint. Capacity looks tight with @dave on PTO next week.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- OPEN QUESTIONS -->
+<div class="oq" id="oq">
+  <button class="cx" onclick="document.getElementById('oq').style.display='none'">&times;</button>
+  <h4>&#9888; Key Design Decisions in This Mockup</h4>
+  <ul>
+    <li><strong>Today = Feed + Tasks.</strong> The Feed isn't gone — it's the "Journal" section inside Today. Today's tasks appear above today's journal entries. Previous days scroll below with day dividers.</li>
+    <li><strong>Tab bar preserved.</strong> Notes open as tabs in the main area, exactly like current DailyDispatch. The + button creates a new note tab. Today is always the leftmost tab (like Feed was).</li>
+    <li><strong>Clicking a note in the sidebar</strong> opens it as a tab (or switches to its tab if already open). Same UX as now.</li>
+    <li><strong>Sidebar replaces the current topbar</strong> for primary navigation. Topbar logo moves to sidebar header. Calendar moves from left sidebar widget to the sidebar.</li>
+    <li><strong>Settings, Gallery, Floating Note</strong> are footer icons in the sidebar — small, out of the way, always accessible. Search is also in the tab bar icons (Cmd+K).</li>
+    <li><strong>Sections (Help, Meetings, custom filters)</strong> would move to a right sidebar panel like current DailyDispatch, or could be accessed via the Tasks tab's grouping. TBD.</li>
+    <li><strong>Task checking in Today view</strong> syncs to the Kanban board (Done column). The column pill ("Inbox") shows where the task lives on the board.</li>
+    <li><strong>Calendar click</strong> navigates to that day — Today view becomes that day's view with its tasks and journal entries.</li>
+  </ul>
+</div>
+
+<script>
+function activateNav(el){
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+}
+function activateNote(el){
+  document.querySelectorAll('.sb-note').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+}
+function activateTab(el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+// Calendar
+(function(){
+  const g=document.getElementById('cal');
+  const dows=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let h=dows.map(d=>`<div class="sb-cal-dow">${d}</div>`).join('');
+  const fd=3,dim=30;
+  for(let i=0;i<fd;i++)h+=`<div class="sb-cal-day dim">${30-fd+i+1}</div>`;
+  const has=new Set([1,2,3,4,5,6,7,8,9,10,11]);
+  for(let d=1;d<=dim;d++){
+    let c='sb-cal-day';
+    if(d===11)c+=' today';
+    else if(has.has(d))c+=' has';
+    h+=`<div class="${c}">${d}</div>`;
+  }
+  g.innerHTML=h;
+})();
+// Tags
+(function(){
+  const t=[{n:'meeting',c:'#cb912f'},{n:'api',c:'#7c3aed'},{n:'planning',c:'#5b9bd5'},{n:'design',c:'#db2777'},{n:'research',c:'#16a34a'}];
+  document.getElementById('tags').innerHTML=t.map(x=>`<span class="sb-tag" style="color:${x.c};border-color:${x.c}40;background:${x.c}12">#${x.n}</span>`).join('');
+})();
+</script>
+</body>
+</html>

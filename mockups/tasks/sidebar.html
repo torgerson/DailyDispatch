@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DailyDispatch — Sidebar & Navigation Mockup</title>
+<style>
+  :root {
+    --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+    --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+    --text:#37352f; --text2:#787774; --text3:#9b9a97;
+    --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+    --danger:#e16259; --green:#16a34a; --amber:#d97706; --blue:#5b9bd5;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --radius-sm:4px; --radius-md:6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans); font-size: 13px; color: var(--text);
+    background: var(--bg); height: 100vh; overflow: hidden;
+    display: grid; grid-template-columns: 240px 1fr;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══ SIDEBAR ═══ */
+  #sidebar {
+    background: var(--sidebar-bg); border-right: 1px solid var(--border-light);
+    display: flex; flex-direction: column; overflow: hidden;
+    user-select: none;
+  }
+  .sb-logo {
+    padding: 16px 18px 12px; font-weight: 700; font-size: 14px; color: var(--text);
+    letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .sb-logo span { color: var(--accent); }
+  .sb-logo-icon { color: var(--text3); display: inline-flex; }
+
+  /* Navigation items */
+  .sb-nav { padding: 10px 10px 6px; }
+  .sb-nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 10px; border-radius: var(--radius-md); cursor: pointer;
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    transition: all 0.12s; position: relative;
+  }
+  .sb-nav-item:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+  .sb-nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+  .sb-nav-item .sb-icon { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sb-nav-item .sb-icon svg { width: 16px; height: 16px; }
+  .sb-nav-item .sb-count {
+    margin-left: auto; font-size: 10px; font-weight: 600;
+    background: var(--border); color: var(--text2);
+    padding: 1px 7px; border-radius: 8px; min-width: 20px; text-align: center;
+  }
+  .sb-nav-item.active .sb-count { background: var(--accent); color: #fff; }
+  .sb-nav-item .sb-kbd {
+    margin-left: auto; font-size: 9px; color: var(--text3);
+    font-family: var(--mono); opacity: 0;
+  }
+  .sb-nav-item:hover .sb-kbd { opacity: 1; }
+
+  .sb-divider { height: 1px; background: var(--border-light); margin: 6px 18px; }
+
+  /* Section headers */
+  .sb-section-hdr {
+    padding: 10px 18px 4px; font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sb-section-hdr button {
+    background: none; border: none; color: var(--text3); cursor: pointer;
+    font-size: 14px; line-height: 1; padding: 0 2px;
+  }
+  .sb-section-hdr button:hover { color: var(--accent); }
+
+  /* Notes list in sidebar */
+  .sb-notes { padding: 2px 10px; flex: 1; overflow-y: auto; }
+  .sb-note-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: var(--radius-sm); cursor: pointer;
+    font-size: 12px; color: var(--text2);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sb-note-item:hover { background: rgba(0,0,0,0.03); color: var(--text); }
+  .sb-note-item.active { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .sb-note-icon { color: var(--text3); font-size: 10px; flex-shrink: 0; }
+  .sb-note-title { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .sb-note-date { font-size: 10px; color: var(--text3); font-family: var(--mono); flex-shrink: 0; }
+
+  /* Calendar widget */
+  .sb-cal { padding: 4px 14px 10px; }
+  .sb-cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px; font-size: 11px; font-weight: 600; color: var(--text2);
+  }
+  .sb-cal-header button {
+    background: none; border: none; cursor: pointer; color: var(--text3);
+    font-size: 10px; padding: 2px 4px;
+  }
+  .sb-cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; text-align: center;
+    font-size: 10px; color: var(--text2);
+  }
+  .sb-cal-dow { font-weight: 600; color: var(--text3); padding: 2px 0; font-size: 9px; }
+  .sb-cal-day { padding: 3px 0; border-radius: 3px; cursor: pointer; }
+  .sb-cal-day:hover { background: var(--accent-light); }
+  .sb-cal-day.today { background: var(--accent); color: #fff; font-weight: 700; border-radius: 50%; }
+  .sb-cal-day.has-entries { font-weight: 600; color: var(--text); }
+  .sb-cal-day.other { color: var(--text3); opacity: 0.5; }
+
+  /* Tags at bottom */
+  .sb-tags { padding: 6px 14px 14px; }
+  .sb-tag {
+    display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 3px;
+    margin: 1px 2px; cursor: pointer; border: 1px solid;
+  }
+
+  /* ═══ MAIN CONTENT ═══ */
+  #main {
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  #main-toolbar {
+    height: 44px; display: flex; align-items: center; padding: 0 20px; gap: 8px;
+    border-bottom: 1px solid var(--border-light); background: var(--surface);
+    flex-shrink: 0;
+  }
+  .toolbar-title { font-size: 15px; font-weight: 700; flex: 1; }
+  .toolbar-btn {
+    background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 4px 10px; font-size: 11px; font-weight: 500; color: var(--text2);
+    cursor: pointer; font-family: var(--sans);
+  }
+  .toolbar-btn:hover { background: var(--bg); color: var(--text); }
+  .toolbar-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #main-content {
+    flex: 1; overflow-y: auto; padding: 24px 32px 60px;
+  }
+
+  /* Note content placeholder */
+  .note-content h1 { font-size: 24px; font-weight: 800; margin-bottom: 14px; color: var(--text); }
+  .note-content p { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 10px; }
+  .note-content .task-embed {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    background: var(--bg); border-radius: var(--radius-md); margin: 8px 0;
+    border: 1px solid var(--border-light);
+  }
+  .task-checkbox {
+    width: 16px; height: 16px; border: 2px solid var(--border-strong); border-radius: 50%;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .task-checkbox:hover { border-color: var(--accent); }
+  .task-checkbox.checked { background: var(--green); border-color: var(--green); }
+  .task-checkbox.checked::after { content: '✓'; color: #fff; font-size: 10px; font-weight: 700; }
+  .task-title { flex: 1; font-size: 13px; }
+  .task-title.done { text-decoration: line-through; color: var(--text3); }
+  .task-priority {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .task-priority.high { background: var(--danger); }
+  .task-priority.medium { background: var(--amber); }
+  .task-priority.low { background: var(--border-strong); }
+  .task-due {
+    font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px;
+    white-space: nowrap;
+  }
+  .task-due.overdue { background: #fef2f2; color: var(--danger); }
+  .task-due.today { background: #fefce8; color: var(--amber); }
+  .task-due.future { background: var(--bg); color: var(--text3); }
+  .task-note-link {
+    font-size: 10px; color: var(--blue); display: inline-flex; align-items: center; gap: 3px;
+    cursor: pointer;
+  }
+
+  /* ═══ OPEN QUESTIONS CALLOUT ═══ */
+  .oq-callout {
+    position: fixed; bottom: 16px; right: 16px; max-width: 380px;
+    background: #fffbeb; border: 1px solid #fcd34d; border-radius: var(--radius-md);
+    padding: 14px 16px; font-size: 11px; color: #92400e; line-height: 1.55;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 100;
+  }
+  .oq-callout h4 { font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .oq-callout ul { padding-left: 14px; margin: 0; }
+  .oq-callout li { margin-bottom: 3px; }
+  .oq-callout .close-oq {
+    position: absolute; top: 8px; right: 10px; background: none; border: none;
+    color: #92400e; cursor: pointer; font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-logo">
+    <span class="sb-logo-icon"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg></span>
+    Daily<span>Dispatch</span>
+  </div>
+
+  <!-- Primary navigation -->
+  <div class="sb-nav">
+    <div class="sb-nav-item" onclick="setActive(this)">
+      <span class="sb-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg></span>
+      Today
+      <span class="sb-count">5</span>
+    </div>
+    <div class="sb-nav-item active" onclick="setActive(this)">
+      <span class="sb-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="10" x2="16" y2="10"/><line x1="4" y1="14" x2="12" y2="14"/></svg></span>
+      Feed
+      <span class="sb-kbd">&#8984;1</span>
+    </div>
+    <div class="sb-nav-item" onclick="setActive(this)">
+      <span class="sb-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg></span>
+      Tasks
+      <span class="sb-count">12</span>
+    </div>
+    <div class="sb-nav-item" onclick="setActive(this)">
+      <span class="sb-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg></span>
+      Search
+      <span class="sb-kbd">&#8984;K</span>
+    </div>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <!-- Calendar -->
+  <div class="sb-section-hdr">Calendar</div>
+  <div class="sb-cal">
+    <div class="sb-cal-header">
+      <button>&#9664;</button>
+      <span>Apr 2026</span>
+      <button>&#9654;</button>
+    </div>
+    <div class="sb-cal-grid" id="cal-grid"></div>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <!-- Notes list -->
+  <div class="sb-section-hdr">
+    Notes
+    <button title="New note">+</button>
+  </div>
+  <div class="sb-notes">
+    <div class="sb-note-item active">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">Q1 Planning</span>
+      <span class="sb-note-date">Apr 8</span>
+    </div>
+    <div class="sb-note-item">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">API Design Review</span>
+      <span class="sb-note-date">Apr 7</span>
+    </div>
+    <div class="sb-note-item">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">1:1 with Sarah</span>
+      <span class="sb-note-date">Apr 6</span>
+    </div>
+    <div class="sb-note-item">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">Meeting: Kickoff</span>
+      <span class="sb-note-date">Apr 5</span>
+    </div>
+    <div class="sb-note-item">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">Sprint Retro Notes</span>
+      <span class="sb-note-date">Apr 4</span>
+    </div>
+    <div class="sb-note-item">
+      <span class="sb-note-icon">&#128196;</span>
+      <span class="sb-note-title">Architecture Decisions</span>
+      <span class="sb-note-date">Apr 3</span>
+    </div>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <!-- Tags -->
+  <div class="sb-section-hdr">Tags</div>
+  <div class="sb-tags" id="sb-tags"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+  <div id="main-toolbar">
+    <span class="toolbar-title">Q1 Planning</span>
+    <button class="toolbar-btn">&#128203; Copy</button>
+    <button class="toolbar-btn">&#128279; Link</button>
+  </div>
+  <div id="main-content">
+    <div class="note-content">
+      <h1>Q1 Planning</h1>
+      <p>Discussed priorities for the quarter. The team agreed on three main tracks: API redesign, mobile companion, and internal tooling improvements.</p>
+
+      <p><strong>Action items from the meeting:</strong></p>
+
+      <div class="task-embed">
+        <div class="task-checkbox" onclick="this.classList.toggle('checked');this.nextElementSibling.classList.toggle('done')"></div>
+        <span class="task-title">Draft API v2 proposal document</span>
+        <span class="task-priority high"></span>
+        <span class="task-due today">today</span>
+      </div>
+
+      <div class="task-embed">
+        <div class="task-checkbox" onclick="this.classList.toggle('checked');this.nextElementSibling.classList.toggle('done')"></div>
+        <span class="task-title">Schedule design review with @sarah</span>
+        <span class="task-priority medium"></span>
+        <span class="task-due future">in 3d</span>
+      </div>
+
+      <div class="task-embed">
+        <div class="task-checkbox checked" onclick="this.classList.toggle('checked');this.nextElementSibling.classList.toggle('done')"></div>
+        <span class="task-title done">Set up project board columns</span>
+        <span class="task-priority low"></span>
+        <span class="task-due future">Apr 15</span>
+      </div>
+
+      <div class="task-embed">
+        <div class="task-checkbox" onclick="this.classList.toggle('checked');this.nextElementSibling.classList.toggle('done')"></div>
+        <span class="task-title">Review mobile wireframes from Dave</span>
+        <span class="task-priority high"></span>
+        <span class="task-due overdue">overdue 2d</span>
+      </div>
+
+      <p style="margin-top:14px">@dave will own the mobile track. @sarah takes API. I'll handle tooling.</p>
+
+      <p>Next sync is Thursday. Need the proposal doc before then.</p>
+
+      <p style="color:var(--text3);font-size:12px;margin-top:20px">#planning #q1 #meeting</p>
+    </div>
+  </div>
+</div>
+
+<!-- OPEN QUESTIONS CALLOUT -->
+<div class="oq-callout" id="oq">
+  <button class="close-oq" onclick="document.getElementById('oq').style.display='none'">&times;</button>
+  <h4>&#9888; Sidebar Design Decisions</h4>
+  <ul>
+    <li><strong>Today view:</strong> Proposed as top-level nav. Would show today's tasks + today's feed entries in one view. Is this wanted, or is Feed + Tasks sufficient?</li>
+    <li><strong>Notes list:</strong> Shown as a reverse-chron list in the sidebar. Could also be tag-filtered or search-first. This replaces the current "Recent" section panel approach.</li>
+    <li><strong>Tasks nav item:</strong> Opens the Kanban/List tab. Count badge shows open (non-done) tasks. The current DailyDispatch tab bar would be replaced by this sidebar nav for primary navigation.</li>
+    <li><strong>Calendar stays:</strong> Kept from the current app. Clicking a date filters the Feed to that day.</li>
+    <li><strong>Tags stay:</strong> Compact cloud at the bottom. Could also move into the Feed view as a filter bar.</li>
+    <li><strong>Search:</strong> Opens a search panel (existing Cmd+K behavior). Could be inline in sidebar or a full-tab view.</li>
+    <li><strong>Settings/Gallery:</strong> Not shown here — would they be footer icons, or accessible via a menu? Currently they're tab-bar icons.</li>
+  </ul>
+</div>
+
+<script>
+// Interactive sidebar nav
+function setActive(el){
+  document.querySelectorAll('.sb-nav-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// Calendar
+(function(){
+  const grid=document.getElementById('cal-grid');
+  const dows=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let h=dows.map(d=>`<div class="sb-cal-dow">${d}</div>`).join('');
+  // April 2026 starts on Wednesday (day 3)
+  const fd=3,dim=30;
+  for(let i=0;i<fd;i++)h+=`<div class="sb-cal-day other">${30-fd+i+1}</div>`;
+  const hasEntries=new Set([1,2,3,4,5,6,7,8,9,10,11]);
+  for(let d=1;d<=dim;d++){
+    let cls='sb-cal-day';
+    if(d===11)cls+=' today';
+    if(hasEntries.has(d))cls+=' has-entries';
+    h+=`<div class="${cls}">${d}</div>`;
+  }
+  const rem=(7-(fd+dim)%7)%7;
+  for(let d=1;d<=rem;d++)h+=`<div class="sb-cal-day other">${d}</div>`;
+  grid.innerHTML=h;
+})();
+
+// Tags
+(function(){
+  const tags=[
+    {name:'meeting',color:'#cb912f'},
+    {name:'planning',color:'#5b9bd5'},
+    {name:'api',color:'#7c3aed'},
+    {name:'design',color:'#db2777'},
+    {name:'q1',color:'#16a34a'},
+    {name:'mobile',color:'#ea580c'},
+  ];
+  const el=document.getElementById('sb-tags');
+  el.innerHTML=tags.map(t=>`<span class="sb-tag" style="color:${t.color};border-color:${t.color}40;background:${t.color}12">#${t.name}</span>`).join('');
+})();
+</script>
+</body>
+</html>

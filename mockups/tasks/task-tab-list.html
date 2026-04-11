@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DailyDispatch — Task Tab: List View</title>
+<style>
+  :root {
+    --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+    --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+    --text:#37352f; --text2:#787774; --text3:#9b9a97;
+    --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+    --danger:#e16259; --green:#16a34a; --amber:#d97706; --blue:#5b9bd5;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --radius-sm:4px; --radius-md:6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans); font-size: 13px; color: var(--text);
+    background: var(--bg); height: 100vh; overflow: hidden;
+    display: flex; flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══ TOP BAR ═══ */
+  #topbar {
+    height: 52px; background: var(--surface);
+    border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; padding: 0 24px; gap: 16px;
+    flex-shrink: 0;
+  }
+  .topbar-title { font-size: 16px; font-weight: 700; }
+  .topbar-spacer { flex: 1; }
+  .view-toggle {
+    display: flex; border: 1px solid var(--border); border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .view-toggle button {
+    padding: 5px 14px; font-size: 11px; font-weight: 600; cursor: pointer;
+    border: none; background: var(--surface); color: var(--text2);
+    font-family: var(--sans); transition: all 0.12s;
+  }
+  .view-toggle button.active { background: var(--accent); color: #fff; }
+  .view-toggle button:not(.active):hover { background: var(--bg); }
+  .view-toggle button:first-child { border-right: 1px solid var(--border); }
+  .btn-new-task {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: var(--radius-md);
+    background: var(--accent); color: #fff; border: none;
+    font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--sans);
+  }
+  .btn-new-task:hover { filter: brightness(0.92); }
+  .btn-new-task svg { width: 14px; height: 14px; }
+
+  /* ═══ FILTER BAR ═══ */
+  #filterbar {
+    display: flex; align-items: center; gap: 10px; padding: 10px 24px;
+    border-bottom: 1px solid var(--border-light); background: var(--surface);
+    flex-shrink: 0;
+  }
+  .filter-search {
+    flex: 1; max-width: 280px; padding: 6px 10px 6px 30px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 12px; font-family: var(--sans); color: var(--text); outline: none;
+    background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none' stroke='%239b9a97' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='9' r='5'/%3E%3Cline x1='13' y1='13' x2='16' y2='16'/%3E%3C/svg%3E") 10px center no-repeat;
+  }
+  .filter-search::placeholder { color: var(--text3); }
+  .filter-search:focus { border-color: var(--accent); }
+  .filter-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600;
+    cursor: pointer; user-select: none; border: 1px solid; transition: all 0.12s;
+  }
+  .filter-pill.off { border-color: var(--border); color: var(--text3); background: transparent; }
+  .filter-pill.on { color: #fff; }
+  .filter-due {
+    padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 11px; color: var(--text2); background: var(--surface);
+    cursor: pointer; font-family: var(--sans);
+  }
+  .filter-count { font-size: 10px; color: var(--text3); margin-left: auto; font-family: var(--mono); }
+
+  /* ═══ TASK LIST ═══ */
+  #task-list {
+    flex: 1; overflow-y: auto; padding: 0;
+  }
+
+  /* Group header */
+  .group-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 24px 6px; position: sticky; top: 0;
+    background: var(--bg); z-index: 2;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: var(--text2);
+  }
+  .group-header .group-line { flex: 1; height: 1px; background: var(--border); }
+  .group-header .group-count {
+    font-size: 9px; color: var(--text3); font-weight: 600;
+    background: var(--surface); padding: 1px 7px; border-radius: 8px;
+    border: 1px solid var(--border-light);
+  }
+
+  /* Task row */
+  .task-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 24px; border-bottom: 1px solid var(--border-light);
+    cursor: pointer; transition: background 0.1s;
+  }
+  .task-row:hover { background: var(--surface); }
+  .task-row.completed { opacity: 0.55; }
+  .task-row.completed .task-row-title { text-decoration: line-through; color: var(--text3); }
+
+  .row-checkbox {
+    width: 16px; height: 16px; border: 2px solid var(--border-strong); border-radius: 50%;
+    cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .row-checkbox:hover { border-color: var(--green); }
+  .row-checkbox.checked { background: var(--green); border-color: var(--green); }
+  .row-checkbox.checked::after { content: '✓'; color: #fff; font-size: 9px; font-weight: 700; }
+
+  .row-priority {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .row-priority.high { background: var(--danger); }
+  .row-priority.medium { background: var(--amber); }
+  .row-priority.low { background: var(--border-strong); }
+
+  .task-row-title { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+
+  .row-column {
+    font-size: 10px; font-weight: 600; color: var(--text3);
+    padding: 2px 8px; border-radius: 4px; background: var(--sidebar-bg);
+    white-space: nowrap; min-width: 60px; text-align: center;
+  }
+
+  .row-due {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 8px;
+    white-space: nowrap; min-width: 70px; text-align: center;
+  }
+  .row-due.overdue { background: #fef2f2; color: var(--danger); }
+  .row-due.today { background: #fefce8; color: var(--amber); }
+  .row-due.future { background: var(--bg); color: var(--text3); border: 1px solid var(--border-light); }
+  .row-due.none { color: var(--text3); font-weight: 400; font-style: italic; }
+
+  .row-note-link {
+    font-size: 10px; color: var(--blue); display: inline-flex; align-items: center; gap: 3px;
+    cursor: pointer; white-space: nowrap;
+  }
+  .row-note-link svg { width: 10px; height: 10px; }
+  .row-note-link:hover { text-decoration: underline; }
+
+  .row-created {
+    font-size: 10px; color: var(--text3); font-family: var(--mono);
+    min-width: 50px; text-align: right;
+  }
+
+  /* ═══ OPEN QUESTIONS ═══ */
+  .oq-callout {
+    position: fixed; bottom: 16px; right: 16px; max-width: 400px;
+    background: #fffbeb; border: 1px solid #fcd34d; border-radius: var(--radius-md);
+    padding: 14px 16px; font-size: 11px; color: #92400e; line-height: 1.55;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 100;
+  }
+  .oq-callout h4 { font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .oq-callout ul { padding-left: 14px; margin: 0; }
+  .oq-callout li { margin-bottom: 3px; }
+  .oq-callout .close-oq {
+    position: absolute; top: 8px; right: 10px; background: none; border: none;
+    color: #92400e; cursor: pointer; font-size: 14px;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <span class="topbar-title">Tasks</span>
+  <span class="topbar-spacer"></span>
+  <div class="view-toggle">
+    <button onclick="alert('Switch to Kanban — see task-tab-kanban.html')">Kanban</button>
+    <button class="active">List</button>
+  </div>
+  <button class="btn-new-task">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
+    New task
+  </button>
+</div>
+
+<!-- FILTER BAR -->
+<div id="filterbar">
+  <input class="filter-search" type="text" placeholder="Search tasks...">
+  <span class="filter-pill on" style="background:var(--danger);border-color:var(--danger)">
+    <span style="width:7px;height:7px;border-radius:50%;background:#fff"></span> High
+  </span>
+  <span class="filter-pill on" style="background:var(--amber);border-color:var(--amber)">
+    <span style="width:7px;height:7px;border-radius:50%;background:#fff"></span> Med
+  </span>
+  <span class="filter-pill off">
+    <span style="width:7px;height:7px;border-radius:50%;background:var(--border-strong)"></span> Low
+  </span>
+  <select class="filter-due">
+    <option>All dates</option>
+    <option>Overdue</option>
+    <option>Today</option>
+    <option>Next 7 days</option>
+    <option>Next 30 days</option>
+    <option>No due date</option>
+  </select>
+  <span class="filter-count">18 tasks</span>
+</div>
+
+<!-- TASK LIST -->
+<div id="task-list">
+
+  <!-- Inbox group -->
+  <div class="group-header">
+    <span>Inbox</span>
+    <span class="group-line"></span>
+    <span class="group-count">4</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority high"></span>
+    <span class="task-row-title">Review mobile wireframes from Dave</span>
+    <span class="row-column">Inbox</span>
+    <span class="row-due overdue">overdue 2d</span>
+    <span class="row-note-link"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="13" y2="10"/></svg> Q1 Planning</span>
+    <span class="row-created">Apr 8</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority high"></span>
+    <span class="task-row-title">Fix login redirect bug</span>
+    <span class="row-column">Inbox</span>
+    <span class="row-due today">today</span>
+    <span class="row-created">Apr 9</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority medium"></span>
+    <span class="task-row-title">Update onboarding flow copy</span>
+    <span class="row-column">Inbox</span>
+    <span class="row-due today">today</span>
+    <span class="row-created">Apr 10</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority low"></span>
+    <span class="task-row-title">Clean up old test fixtures</span>
+    <span class="row-column">Inbox</span>
+    <span class="row-due none">no date</span>
+    <span class="row-created">Apr 10</span>
+  </div>
+
+  <!-- Backlog group -->
+  <div class="group-header">
+    <span>Backlog</span>
+    <span class="group-line"></span>
+    <span class="group-count">5</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority high"></span>
+    <span class="task-row-title">Draft API v2 proposal document</span>
+    <span class="row-column">Backlog</span>
+    <span class="row-due future">in 3d</span>
+    <span class="row-note-link"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="13" y2="10"/></svg> Q1 Planning</span>
+    <span class="row-created">Apr 8</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority medium"></span>
+    <span class="task-row-title">Research auth providers for SSO</span>
+    <span class="row-column">Backlog</span>
+    <span class="row-due future">in 5d</span>
+    <span class="row-created">Apr 7</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority medium"></span>
+    <span class="task-row-title">Write migration script for user table</span>
+    <span class="row-column">Backlog</span>
+    <span class="row-due none">no date</span>
+    <span class="row-created">Apr 6</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority low"></span>
+    <span class="task-row-title">Add dark mode to email templates</span>
+    <span class="row-column">Backlog</span>
+    <span class="row-due future">Apr 20</span>
+    <span class="row-created">Apr 5</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority low"></span>
+    <span class="task-row-title">Update README with new endpoints</span>
+    <span class="row-column">Backlog</span>
+    <span class="row-due future">Apr 25</span>
+    <span class="row-created">Apr 4</span>
+  </div>
+
+  <!-- In Work group -->
+  <div class="group-header">
+    <span>In Work</span>
+    <span class="group-line"></span>
+    <span class="group-count">3</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority high"></span>
+    <span class="task-row-title">Implement payment webhook handler</span>
+    <span class="row-column">In Work</span>
+    <span class="row-due overdue">overdue 1d</span>
+    <span class="row-created">Apr 5</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority medium"></span>
+    <span class="task-row-title">Schedule design review with @sarah</span>
+    <span class="row-column">In Work</span>
+    <span class="row-due future">in 2d</span>
+    <span class="row-note-link"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="13" y2="10"/></svg> Q1 Planning</span>
+    <span class="row-created">Apr 8</span>
+  </div>
+  <div class="task-row" onclick="this.querySelector('.row-checkbox').classList.toggle('checked');this.classList.toggle('completed')">
+    <span class="row-checkbox"></span>
+    <span class="row-priority low"></span>
+    <span class="task-row-title">Refactor error handling middleware</span>
+    <span class="row-column">In Work</span>
+    <span class="row-due future">in 7d</span>
+    <span class="row-created">Apr 3</span>
+  </div>
+
+  <!-- Done group -->
+  <div class="group-header">
+    <span>Done</span>
+    <span class="group-line"></span>
+    <span class="group-count">6</span>
+  </div>
+  <div class="task-row completed">
+    <span class="row-checkbox checked"></span>
+    <span class="row-priority low"></span>
+    <span class="task-row-title">Set up project board columns</span>
+    <span class="row-column">Done</span>
+    <span class="row-due future" style="background:#f0fdf4;color:var(--green)">Apr 8</span>
+    <span class="row-created">Apr 7</span>
+  </div>
+  <div class="task-row completed">
+    <span class="row-checkbox checked"></span>
+    <span class="row-priority medium"></span>
+    <span class="task-row-title">Deploy staging environment</span>
+    <span class="row-column">Done</span>
+    <span class="row-due future" style="background:#f0fdf4;color:var(--green)">Apr 7</span>
+    <span class="row-created">Apr 5</span>
+  </div>
+  <div class="task-row completed">
+    <span class="row-checkbox checked"></span>
+    <span class="row-priority high"></span>
+    <span class="task-row-title">Fix critical data loss bug</span>
+    <span class="row-column">Done</span>
+    <span class="row-due future" style="background:#f0fdf4;color:var(--green)">Apr 6</span>
+    <span class="row-created">Apr 3</span>
+  </div>
+</div>
+
+<!-- OPEN QUESTIONS -->
+<div class="oq-callout" id="oq">
+  <button class="close-oq" onclick="document.getElementById('oq').style.display='none'">&times;</button>
+  <h4>&#9888; List View Design Decisions</h4>
+  <ul>
+    <li><strong>Grouping:</strong> Shown grouped by column (Inbox/Backlog/In Work/Done). Could also group by priority, due date, or none (flat). Should grouping be toggleable?</li>
+    <li><strong>Sorting:</strong> Within each group, tasks are sorted by priority (high first) then due date. Should sorting be user-configurable (click column headers)?</li>
+    <li><strong>Column indicator:</strong> Each row shows a "Backlog" / "In Work" pill. In list view this replaces the spatial grouping of Kanban. Is it redundant with the group headers?</li>
+    <li><strong>Done visibility:</strong> In Kanban, Done shows "last 10". In list view, should Done show all? Or also cap at 10? Current mockup shows 3 for brevity.</li>
+    <li><strong>Row click:</strong> Currently toggles checkbox. Should it open a detail view instead? (Checkbox click would be a separate target.)</li>
+    <li><strong>Inline editing:</strong> Should clicking the title allow inline rename? Or require opening a detail panel?</li>
+    <li><strong>Drag reorder:</strong> Not shown here. Should list rows be draggable to change column assignment (like dragging to a different group)?</li>
+    <li><strong>Note link column:</strong> Shows note title for linked tasks. Takes horizontal space. Worth keeping, or hide behind hover/click?</li>
+  </ul>
+</div>
+
+</body>
+</html>
