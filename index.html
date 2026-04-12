@@ -202,13 +202,15 @@
     margin: 0 auto; position: relative;
   }
   .cal-day:hover { background: var(--sidebar-bg); }
-  .cal-day.today { font-weight: 600; background: var(--accent); color: #fff; }
+  .cal-day.today { font-weight: 700; box-shadow: inset 0 0 0 2px var(--accent); color: var(--accent); }
   .cal-day.selected { background: var(--accent); color: #fff; }
+  .cal-day.today.selected { background: var(--accent); color: #fff; box-shadow: none; }
   .cal-day.has-entries::after {
     content: ''; position: absolute; bottom: 1px; width: 3px; height: 3px;
     border-radius: 50%; background: var(--accent);
   }
   .cal-day.selected.has-entries::after { background: #fff; }
+  .cal-day.today.has-entries::after { background: var(--accent); }
   .cal-day.other-month { opacity: .3; }
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .cal-nav span { font-weight: 600; font-size: 11px; }
@@ -524,9 +526,47 @@
      line-height:1.7, adding ~24px padding above/below each card.
      Zeroing font-size+line-height on the .cm-line kills the strut;
      the card restores its own font-size below. */
-  .cm-line:has(> .cm-task-card) {
+  .cm-line:has(> .cm-task-card),
+  .cm-line:has(> .cm-smartlist) {
     line-height: 0 !important;
     font-size: 0 !important;
+  }
+  /* Smart List widget */
+  .cm-smartlist {
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--surface); margin: 4px 0; overflow: hidden; font-size: 14px;
+  }
+  .cm-sl-hdr {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border-light); font-size: 11px;
+  }
+  .cm-sl-icon { font-size: 12px; }
+  .cm-sl-query {
+    flex: 1; font-family: var(--mono); font-size: 11px; color: var(--accent); cursor: pointer;
+  }
+  .cm-sl-query:hover { text-decoration: underline; }
+  .cm-sl-count {
+    font-size: 9px; font-weight: 600; color: var(--text3);
+    background: var(--bg); padding: 1px 6px; border-radius: 8px;
+  }
+  .cm-sl-body { max-height: 280px; overflow-y: auto; padding: 4px 0; }
+  .cm-sl-entry {
+    display: flex; align-items: baseline; gap: 10px; padding: 7px 12px;
+    border-bottom: 1px solid var(--border-light);
+    cursor: pointer; font-size: 12px; transition: background 0.1s;
+  }
+  .cm-sl-entry:last-child { border-bottom: none; }
+  .cm-sl-entry:hover { background: var(--accent-light); }
+  .cm-sl-time {
+    font-family: var(--mono); font-size: 10px; color: var(--text3);
+    flex-shrink: 0; min-width: 44px; text-align: right;
+  }
+  .cm-sl-title { flex: 1; color: var(--text); font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+  .cm-sl-title strong { font-weight: 600; }
+  .cm-sl-preview { color: var(--text2); font-weight: 400; }
+  .cm-sl-empty {
+    padding: 12px; text-align: center; color: var(--text3); font-size: 11px; font-style: italic;
   }
   .cm-task-card {
     display: flex; align-items: center; gap: 10px;
@@ -1979,6 +2019,19 @@
     outline: none;
   }
   .tm-field select:focus, .tm-field input:focus { border-color: var(--accent); }
+  .tm-pri-pills { display: flex; gap: 6px; flex: 1; }
+  .tm-pri-pills .tap-pill { cursor: pointer; padding: 4px 12px; font-size: 11px; }
+  .tm-due-set {
+    padding: 5px 12px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm);
+    background: transparent; color: var(--text3); font-size: 11px; font-family: var(--sans);
+    cursor: pointer; flex: 1; text-align: left;
+  }
+  .tm-due-set:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .tm-due-clear {
+    background: none; border: none; color: var(--text3); font-size: 14px; cursor: pointer;
+    padding: 2px 6px; border-radius: 3px; flex-shrink: 0;
+  }
+  .tm-due-clear:hover { color: var(--danger); background: #fef2f2; }
   .tm-note-link {
     display: flex; align-items: center; gap: 6px;
     padding: 8px 20px; font-size: 12px; color: var(--blue); cursor: pointer;
@@ -3570,7 +3623,7 @@ function renderToday(area){
   h+='</div>'; // close .today-wrap
   area.innerHTML=h;
   setupCaptureImageHandlers();
-  setTimeout(setupFeedScrollObserver,50);
+  setTimeout(()=>{setupFeedScrollObserver();setupFeedDayTracker();},50);
 }
 function showMoreDay(ds){feedDayShowMore[ds]=(feedDayShowMore[ds]||FEED_DAY_CAP)+FEED_DAY_CAP;renderActiveView();}
 function renderDayDivider(ds){
@@ -3584,7 +3637,7 @@ function renderDayDivider(ds){
     else label=d.toLocaleDateString('en-US',{weekday:'long'});
   }
   const fullDate=d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  return`<div class="day-divider"><span class="day-divider-label">${label}</span><span class="day-divider-sublabel">&mdash; ${fullDate}</span><div class="day-divider-line"></div></div>`;
+  return`<div class="day-divider" data-date="${ds}"><span class="day-divider-label">${label}</span><span class="day-divider-sublabel">&mdash; ${fullDate}</span><div class="day-divider-line"></div></div>`;
 }
 function getEntryBorderColor(tags){
   if(!tags||!tags.length)return 'var(--border)';
@@ -3740,6 +3793,35 @@ function setupFeedScrollObserver(){
     },{root:container,rootMargin:'200px'});
     feedScrollObserverTop.observe(topSentinel);
   }
+}
+// Track which day is at the top of the feed as user scrolls — update calendar highlight
+let _feedScrollHandler=null;
+function setupFeedDayTracker(){
+  const container=document.getElementById('content-area');
+  if(!container)return;
+  if(_feedScrollHandler)container.removeEventListener('scroll',_feedScrollHandler);
+  _feedScrollHandler=()=>{
+    const dividers=container.querySelectorAll('.day-divider[data-date]');
+    if(!dividers.length)return;
+    const containerTop=container.getBoundingClientRect().top;
+    let topDay=null;
+    for(const div of dividers){
+      const r=div.getBoundingClientRect();
+      if(r.top<=containerTop+60)topDay=div.dataset.date;
+      else break;
+    }
+    if(!topDay)topDay=dividers[0]?.dataset.date;
+    if(topDay&&topDay!==selectedDate){
+      selectedDate=topDay;
+      // Update calendar highlight without re-rendering the feed
+      const calMonth=new Date(topDay+'T12:00:00');
+      if(calMonth.getMonth()!==calViewDate.getMonth()||calMonth.getFullYear()!==calViewDate.getFullYear()){
+        calViewDate=calMonth;
+      }
+      renderCalendar();
+    }
+  };
+  container.addEventListener('scroll',_feedScrollHandler,{passive:true});
 }
 function getCtxLabel(cid){const c=db.contexts.find(x=>x.id===cid);return c?c.label:null;}
 function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,160)+'px';}
@@ -4331,6 +4413,13 @@ function cmDecorateLine(builder,line,Decoration){
     return;
   }}
 
+  // Smart List widget: {{smartlist:query}} — replaces entire line with live search results
+  {const sl=text.match(/^\{\{smartlist:(.+)\}\}$/i);
+  if(sl&&claim(0,text.length)){
+    builder.push(Decoration.replace({widget:new CmSmartListWidget(sl[1],line.number)}).range(from,from+text.length));
+    return;
+  }}
+
   // Line-level: headings
   let hm;
   if((hm=text.match(/^(#{1,3}) /))){
@@ -4655,6 +4744,84 @@ class CmTaskWidget extends CM6.WidgetType{
       openTaskDetail(t.id);
     });
     return card;
+  }
+}
+// Smart List widget — live search results inline in notes
+class CmSmartListWidget extends CM6.WidgetType{
+  constructor(query,lineNum){super();this.query=query;this.lineNum=lineNum;}
+  eq(other){return other.query===this.query;}
+  ignoreEvent(){return true;}
+  toDOM(){
+    const wrap=document.createElement('div');
+    wrap.className='cm-smartlist';
+    // Header
+    const hdr=document.createElement('div');
+    hdr.className='cm-sl-hdr';
+    const icon=document.createElement('span');
+    icon.className='cm-sl-icon';
+    icon.textContent='\u26A1';
+    hdr.appendChild(icon);
+    const queryEl=document.createElement('span');
+    queryEl.className='cm-sl-query';
+    queryEl.textContent=this.query;
+    queryEl.title='Click to edit query';
+    const lineNum=this.lineNum;
+    const curQuery=this.query;
+    queryEl.addEventListener('mousedown',e=>{
+      e.preventDefault();e.stopPropagation();
+      showPrompt('Smart List query:',{title:'Edit Smart List',defaultVal:curQuery}).then(nq=>{
+        if(nq===null||!nq.trim())return;
+        if(!cmEditorView)return;
+        const ln=cmEditorView.state.doc.line(lineNum);
+        cmEditorView.dispatch({changes:{from:ln.from,to:ln.to,insert:'{{smartlist:'+nq.trim()+'}}'}});
+      });
+    });
+    hdr.appendChild(queryEl);
+    const count=document.createElement('span');
+    count.className='cm-sl-count';
+    hdr.appendChild(count);
+    wrap.appendChild(hdr);
+    // Results
+    const body=document.createElement('div');
+    body.className='cm-sl-body';
+    const allResults=matchEntries(this.query).filter(e=>!e.isHelp);
+    const results=allResults.slice(0,50);
+    count.textContent=allResults.length;
+    if(!results.length){
+      const empty=document.createElement('div');
+      empty.className='cm-sl-empty';
+      empty.textContent='No matches';
+      body.appendChild(empty);
+    } else {
+      results.forEach(entry=>{
+        const row=document.createElement('div');
+        row.className='cm-sl-entry';
+        row.addEventListener('mousedown',e=>{
+          e.preventDefault();e.stopPropagation();
+          openAsNote(entry.id);
+        });
+        const time=document.createElement('span');
+        time.className='cm-sl-time';
+        time.textContent=fmtShortDate(entry.updatedTs||entry.ts);
+        row.appendChild(time);
+        // Title + preview
+        const titleWrap=document.createElement('span');
+        titleWrap.className='cm-sl-title';
+        const cleanContent=(entry.content||'').replace(/\{\{[^}]+\}\}/g,'').replace(/!\[\]\([^)]+\)/g,'').replace(/#[a-zA-Z0-9_-]+/g,'').replace(/@[a-zA-Z0-9_-]+/g,'').replace(/[*`_~#\[\]>]/g,'').trim();
+        if(entry.isNote){
+          const name=(entry.noteTitle||'Untitled').replace(/^#+\s+/,'').slice(0,50);
+          titleWrap.innerHTML='<strong>'+escH(name)+'</strong>';
+          const preview=cleanContent.split('\n').filter(l=>l.trim()&&l.trim()!==name.trim()).join(' ').slice(0,80);
+          if(preview)titleWrap.innerHTML+=' <span class="cm-sl-preview">&mdash; '+escH(preview)+'</span>';
+        } else {
+          titleWrap.textContent=cleanContent.slice(0,80)||'(empty)';
+        }
+        row.appendChild(titleWrap);
+        body.appendChild(row);
+      });
+    }
+    wrap.appendChild(body);
+    return wrap;
   }
 }
 // Widget for inline image ![](img_xxx) with optional |w=N display width.
@@ -5262,6 +5429,9 @@ function cmCheckAC(view){
       return;
     }
   }
+  // Don't close if slash/template menu is actively open — arrow keys trigger
+  // selectionSet which re-runs this check, but the menu should stay open
+  if(acState&&(acState.type==='slash'||acState.type==='template'))return;
   closeAC();
 }
 
@@ -5367,6 +5537,7 @@ const SLASH_COMMANDS=[
   {name:'datetime',label:'Date & time',desc:'Insert today\u2019s date and time',run:_slashDatetime},
   {name:'task',label:'Task',desc:'Insert a task checkbox',run:_slashTask},
   {name:'status',label:'Status',desc:'Insert a status badge',run:_slashStatus},
+  {name:'smartlist',label:'Smart List',desc:'Live search results in your note',run:_slashSmartList},
 ];
 function _slashTask(view,slashStart,slashEnd){
   showPrompt('Task title:',{title:'New Task'}).then(title=>{
@@ -5393,6 +5564,19 @@ function _slashStatus(view,slashStart,slashEnd){
     view.focus();
   });
 }
+function _slashSmartList(view,slashStart,slashEnd){
+  showPrompt('What should this list show?',{title:'Smart List',defaultVal:'#tag'}).then(query=>{
+    if(!query||!query.trim()){view.focus();return;}
+    const line=view.state.doc.lineAt(slashStart);
+    const token='{{smartlist:'+query.trim()+'}}';
+    const atEnd=line.to>=view.state.doc.length;
+    view.dispatch({
+      changes:{from:line.from,to:line.to,insert:atEnd?token+'\n':token},
+      selection:{anchor:line.from+token.length+1}
+    });
+    view.focus();
+  });
+}
 
 function cmShowSlashMenu(view,pos,cmds,slashStart){
   const c=cmGetACCoords(view,pos);
@@ -5415,7 +5599,7 @@ function showTableGridPicker(view,slashStart,slashEnd){
   for(let r=0;r<MAX;r++)for(let c=0;c<MAX;c++){
     html+=`<div class="tgp-cell" data-r="${r}" data-c="${c}" style="width:18px;height:18px;border:1px solid #bbb;background:#f5f5f5;cursor:pointer;border-radius:2px"></div>`;
   }
-  html+=`</div><div style="font-size:9px;color:var(--text3);margin-top:6px;text-align:center">Click to insert</div>`;
+  html+=`</div><div style="font-size:9px;color:var(--text3);margin-top:6px;text-align:center">Click or use arrow keys + Enter</div>`;
   wrap.innerHTML=html;
   document.body.appendChild(wrap);
   const label=wrap.querySelector('#tgp-label');
@@ -5443,6 +5627,8 @@ function showTableGridPicker(view,slashStart,slashEnd){
     if(cell)highlight(+cell.dataset.r,+cell.dataset.c);
   });
   highlight(0,0);
+  // Track current keyboard position
+  wrap._kbR=0;wrap._kbC=0;wrap._view=view;wrap._slashStart=slashStart;wrap._slashEnd=slashEnd;
   // Dismiss on outside click or Escape — schedule after current event loop
   setTimeout(()=>{
     document.addEventListener('mousedown',_tgpOutsideClick,true);
@@ -5456,7 +5642,31 @@ function _tgpOutsideClick(e){
   closeTableGridPicker();
 }
 function _tgpKeydown(e){
-  if(e.key==='Escape'){e.preventDefault();closeTableGridPicker();}
+  const w=document.getElementById('table-grid-picker');
+  if(!w)return;
+  const MAX=8;
+  if(e.key==='Escape'){e.preventDefault();closeTableGridPicker();return;}
+  if(e.key==='ArrowRight'){e.preventDefault();w._kbC=Math.min(w._kbC+1,MAX-1);}
+  else if(e.key==='ArrowLeft'){e.preventDefault();w._kbC=Math.max(w._kbC-1,0);}
+  else if(e.key==='ArrowDown'){e.preventDefault();w._kbR=Math.min(w._kbR+1,MAX-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();w._kbR=Math.max(w._kbR-1,0);}
+  else if(e.key==='Enter'){
+    e.preventDefault();
+    const rows=w._kbR+1,cols=w._kbC+1;
+    const view=w._view,ss=w._slashStart,se=w._slashEnd;
+    closeTableGridPicker();
+    insertTableAt(view,ss,se,rows,cols);
+    return;
+  } else return;
+  // Update highlight
+  const label=w.querySelector('#tgp-label');
+  w.querySelectorAll('.tgp-cell').forEach(cell=>{
+    const r=+cell.dataset.r,c=+cell.dataset.c;
+    const on=r<=w._kbR&&c<=w._kbC;
+    cell.style.background=on?'#4a90e2':'#f5f5f5';
+    cell.style.borderColor=on?'#4a90e2':'#bbb';
+  });
+  if(label)label.textContent=`${w._kbR+1} × ${w._kbC+1}`;
 }
 function closeTableGridPicker(){
   const w=document.getElementById('table-grid-picker');
@@ -5848,7 +6058,7 @@ function showACPeople(el,people,startIdx){
   const existing=new Set(getAllPeople());
   dd.innerHTML=people.map((p,i)=>`<div class="ac-item${i===0?' highlighted':''}" onmousedown="event.preventDefault();acState.selected=${i};selectAC()"><span style="color:#2563eb">@${escH(p)}</span>${existing.has(p)?'':'<span class="ac-cnt">new</span>'}</div>`).join('');
 }
-function navAC(dir){if(!acState)return;const items=acState.type==='link'?acState.notes:acState.type==='mention'?acState.people:acState.type==='slash'?acState.cmds:acState.type==='template'?acState.templates:acState.tags;acState.selected=(acState.selected+dir+items.length)%items.length;document.querySelectorAll('#autocomplete .ac-item').forEach((el,i)=>{el.classList.toggle('highlighted',i===acState.selected);});}
+function navAC(dir){if(!acState)return;const items=acState.type==='link'?acState.notes:acState.type==='mention'?acState.people:acState.type==='slash'?acState.cmds:acState.type==='template'?acState.templates:acState.tags;acState.selected=(acState.selected+dir+items.length)%items.length;const els=document.querySelectorAll('#autocomplete .ac-item');els.forEach((el,i)=>{el.classList.toggle('highlighted',i===acState.selected);if(i===acState.selected)el.scrollIntoView({block:'nearest'});});}
 function selectAC(){
   if(!acState)return;
   // CM6 path
@@ -7399,6 +7609,40 @@ function renderHome(area){
       </div>
     </section>
 
+    <!-- KEY FEATURE: SMART LISTS -->
+    <section class="home-feature">
+      <div class="home-feature-text">
+        <span class="home-feature-kicker">Embedded dashboards</span>
+        <h2 class="home-feature-title">Smart Lists inside your notes</h2>
+        <p class="home-feature-lead">Type <code>/smartlist</code> in any note and enter a query. A live widget appears showing every matching entry &mdash; updated automatically as you add new content. Turn any note into a project dashboard.</p>
+        <ul class="home-feature-bullets">
+          <li><strong>Project hub</strong> &mdash; <code>#projectx</code> shows all project entries</li>
+          <li><strong>Team view</strong> &mdash; <code>@dave @sarah</code> pulls in everyone's updates</li>
+          <li><strong>Meeting tracker</strong> &mdash; <code>#meeting #q2</code> filters to Q2 meetings</li>
+          <li><strong>Editable</strong> &mdash; click the query to change it anytime</li>
+        </ul>
+        <p class="home-feature-footnote">Click any result to jump straight to that entry or note.</p>
+      </div>
+      <div class="home-feature-mock">
+        <div class="home-mock-section" style="max-width:340px">
+          <div style="padding:10px 14px;font-size:12px;color:var(--text2)"><strong style="color:var(--text)"># Project X Tracker</strong></div>
+          <div style="padding:0 14px 8px">
+            <div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--sidebar-bg);border-radius:var(--radius-sm);border:1px solid var(--border-light);font-size:11px;margin-bottom:4px">
+              <span style="font-size:12px">&#9889;</span>
+              <span style="font-family:var(--mono);color:var(--accent);flex:1">#projectx</span>
+              <span style="font-size:9px;color:var(--text3);background:var(--bg);padding:1px 6px;border-radius:8px">12</span>
+            </div>
+            <div style="border:1px solid var(--border-light);border-radius:var(--radius-sm);overflow:hidden">
+              <div class="home-mock-entry" style="padding:6px 10px"><span class="home-mock-time">11 Apr</span><strong>API migration plan</strong> <span style="color:var(--text2)">&mdash; endpoints for v2...</span></div>
+              <div class="home-mock-entry" style="padding:6px 10px"><span class="home-mock-time">10 Apr</span><strong>Design review notes</strong> <span style="color:var(--text2)">&mdash; new layout...</span></div>
+              <div class="home-mock-entry" style="padding:6px 10px"><span class="home-mock-time">8 Apr</span><strong>Sprint planning</strong> <span style="color:var(--text2)">&mdash; Q2 scope...</span></div>
+              <div class="home-mock-entry" style="padding:6px 10px"><span class="home-mock-time">5 Apr</span>Kickoff meeting recap</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- FEATURE GRID -->
     <section class="home-section">
       <div class="home-section-head">
@@ -7414,7 +7658,7 @@ function renderHome(area){
         <div class="home-card">
           <div class="home-card-icon">${iconFeed}</div>
           <h3>Markdown + slash commands</h3>
-          <p>Type <code>/</code> for headings, bullets, tables, code blocks, templates, tasks, and timestamps. Live preview as you type.</p>
+          <p>Type <code>/</code> for headings, bullets, tables, code blocks, templates, tasks, Smart Lists, and more. Live preview as you type.</p>
         </div>
         <div class="home-card">
           <div class="home-card-icon">${iconSection}</div>
@@ -8297,7 +8541,8 @@ DailyDispatch is a work journal where notes and tasks live together. Capture wha
 2. **Take notes** — Click **+** in the tab bar to create a note with full markdown
 3. **Create tasks** — Type \`/task\` in any note to create a linked task
 4. **Tag everything** — Use \`#tags\` and \`@people\` inline for instant organization
-5. **Find anything** — Press **Cmd+K** to search, or click tags in the sidebar to filter
+5. **Build dashboards** — Type \`/smartlist\` in a note to embed live search results
+6. **Find anything** — Press **Cmd+K** to search, or click tags in the sidebar to filter
 
 ## Key Shortcuts
 
@@ -8313,7 +8558,7 @@ DailyDispatch is a work journal where notes and tasks live together. Capture wha
 - [[Today View & Feed]] — Your daily timeline
 - [[Tasks & Kanban]] — Task management, boards, and priorities
 - [[Notes & Markdown Editor]] — Rich markdown editing
-- [[Slash Commands]] — Quick formatting and task creation
+- [[Slash Commands]] — Quick formatting, tasks, and Smart Lists
 - [[Tags & Filtering]] — Organization and sidebar filters
 - [[Sections & Custom Views]] — Saved filter dashboards
 - [[Search Tabs & Boolean Queries]] — Power search
@@ -8446,6 +8691,19 @@ The editor shows **rendered markdown on lines you're not editing** and **raw mar
 
 Type \`/task\` to create a task. It renders as an inline card showing the checkbox, title, priority, and due date. Tasks are live — check them off in the note or on the Kanban board.
 
+## Smart Lists
+
+Type \`/smartlist\` to embed a live search widget in your note. You'll be prompted for a query — use the same syntax as search tabs (\`#tags\`, \`@people\`, keywords, \`OR\`, etc.).
+
+The widget shows all matching entries with title, preview, and date. Results update automatically as you add new content. Click any result to open it.
+
+**Use cases:**
+- **Project dashboard** — create a note for a project, add \`/smartlist\` with \`#projectname\`
+- **Team activity** — \`@dave @sarah\` to see everyone's updates in one place
+- **Meeting digest** — \`#meeting #q2\` for all Q2 meeting notes
+
+**Editing:** Click the query text in the widget header to change the search criteria anytime.
+
 ## Tables
 
 Use \`/table\` to insert an editable table. Click cells to edit, right-click for row/column actions, drag column edges to resize.
@@ -8486,10 +8744,24 @@ Type \`/\` at the start of a line to open the command menu. Filter by typing, na
 | \`/time\` | Insert current time |
 | \`/datetime\` | Insert date and time |
 | \`/status\` | Insert a colored status badge |
+| \`/smartlist\` | Embed a live Smart List — shows matching entries inline |
 
 ## Task Creation
 
 \`/task\` prompts for a title, creates a task in your Kanban board, and inserts a live task widget in the note. The task and note stay linked — see [[Tasks & Kanban]].
+
+## Smart Lists
+
+\`/smartlist\` prompts for a search query and embeds a live results widget in your note. Use the same search syntax as search tabs: \`#tags\`, \`@people\`, keywords, \`OR\`, phrases in quotes, and exclusions with \`-\`.
+
+The widget shows matching entries with title, preview, and date. Click the query in the header to edit it. Click any result to open it. Results update live as your data changes.
+
+**Examples:**
+- \`#projectx\` — all entries for a project
+- \`@dave #meeting\` — Dave's meeting notes
+- \`#idea OR #question\` — ideas and questions in one list
+
+See [[Notes & Markdown Editor]] for more on Smart Lists.
 
 ## Templates
 
@@ -8847,7 +9119,12 @@ function openTaskDetail(taskId){
   const cols=(db.columns||[]).sort((a,b)=>a.order-b.order);
   const modal=document.getElementById('task-modal');
   const body=document.getElementById('task-modal-content');
-  const priOpts=['H','M','L'].map(p=>`<option value="${p}"${t.priority===p?' selected':''}>${p==='H'?'High':p==='M'?'Medium':'Low'}</option>`).join('');
+  const priPills=['L','M','H'].map(p=>{
+    const cls=p==='H'?'high':p==='M'?'med':'low';
+    const label=p==='H'?'High':p==='M'?'Med':'Low';
+    const active=t.priority===p?' active':'';
+    return`<span class="tap-pill ${cls}${active}" onclick="updateTask('${t.id}',{priority:'${p}'});openTaskDetail('${t.id}');renderActiveView();renderSidebar()">${label}</span>`;
+  }).join('');
   const colOpts=cols.map(c=>`<option value="${c.id}"${t.column_id===c.id?' selected':''}>${escH(c.name)}</option>`).join('');
   const createdDate=new Date(t.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   const completedDate=t.completed_at?new Date(t.completed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
@@ -8862,11 +9139,15 @@ function openTaskDetail(taskId){
     <div class="tm-fields">
       <div class="tm-field">
         <label>Priority</label>
-        <select onchange="updateTask('${t.id}',{priority:this.value});renderActiveView();renderSidebar()">${priOpts}</select>
+        <div class="tm-pri-pills">${priPills}</div>
       </div>
       <div class="tm-field">
         <label>Due date</label>
-        <input type="date" value="${t.due_date||''}" onchange="updateTask('${t.id}',{due_date:this.value||null});renderActiveView();renderSidebar()">
+        ${t.due_date
+          ?`<input type="date" value="${t.due_date}" onchange="updateTask('${t.id}',{due_date:this.value||null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()">
+            <button class="tm-due-clear" onclick="updateTask('${t.id}',{due_date:null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()" title="Clear date">&times;</button>`
+          :`<button class="tm-due-set" onclick="this.nextElementSibling.showPicker();this.nextElementSibling.style.display='inline-block';this.style.display='none'">Set date</button>
+            <input type="date" style="display:none" value="" onchange="updateTask('${t.id}',{due_date:this.value||null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()">`}
       </div>
       <div class="tm-field">
         <label>Column</label>
