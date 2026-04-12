@@ -478,8 +478,8 @@
 
   /* Note editor */
   .note-editor {
-    max-width: 100%; display: flex; flex-direction: column;
-    height: 100%;
+    max-width: 75%; margin: 0 auto; display: flex; flex-direction: column;
+    height: 100%; width: 100%;
   }
   .note-title {
     width: 100%; border: none; outline: none; font-family: var(--sans);
@@ -1134,6 +1134,12 @@
   body.floating-mode #sidebar,
   body.floating-mode #tab-bar,
   body.floating-mode #capture-top { display: none !important; }
+  .float-done-btn {
+    padding: 4px 14px; border-radius: var(--radius-sm); border: none;
+    background: var(--accent); color: #fff; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: var(--sans); transition: all 0.1s;
+  }
+  .float-done-btn:hover { filter: brightness(0.9); }
   body.floating-mode { grid-template-rows: 1fr; grid-template-areas: "main"; grid-template-columns: 1fr; }
   body.floating-mode #center { grid-area: main; }
   body.floating-mode #content-area { padding: 10px !important; height: 100vh; overflow-y: auto; }
@@ -1320,10 +1326,34 @@
 
   /* Note toolbar row */
   .note-toolbar {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
-    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 2px;
+    padding: 4px 6px; margin-bottom: 8px;
+    background: var(--surface); border: 1px solid var(--border-light);
+    border-radius: var(--radius-md); flex-wrap: wrap;
   }
   .note-toolbar .spacer { flex: 1; }
+  .fmt-btn {
+    background: none; border: none; padding: 4px 6px; border-radius: 3px;
+    cursor: pointer; color: var(--text2); font-size: 13px; font-family: var(--sans);
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 26px; height: 26px; transition: all 0.1s;
+  }
+  .fmt-btn:hover { background: var(--bg); color: var(--text); }
+  .fmt-btn.active { background: var(--accent-light); color: var(--accent); }
+  .fmt-code { font-family: var(--mono); font-size: 11px; }
+  .fmt-sep { width: 1px; height: 16px; background: var(--border-light); margin: 0 3px; flex-shrink: 0; }
+  /* Floating selection toolbar */
+  .cm-sel-toolbar {
+    position: fixed; z-index: 500;
+    background: var(--text); color: #fff;
+    border-radius: 6px; padding: 3px 4px;
+    display: flex; gap: 1px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    pointer-events: auto;
+  }
+  .cm-sel-toolbar .fmt-btn { color: rgba(255,255,255,0.7); font-size: 12px; min-width: 24px; height: 24px; }
+  .cm-sel-toolbar .fmt-btn:hover { color: #fff; background: rgba(255,255,255,0.15); }
+  .cm-sel-toolbar .fmt-sep { background: rgba(255,255,255,0.15); height: 14px; }
 
   /* ── RIGHT SIDEBAR ── */
   #right { /* Legacy — replaced by sidebar sections. Hidden. */
@@ -2560,7 +2590,7 @@ async function loadDB(){
   db.checkboxesMigrated=s.checkboxesMigrated||false;
   db.checkboxesMigrated2=s.checkboxesMigrated2||false;
   if(s.sbGroupState)sbGroupState=s.sbGroupState;
-  if(s.sbGroupOrder)sbGroupOrder=s.sbGroupOrder.filter(id=>id!=='tags'&&id!=='calendar');
+  if(s.sbGroupOrder)sbGroupOrder=s.sbGroupOrder.filter(id=>id!=='tags'&&id!=='calendar'&&id!=='sections');
   if(s.onboardingDone)db.onboardingDone=s.onboardingDone;
   if(s.onboardingDismissed)db.onboardingDismissed=s.onboardingDismissed;
   // Restore tab session
@@ -3565,12 +3595,27 @@ function renderToday(area){
   // Tasks section
   const todayTasks=viewingToday?getTasksForToday():
     (selectedDate>today?getTasksDueOn(selectedDate):[]);
+  // Sort: priority is king, due date is tiebreaker
+  // Overdue always floats to top, then priority H>M>L, then earlier due dates first
   todayTasks.sort((a,b)=>{
-    const aOD=a.due_date&&a.due_date<today?0:a.due_date===today?1:2;
-    const bOD=b.due_date&&b.due_date<today?0:b.due_date===today?1:2;
-    if(aOD!==bOD)return aOD-bOD;
-    const pOrd={H:0,M:1,L:2};
-    return(pOrd[a.priority]||2)-(pOrd[b.priority]||2);
+    const pri=p=>p==='H'?0:p==='M'?1:2;
+    const aOverdue=!!(a.due_date&&a.due_date<today);
+    const bOverdue=!!(b.due_date&&b.due_date<today);
+    // Overdue tasks always first
+    if(aOverdue!==bOverdue)return aOverdue?-1:1;
+    // Both overdue: sort by priority, then by how overdue
+    if(aOverdue&&bOverdue){
+      const pd=pri(a.priority)-pri(b.priority);
+      if(pd!==0)return pd;
+      return a.due_date.localeCompare(b.due_date);
+    }
+    // Neither overdue: sort by priority first
+    const pd=pri(a.priority)-pri(b.priority);
+    if(pd!==0)return pd;
+    // Same priority: due date breaks tie (due today > due soon > no date)
+    const aDue=a.due_date||'9999-99-99';
+    const bDue=b.due_date||'9999-99-99';
+    return aDue.localeCompare(bDue);
   });
   const overdueCount=todayTasks.filter(t=>t.due_date&&t.due_date<today).length;
   const starredCount=todayTasks.filter(t=>t.today&&!(t.due_date&&t.due_date<=today)).length;
@@ -4250,6 +4295,110 @@ function renderHelpInline(text){
   return h;
 }
 
+/* ═══════════ FORMATTING TOOLBAR UTILITIES ═══════════ */
+function cmWrapSelection(before,after){
+  if(!cmEditorView)return;
+  const sel=cmEditorView.state.selection.main;
+  if(sel.empty){
+    cmEditorView.dispatch({changes:{from:sel.from,insert:before+after},selection:{anchor:sel.from+before.length}});
+  } else {
+    const text=cmEditorView.state.doc.sliceString(sel.from,sel.to);
+    cmEditorView.dispatch({changes:{from:sel.from,to:sel.to,insert:before+text+after},selection:{anchor:sel.from+before.length,head:sel.to+before.length}});
+  }
+  cmEditorView.focus();
+}
+function cmInsertPrefix(prefix){
+  if(!cmEditorView)return;
+  const sel=cmEditorView.state.selection.main;
+  const doc=cmEditorView.state.doc;
+  const startLine=doc.lineAt(sel.from);
+  const endLine=doc.lineAt(sel.to);
+  // Apply prefix to every line in selection
+  const changes=[];
+  for(let n=startLine.number;n<=endLine.number;n++){
+    const line=doc.line(n);
+    changes.push({from:line.from,to:line.from,insert:prefix});
+  }
+  cmEditorView.dispatch({changes});
+  cmEditorView.focus();
+}
+function cmInsertLink(){
+  if(!cmEditorView)return;
+  const sel=cmEditorView.state.selection.main;
+  const selectedText=sel.empty?'':cmEditorView.state.doc.sliceString(sel.from,sel.to);
+  showPrompt('URL:',{title:'Insert Link',defaultVal:'https://'}).then(url=>{
+    if(!url||!url.trim()){cmEditorView.focus();return;}
+    const text=selectedText||'link';
+    const md='['+text+']('+url.trim()+')';
+    cmEditorView.dispatch({changes:{from:sel.from,to:sel.to,insert:md},selection:{anchor:sel.from+md.length}});
+    cmEditorView.focus();
+  });
+}
+function cmInsertNoteLink(){
+  if(!cmEditorView)return;
+  const pos=cmEditorView.state.selection.main.head;
+  cmEditorView.dispatch({changes:{from:pos,insert:'[['},selection:{anchor:pos+2}});
+  cmEditorView.focus();
+  setTimeout(()=>cmCheckAC(cmEditorView),10);
+}
+function cmInsertTable(){
+  if(!cmEditorView)return;
+  const pos=cmEditorView.state.selection.main.head;
+  const line=cmEditorView.state.doc.lineAt(pos);
+  showTableGridPicker(cmEditorView,line.from,line.to);
+}
+function cmInsertTask(){
+  if(!cmEditorView)return;
+  const pos=cmEditorView.state.selection.main.head;
+  const line=cmEditorView.state.doc.lineAt(pos);
+  _slashTask(cmEditorView,line.from,line.to);
+}
+function cmInsertSmartList(){
+  if(!cmEditorView)return;
+  const pos=cmEditorView.state.selection.main.head;
+  const line=cmEditorView.state.doc.lineAt(pos);
+  _slashSmartList(cmEditorView,line.from,line.to);
+}
+function cmInsertDivider(){
+  if(!cmEditorView)return;
+  const pos=cmEditorView.state.selection.main.head;
+  const line=cmEditorView.state.doc.lineAt(pos);
+  cmEditorView.dispatch({changes:{from:line.from,to:line.to,insert:'---\n'},selection:{anchor:line.from+4}});
+  cmEditorView.focus();
+}
+function cmInsertCodeBlock(){
+  if(!cmEditorView)return;
+  const pos=cmEditorView.state.selection.main.head;
+  const line=cmEditorView.state.doc.lineAt(pos);
+  cmEditorView.dispatch({changes:{from:line.from,to:line.to,insert:'```\n\n```'},selection:{anchor:line.from+4}});
+  cmEditorView.focus();
+}
+
+function showSelToolbar(x,y){
+  let tb=document.getElementById('cm-sel-toolbar');
+  if(!tb){
+    tb=document.createElement('div');
+    tb.id='cm-sel-toolbar';
+    tb.className='cm-sel-toolbar';
+    tb.innerHTML=`
+      <button class="fmt-btn" onmousedown="event.preventDefault();cmWrapSelection('**','**')" title="Bold"><strong>B</strong></button>
+      <button class="fmt-btn" onmousedown="event.preventDefault();cmWrapSelection('*','*')" title="Italic"><em>I</em></button>
+      <button class="fmt-btn" onmousedown="event.preventDefault();cmWrapSelection('~~','~~')" title="Strike"><s>S</s></button>
+      <button class="fmt-btn" onmousedown="event.preventDefault();cmWrapSelection('\`','\`')" title="Code" style="font-family:var(--mono);font-size:10px">&lt;/&gt;</button>
+      <span class="fmt-sep"></span>
+      <button class="fmt-btn" onmousedown="event.preventDefault();cmInsertLink()" title="Link"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 9 L5.5 10.5 A2.5 2.5 0 0 1 2 7 L4 5 A2.5 2.5 0 0 1 7.5 5"/><path d="M9 7 L10.5 5.5 A2.5 2.5 0 0 1 14 9 L12 11 A2.5 2.5 0 0 1 8.5 11"/></svg></button>
+    `;
+    document.body.appendChild(tb);
+  }
+  tb.style.left=Math.max(8,x)+'px';
+  tb.style.top=Math.max(8,y)+'px';
+  tb.style.display='flex';
+}
+function hideSelToolbar(){
+  const tb=document.getElementById('cm-sel-toolbar');
+  if(tb)tb.style.display='none';
+}
+
 function renderNoteEditor(area,noteId){
   const e=db.entries.find(x=>x.id===noteId);
   if(!e||!e.isNote){switchTab('today');return;}
@@ -4266,10 +4415,32 @@ function renderNoteEditor(area,noteId){
   if(cmEditorView){cmEditorView.destroy();cmEditorView=null;}
   area.innerHTML=`<div class="note-editor">
     <div class="note-toolbar">
+      <button class="fmt-btn" onclick="cmWrapSelection('**','**')" title="Bold"><strong>B</strong></button>
+      <button class="fmt-btn" onclick="cmWrapSelection('*','*')" title="Italic"><em>I</em></button>
+      <button class="fmt-btn" onclick="cmWrapSelection('~~','~~')" title="Strikethrough"><s>S</s></button>
+      <button class="fmt-btn fmt-code" onclick="cmWrapSelection('\`','\`')" title="Inline code">&lt;/&gt;</button>
+      <span class="fmt-sep"></span>
+      <button class="fmt-btn" onclick="cmInsertPrefix('# ')" title="Heading 1" style="font-weight:800;font-size:13px">H1</button>
+      <button class="fmt-btn" onclick="cmInsertPrefix('## ')" title="Heading 2" style="font-weight:700;font-size:11px">H2</button>
+      <button class="fmt-btn" onclick="cmInsertPrefix('### ')" title="Heading 3" style="font-weight:600;font-size:10px">H3</button>
+      <span class="fmt-sep"></span>
+      <button class="fmt-btn" onclick="cmInsertPrefix('- ')" title="Bullet list"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="2.5" cy="4" r="1.3"/><rect x="5.5" y="3" width="9" height="2" rx=".5"/><circle cx="2.5" cy="8" r="1.3"/><rect x="5.5" y="7" width="9" height="2" rx=".5"/><circle cx="2.5" cy="12" r="1.3"/><rect x="5.5" y="11" width="9" height="2" rx=".5"/></svg></button>
+      <button class="fmt-btn" onclick="cmInsertPrefix('1. ')" title="Numbered list"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><text x="0" y="5.5" font-size="5" font-weight="700" font-family="sans-serif">1</text><rect x="5.5" y="3" width="9" height="2" rx=".5"/><text x="0" y="9.5" font-size="5" font-weight="700" font-family="sans-serif">2</text><rect x="5.5" y="7" width="9" height="2" rx=".5"/><text x="0" y="13.5" font-size="5" font-weight="700" font-family="sans-serif">3</text><rect x="5.5" y="11" width="9" height="2" rx=".5"/></svg></button>
+      <button class="fmt-btn" onclick="cmInsertPrefix('> ')" title="Blockquote"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="2.5" height="12" rx="1"/><rect x="5.5" y="4" width="9" height="2" rx=".5"/><rect x="5.5" y="7" width="7" height="2" rx=".5"/><rect x="5.5" y="10" width="8" height="2" rx=".5"/></svg></button>
+      <span class="fmt-sep"></span>
+      <button class="fmt-btn" onclick="cmInsertTable()" title="Table"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="2" width="14" height="12" rx="1"/><line x1="1" y1="6" x2="15" y2="6"/><line x1="1" y1="10" x2="15" y2="10"/><line x1="6" y1="2" x2="6" y2="14"/><line x1="11" y1="2" x2="11" y2="14"/></svg></button>
+      <button class="fmt-btn" onclick="cmInsertTask()" title="Task"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="2" width="12" height="12" rx="2"/><polyline points="5 8 7 10 11 6"/></svg></button>
+      <button class="fmt-btn" onclick="cmInsertSmartList()" title="Smart List">&#9889;</button>
+      <button class="fmt-btn" onclick="cmInsertDivider()" title="Divider">&mdash;</button>
+      <button class="fmt-btn" onclick="cmInsertCodeBlock()" title="Code block"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><polyline points="5 4 1 8 5 12"/><polyline points="11 4 15 8 11 12"/></svg></button>
+      <span class="fmt-sep"></span>
+      <button class="fmt-btn" onclick="cmInsertLink()" title="External link"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M7 9 L5.5 10.5 A2.5 2.5 0 0 1 2 7 L4 5 A2.5 2.5 0 0 1 7.5 5"/><path d="M9 7 L10.5 5.5 A2.5 2.5 0 0 1 14 9 L12 11 A2.5 2.5 0 0 1 8.5 11"/></svg></button>
+      <button class="fmt-btn" onclick="cmInsertNoteLink()" title="Note link" style="font-size:11px;font-weight:600">[[]]</button>
       <div class="spacer"></div>
-      <button class="copy-btn" onclick="copyNoteAsMarkdown('${noteId}')">&#128203; Copy</button>
-      <button class="copy-btn" onclick="copyNoteLink('${noteId}')">&#128279; Link</button>
-      ${e.isHelp?'':'<button class="copy-btn danger" onclick="confirmDelete(\''+noteId+'\')">&#10005; Delete</button>'}
+      ${isFloatingMode()?'<button class="float-done-btn" onclick="window.close()">Done</button>':''}
+      <button class="copy-btn" onclick="copyNoteAsMarkdown('${noteId}')">Copy</button>
+      <button class="copy-btn" onclick="copyNoteLink('${noteId}')">Link</button>
+      ${e.isHelp?'':'<button class="copy-btn danger" onclick="confirmDelete(\''+noteId+'\')">Delete</button>'}
     </div>
     <div class="cm-wrap" id="cm-wrap"></div>
     <div class="note-meta-bar" id="note-meta-bar"></div>
@@ -4285,8 +4456,17 @@ function renderNoteEditor(area,noteId){
       noteContentChanged(cmNoteId,val);
     }
     if(update.docChanged||update.selectionSet){
-      // Trigger autocomplete check
       cmCheckAC(update.view);
+    }
+    // Floating selection toolbar
+    if(update.selectionSet){
+      const sel=update.state.selection.main;
+      if(!sel.empty&&!acState){
+        const coords=update.view.coordsAtPos(sel.from);
+        if(coords)showSelToolbar(coords.left,coords.top-36);
+      } else {
+        hideSelToolbar();
+      }
     }
   });
 
@@ -5961,14 +6141,13 @@ function noteContentChanged(id,val){
       },0);
     }
   }
-  // Floating mode: persist immediately (no debounce) and broadcast to main window.
-  // Do NOT register mentions here — they're registered on window close (see
-  // initFloatingMode's onClose handler) so partial names from mid-typing never
-  // leak into the people list.
+  // Floating mode: write to localStorage on every change (synchronous, reliable).
+  // IDB is NOT written during editing — only on close as a bonus.
   if(isFloatingMode()){
-    save();
-    flushSave();
-    try{if(window._ddBC)window._ddBC.postMessage({type:'note-saved',noteId:id});}catch(err){}
+    try{localStorage.setItem('dd_float_note',JSON.stringify({
+      id:e.id,content:val,tags:e.tags||[],date:e.date||todayStr(),
+      ts:e.ts,isNote:true,noteTitle:e.noteTitle||'',updatedTs:e.updatedTs
+    }));}catch(err){}
     return;
   }
   // Save on debounce but do NOT register mentions here — that causes partial
@@ -6827,20 +7006,27 @@ function openSearch(){
 
 /* ═══════════ FLOATING NOTE WINDOW ═══════════ */
 function openFloatingNote(){
-  // Create a fresh note for this floating window
-  const entry={id:genId('e'),content:'',tags:[],date:todayStr(),ts:Date.now(),isNote:true,noteTitle:'',contextId:null};
+  // Create a fresh note and store in localStorage (NOT IDB — popup reads from localStorage)
+  const entry={id:genId('e'),content:'',tags:[],date:todayStr(),ts:Date.now(),isNote:true,noteTitle:'',updatedTs:Date.now()};
+  localStorage.setItem('dd_float_note',JSON.stringify(entry));
+  // Also add to main window's db.entries so it shows in feed immediately
   db.entries.push(entry);
   save();
+  // Open popup synchronously (user gesture required)
   _openFloatingWindowFor(entry.id);
 }
 function openFloatingNoteFor(id){
-  // Open an EXISTING note in a floating window. Called from a left-click
-  // in the context menu, so we have a valid user gesture — window.open first,
-  // then clean up the main-window tab.
+  // Open an EXISTING note in a floating window.
   const e=db.entries.find(x=>x.id===id&&x.isNote);
   if(!e)return;
+  // Write current content to localStorage for the popup to read
+  localStorage.setItem('dd_float_note',JSON.stringify({
+    id:e.id,content:e.content||'',tags:e.tags||[],date:e.date,
+    ts:e.ts,isNote:true,noteTitle:e.noteTitle||'',updatedTs:e.updatedTs||Date.now()
+  }));
+  // Open popup synchronously (user gesture required)
   const win=_openFloatingWindowFor(id);
-  if(!win)return; // blocked — leave the main tab alone
+  if(!win)return;
   if(openTabs.includes(id)){
     openTabs=openTabs.filter(x=>x!==id);
     if(activeTab===id)activeTab=openTabs[openTabs.length-1]||'today';
@@ -6913,34 +7099,47 @@ function isFloatingMode(){
 }
 async function initFloatingMode(){
   document.body.classList.add('floating-mode');
+  // Load DB for theme + settings only
   await loadDB();
   if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
+
+  // Read the note from localStorage (written by main window before opening popup)
   const noteId=window.location.hash.slice(1);
-  let entry=db.entries.find(x=>x.id===noteId&&x.isNote);
-  if(!entry){
-    entry={id:noteId||genId('e'),content:'',tags:[],date:todayStr(),ts:Date.now(),isNote:true,noteTitle:'',contextId:null};
-    db.entries.push(entry);
-    save();
-  }
+  let entry=null;
+  try{
+    const raw=localStorage.getItem('dd_float_note');
+    if(raw){const parsed=JSON.parse(raw);if(parsed&&parsed.id===noteId)entry=parsed;}
+  }catch(e){}
+  // Fallback: try IDB if localStorage didn't have it
+  if(!entry){entry=db.entries.find(x=>x.id===noteId&&x.isNote);}
+  // Last resort: create empty
+  if(!entry){entry={id:noteId||genId('e'),content:'',tags:[],date:todayStr(),ts:Date.now(),isNote:true,noteTitle:'',updatedTs:Date.now()};}
+
+  // Put entry in db.entries so noteContentChanged can find it
+  const existing=db.entries.find(x=>x.id===entry.id);
+  if(existing){Object.assign(existing,entry);entry=existing;}
+  else{db.entries.push(entry);}
+
   openTabs=[entry.id];
   activeTab=entry.id;
   renderActiveView();
-  // Cross-window sync channel — noteContentChanged broadcasts on it directly
-  try{window._ddBC=new BroadcastChannel('dailydispatch');}catch(e){}
-  // Flush pending saves and tell main window to open this note as a tab on close.
-  // Use localStorage (synchronous) — BroadcastChannel.postMessage is async and gets dropped
-  // when the popup tears down on Ctrl-W / X.
-  const onClose=()=>{
-    // Commit mentions now — the note is done being edited, so extract
-    // the final set of @names from the content (no partial mid-word names).
-    try{registerMentions(extractMentions(entry.content||''));}catch(e){}
-    try{flushSave();}catch(e){}
-    try{
-      localStorage.setItem('dd_floating_closed',JSON.stringify({noteId:entry.id,ts:Date.now()}));
-    }catch(e){}
-  };
-  window.addEventListener('beforeunload',onClose);
-  window.addEventListener('pagehide',onClose);
+
+  // On close: write final state to localStorage and signal main window
+  window.addEventListener('beforeunload',()=>{
+    // Re-read from db.entries to get latest content (noteContentChanged updates it)
+    const latest=db.entries.find(x=>x.id===entry.id);
+    const data=latest||entry;
+    try{registerMentions(extractMentions(data.content||''));}catch(e){}
+    // Write final note state to localStorage (synchronous — guaranteed before teardown)
+    try{localStorage.setItem('dd_float_note',JSON.stringify({
+      id:data.id,content:data.content||'',tags:data.tags||[],date:data.date||todayStr(),
+      ts:data.ts||Date.now(),isNote:true,noteTitle:data.noteTitle||'',updatedTs:data.updatedTs||Date.now()
+    }));}catch(e){}
+    // Signal main window to pick up the note
+    try{localStorage.setItem('dd_float_closed',JSON.stringify({noteId:data.id,ts:Date.now()}));}catch(e){}
+    // Attempt IDB flush as bonus (may not complete)
+    try{save();flushSave();}catch(e){}
+  });
 }
 function closeSearch(){/* compat stub — closing search tab via closeTab */}
 
@@ -7185,15 +7384,9 @@ function toggleSbGroup(groupId){
 }
 /* ── Sidebar group drag-to-reorder ── */
 function applySbGroupOrder(){
-  // Tags and Calendar are fixed — strip them from order if persisted from old sessions
-  sbGroupOrder=sbGroupOrder.filter(id=>id!=='tags'&&id!=='calendar');
-  const container=document.querySelector('.sb-groups-scroll');
-  if(!container)return;
-  // Only draggable groups (sections) go inside the scroll area
-  sbGroupOrder.forEach(id=>{
-    const el=document.getElementById('sb-'+id);
-    if(el)container.appendChild(el);
-  });
+  // Tags, Calendar, and Sections are all fixed now — no group-level reordering
+  sbGroupOrder=sbGroupOrder.filter(id=>id!=='tags'&&id!=='calendar'&&id!=='sections');
+  // Nothing to reorder — individual sections within the scroll area handle their own drag
 }
 let _sbDragGroup=null;
 function sbGroupDragStart(e,groupId){
@@ -9768,44 +9961,54 @@ async function init(){
     db.entries=fresh;
     db.images=new Map(imgRows.map(r=>[r.id,{data:r.data,mimeType:r.mimeType,ts:r.ts||0}]));
   }
-  // Cross-window sync via BroadcastChannel — used while floating window is alive
-  try{
-    window._ddBC=new BroadcastChannel('dailydispatch');
-    window._ddBC.addEventListener('message',async e=>{
-      if(!e.data)return;
-      if(e.data.type==='note-saved'){
-        await _ddReloadFromIDB();
-        renderActiveView();renderAllSections();renderTabBar();
-      }
-    });
-  }catch(err){}
-  // Cross-window sync via localStorage — used on floating window close (Ctrl-W / X).
-  // BroadcastChannel.postMessage is async and gets dropped during teardown, so we
-  // use localStorage which is synchronous and fires the storage event reliably.
-  async function _ddOpenFloatingClosedNote(noteId){
-    await _ddReloadFromIDB();
-    const note=db.entries.find(x=>x.id===noteId&&x.isNote);
-    if(note)openNoteTab(note.id);
-    renderAllSections();
-  }
-  window.addEventListener('storage',e=>{
-    if(e.key!=='dd_floating_closed'||!e.newValue)return;
+  // ── Floating note recovery ──
+  // When the floating window closes, it writes dd_float_closed + dd_float_note to localStorage.
+  // This function reads the note data from localStorage, updates db.entries, saves to IDB,
+  // and opens the note as a tab. Simple, synchronous data flow — no IDB race conditions.
+  function _recoverFloatingNote(){
     try{
-      const data=JSON.parse(e.newValue);
-      if(data&&data.noteId)_ddOpenFloatingClosedNote(data.noteId);
-    }catch(err){}
-    try{localStorage.removeItem('dd_floating_closed');}catch(err){}
-  });
-  // Also check on focus in case the storage event was missed (e.g. tab not visible)
-  window.addEventListener('focus',()=>{
-    try{
-      const raw=localStorage.getItem('dd_floating_closed');
+      const raw=localStorage.getItem('dd_float_closed');
       if(!raw)return;
-      const data=JSON.parse(raw);
-      localStorage.removeItem('dd_floating_closed');
-      if(data&&data.noteId)_ddOpenFloatingClosedNote(data.noteId);
-    }catch(err){}
-  });
+      const signal=JSON.parse(raw);
+      if(!signal||!signal.noteId)return;
+      localStorage.removeItem('dd_float_closed');
+      // Read the full note content from localStorage
+      const noteRaw=localStorage.getItem('dd_float_note');
+      localStorage.removeItem('dd_float_note');
+      let noteData=null;
+      if(noteRaw){try{noteData=JSON.parse(noteRaw);}catch(e){}}
+      // Find or create the entry in db.entries
+      let entry=db.entries.find(x=>x.id===signal.noteId);
+      if(entry&&noteData){
+        // Update with latest content from localStorage
+        entry.content=noteData.content||'';
+        entry.noteTitle=noteData.noteTitle||entry.noteTitle||'';
+        entry.tags=noteData.tags||entry.tags||[];
+        entry.updatedTs=noteData.updatedTs||Date.now();
+      } else if(!entry&&noteData){
+        // Entry not in db.entries yet — create it
+        entry={id:noteData.id||signal.noteId,content:noteData.content||'',
+          tags:noteData.tags||[],mentions:[],date:noteData.date||todayStr(),
+          ts:noteData.ts||Date.now(),isNote:true,noteTitle:noteData.noteTitle||'',
+          contextId:null,updatedTs:noteData.updatedTs||Date.now()};
+        db.entries.push(entry);
+      } else if(entry&&!noteData){
+        // No localStorage data but entry exists — just open it as-is
+      } else {
+        return; // No entry and no data — nothing to recover
+      }
+      // Save to IDB (main window does this reliably — no teardown race)
+      save();
+      // Open as tab
+      openNoteTab(entry.id);
+      renderAllSections();renderSidebar();
+    }catch(err){console.error('[DD-FLOAT] Recovery error:',err);}
+  }
+  // Poll every second — most reliable cross-window detection method
+  setInterval(_recoverFloatingNote,1000);
+  // Also try immediately on focus/visibility change
+  window.addEventListener('focus',_recoverFloatingNote);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)_recoverFloatingNote();});
   // Deep link: open note from URL hash (takes priority, adds on top of restored tabs)
   const hash=window.location.hash.slice(1);
   if(hash){const e=db.entries.find(x=>x.id===hash&&x.isNote);if(e){openAsNote(hash);history.replaceState(null,'',window.location.pathname);}}
