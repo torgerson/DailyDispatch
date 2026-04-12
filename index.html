@@ -482,9 +482,11 @@
   /* Task card widget inside notes */
   .cm-task-card {
     display: flex; align-items: center; gap: 10px;
-    padding: 6px 12px; margin: 0;
+    padding: 6px 12px;
+    margin-top: -12px; margin-bottom: -12px;
     background: var(--surface); border-bottom: 1px solid var(--border-light);
     cursor: pointer; transition: background 0.1s;
+    position: relative; z-index: 1;
   }
   .cm-task-card:hover { background: var(--bg); }
   .cm-task-card.done { opacity: 0.55; }
@@ -4208,15 +4210,6 @@ class CmTaskCardWidget extends CM6.WidgetType{
     const card=document.createElement('div');
     card.className='cm-task-card';
     if(this.checked)card.classList.add('done');
-    // Force the parent .cm-line to collapse its line-height.
-    // CM6's .cm-scroller has line-height:1.7 !important which gives
-    // every .cm-line a 23.8px minimum height. CSS :has() doesn't
-    // reliably override this, so we set it directly from JS when the
-    // widget is mounted.
-    requestAnimationFrame(()=>{
-      const parent=card.closest('.cm-line');
-      if(parent){parent.style.lineHeight='0';parent.style.padding='0';}
-    });
     // Checkbox
     const chk=document.createElement('span');
     chk.className='cm-tc-chk'+(this.checked?' checked':'');
