@@ -480,6 +480,7 @@
   .cm-dd-bullet { display: inline; color: var(--text3); }
   /* Checkbox */
   /* Task card widget inside notes */
+  .cm-task-missing { color: var(--danger); font-size: 11px; font-style: italic; padding: 4px; }
   .cm-task-card {
     display: flex; align-items: center; gap: 10px;
     padding: 6px 12px;
@@ -2454,20 +2455,6 @@ function _expandMacrosInEditor(){
     else continue;
     changes.push({from:m.index,to:m.index+m[0].length,insert:val});
   }
-  // Auto-format: typing "[ ] " at start of line (user manually typed checkbox)
-  // Ensure it matches the /task format. Also handle "[ ]" followed by text
-  // without the space — insert the space to normalize.
-  const doc=cmEditorView.state.doc;
-  const cursor=cmEditorView.state.selection.main.head;
-  const curLine=doc.lineAt(cursor);
-  // Check if current line has [ ] or [x] without proper spacing
-  const fixRe=/^(\s*(?:[-*] )?)\[([ x])\]([^\s])/;
-  const fixM=curLine.text.match(fixRe);
-  if(fixM){
-    // Insert a space after ] so "[ ]text" becomes "[ ] text"
-    const pos=curLine.from+fixM[1].length+3;
-    changes.push({from:pos,to:pos,insert:' '});
-  }
   if(changes.length){
     cmEditorView.dispatch({changes});
   }
@@ -2705,8 +2692,6 @@ function _commitMentionsForTab(tabId){
   const entry=db.entries.find(e=>e.id===tabId);
   if(!entry)return;
   registerMentions(extractMentions(entry.content||''));
-  // Sync checkboxes to tasks at this commit point — the user is done editing
-  if(entry.isNote)syncNoteCheckboxes(tabId,entry.content||'');
 }
 
 /* ═══════════ ACTIVE VIEW ═══════════ */
@@ -3931,33 +3916,12 @@ function cmDecorateLine(builder,line,Decoration){
     if(claim(0,2))
       builder.push(Decoration.replace({}).range(from,from+2));
   }
-  // Checkbox: [ ] or [x] (with optional - or * prefix)
-  // If a linked task exists for this note, render as a full task card.
-  else if((hm=text.match(/^(\s*(?:[-*] )?)(\[[ x]\]) (.+)/))){
-    const fullLen=text.length;
-    const checked=hm[2]==='[x]';
-    const taskTitle=hm[3].trim();
-    const lineNum=line.number;
-    // Look for a linked task
-    const linkedTask=cmNoteId?(db.tasks||[]).find(t=>t.note_id===cmNoteId&&t.title===taskTitle):null;
-    if(linkedTask&&claim(0,fullLen)){
-      // Render as a full task card (replaces entire line)
-      builder.push(Decoration.replace({widget:new CmTaskCardWidget(checked,taskTitle,linkedTask,lineNum)}).range(from,from+fullLen));
-    } else if(claim(0,hm[0].length-hm[3].length)){
-      // No linked task yet — render as a basic checkbox
-      const prefixLen=hm[1].length+hm[2].length+1;
-      builder.push(Decoration.replace({widget:new CmCheckboxWidget(checked,lineNum)}).range(from,from+prefixLen));
-      if(checked) builder.push(Decoration.mark({class:'cm-dd-checked'}).range(from+prefixLen,from+fullLen));
-    }
-  }
-  else if((hm=text.match(/^(\s*(?:[-*] )?)(\[[ x]\]) *$/))){
-    // Empty checkbox (no text after) — just render the checkbox
-    const fullPrefix=hm[0].length;
-    const checked=hm[2]==='[x]';
-    if(claim(0,fullPrefix)){
-      builder.push(Decoration.replace({widget:new CmCheckboxWidget(checked,line.number)}).range(from,from+fullPrefix));
-    }
-  }
+  // Task widget: {{task:task_id}} — replaces entire line with task card
+  {const tm=text.match(/^\{\{task:([a-z0-9_]+)\}\}$/i);
+  if(tm&&claim(0,text.length)){
+    builder.push(Decoration.replace({widget:new CmTaskWidget(tm[1])}).range(from,from+text.length));
+    return; // skip further decoration on this line
+  }}
   // Bullet
   else if((hm=text.match(/^(\s*)([-*]) /))){
     const prefixLen=hm[0].length;
@@ -4198,45 +4162,58 @@ class CmStatusBadgeWidget extends CM6.WidgetType{
   }
 }
 
-// Rich task card rendered inline in notes for checkboxes with linked tasks
-class CmTaskCardWidget extends CM6.WidgetType{
-  constructor(checked,title,task,lineNum){
-    super();this.checked=checked;this.title=title;this.task=task;this.lineNum=lineNum;
+/* ── Task widget for notes — rendered from {{task:task_id}} tokens ── */
+class CmTaskWidget extends CM6.WidgetType{
+  constructor(taskId){super();this.taskId=taskId;}
+  eq(other){
+    if(other.taskId!==this.taskId)return false;
+    const a=(db.tasks||[]).find(t=>t.id===this.taskId);
+    const b=(db.tasks||[]).find(t=>t.id===other.taskId);
+    if(!a||!b)return a===b;
+    return a.completed===b.completed&&a.title===b.title&&a.priority===b.priority&&a.due_date===b.due_date;
   }
-  eq(other){return other.checked===this.checked&&other.title===this.title&&other.task?.id===this.task?.id&&other.task?.priority===this.task?.priority&&other.task?.due_date===this.task?.due_date;}
   ignoreEvent(){return true;}
   toDOM(){
-    const t=this.task;
+    const t=(db.tasks||[]).find(x=>x.id===this.taskId);
+    if(!t){
+      const missing=document.createElement('span');
+      missing.className='cm-task-missing';
+      missing.textContent='⚠ Task not found';
+      return missing;
+    }
     const card=document.createElement('div');
-    card.className='cm-task-card';
-    if(this.checked)card.classList.add('done');
+    card.className='cm-task-card'+(t.completed?' done':'');
     // Checkbox
     const chk=document.createElement('span');
-    chk.className='cm-tc-chk'+(this.checked?' checked':'');
-    if(this.checked)chk.textContent='✓';
+    chk.className='cm-tc-chk'+(t.completed?' checked':'');
+    if(t.completed)chk.textContent='✓';
     chk.addEventListener('mousedown',e=>{
       e.preventDefault();e.stopPropagation();
-      if(!cmEditorView)return;
-      const line=cmEditorView.state.doc.line(this.lineNum);
-      const newText=this.checked?line.text.replace('[x]','[ ]'):line.text.replace('[ ]','[x]');
-      cmEditorView.dispatch({changes:{from:line.from,to:line.to,insert:newText}});
-      if(cmNoteId)syncCheckboxToTask(cmNoteId,line.text,!this.checked);
+      completeTask(t.id,!t.completed);
+      renderActiveView();renderSidebar();
     });
     card.appendChild(chk);
     // Title
     const titleEl=document.createElement('span');
     titleEl.className='cm-tc-title';
-    titleEl.textContent=this.title;
+    titleEl.textContent=t.title;
     card.appendChild(titleEl);
+    // Star
+    const star=document.createElement('span');
+    star.className='kc-star'+(t.today?' active':'');
+    star.textContent='★';
+    star.addEventListener('mousedown',e=>{
+      e.preventDefault();e.stopPropagation();
+      toggleTaskToday(t.id);renderActiveView();renderSidebar();
+    });
+    card.appendChild(star);
     // Priority dot
-    if(t){
-      const pri=document.createElement('span');
-      pri.className='cm-tc-pri';
-      pri.style.background=t.priority==='H'?'var(--danger)':t.priority==='M'?'var(--amber)':'var(--border-strong)';
-      card.appendChild(pri);
-    }
+    const pri=document.createElement('span');
+    pri.className='cm-tc-pri';
+    pri.style.background=t.priority==='H'?'var(--danger)':t.priority==='M'?'var(--amber)':'var(--border-strong)';
+    card.appendChild(pri);
     // Due date
-    if(t&&t.due_date){
+    if(t.due_date){
       const today=todayStr();
       const isOverdue=t.due_date<today&&!t.completed;
       const label=isOverdue?'overdue':t.due_date===today?'today':fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
@@ -4245,96 +4222,13 @@ class CmTaskCardWidget extends CM6.WidgetType{
       due.textContent=label;
       card.appendChild(due);
     }
-    // Click card to open task modal
+    // Click card to open modal
     card.addEventListener('mousedown',e=>{
-      if(e.target===chk)return;
+      if(e.target===chk||e.target===star)return;
       e.preventDefault();e.stopPropagation();
-      if(t)openTaskDetail(t.id);
+      openTaskDetail(t.id);
     });
     return card;
-  }
-}
-
-class CmCheckboxWidget extends CM6.WidgetType{
-  constructor(checked,lineNum){super();this.checked=checked;this.lineNum=lineNum;}
-  toDOM(){
-    const cb=document.createElement('input');
-    cb.type='checkbox';
-    cb.checked=this.checked;
-    cb.className='cm-dd-checkbox';
-    cb.addEventListener('mousedown',e=>{
-      e.preventDefault();
-      if(!cmEditorView)return;
-      const line=cmEditorView.state.doc.line(this.lineNum);
-      const text=line.text;
-      const nowChecked=!this.checked;
-      const newText=this.checked?text.replace('[x]','[ ]'):text.replace('[ ]','[x]');
-      cmEditorView.dispatch({changes:{from:line.from,to:line.to,insert:newText}});
-      // Sync with linked task if one exists for this note + checkbox text
-      if(cmNoteId)syncCheckboxToTask(cmNoteId,text,nowChecked);
-    });
-    return cb;
-  }
-  eq(other){return other.checked===this.checked&&other.lineNum===this.lineNum;}
-}
-/* ── Task-Note bidirectional sync ── */
-// Extract the task title from a checkbox line: "  - [ ] Do something" → "Do something"
-function extractCheckboxTitle(lineText){
-  const m=lineText.match(/^(?:\s*(?:[-*]\s+)?)?\[[ x]\]\s+(.*)/);
-  return m?m[1].trim():'';
-}
-// When a note checkbox is toggled, find or create a linked task
-function syncCheckboxToTask(noteId,lineText,checked){
-  const title=extractCheckboxTitle(lineText);
-  if(!title)return;
-  // Find existing task linked to this note with matching title
-  let task=(db.tasks||[]).find(t=>t.note_id===noteId&&t.title===title);
-  if(!task){
-    // Create a new task linked to this note
-    task=createTask({title,note_id:noteId});
-    if(!task)return;
-  }
-  // Sync completion state
-  if(checked&&!task.completed){
-    completeTask(task.id,true);
-  } else if(!checked&&task.completed){
-    completeTask(task.id,false);
-  }
-  renderSidebar();
-}
-// When a task is completed/uncompleted via Kanban/modal, update the note checkbox
-function syncTaskToNote(taskId){
-  const t=(db.tasks||[]).find(x=>x.id===taskId);
-  if(!t||!t.note_id)return;
-  const entry=db.entries.find(e=>e.id===t.note_id);
-  if(!entry||!entry.content)return;
-  // Find the checkbox line matching this task's title
-  const lines=entry.content.split('\n');
-  let changed=false;
-  for(let i=0;i<lines.length;i++){
-    const title=extractCheckboxTitle(lines[i]);
-    if(title===t.title){
-      if(t.completed&&lines[i].includes('[ ]')){
-        lines[i]=lines[i].replace('[ ]','[x]');
-        changed=true;
-      } else if(!t.completed&&lines[i].includes('[x]')){
-        lines[i]=lines[i].replace('[x]','[ ]');
-        changed=true;
-      }
-      break;
-    }
-  }
-  if(changed){
-    entry.content=lines.join('\n');
-    entry.updatedTs=Date.now();
-    save('entries');
-    // If this note is currently open in the CM6 editor, update the doc
-    if(cmEditorView&&cmNoteId===t.note_id){
-      const currentDoc=cmEditorView.state.doc.toString();
-      if(currentDoc!==entry.content){
-        cmEditorView.dispatch({changes:{from:0,to:currentDoc.length,insert:entry.content}});
-      }
-    }
   }
 }
 // Widget for inline image ![](img_xxx) with optional |w=N display width.
@@ -4833,25 +4727,6 @@ function cmBulletContinuation(view){
   const pos=state.selection.main.head;
   const line=state.doc.lineAt(pos);
   const text=line.text;
-  // Checkbox: [ ] or [x] (with optional - or * prefix). Must come before generic bullet.
-  const cm=text.match(/^(\s*(?:[-*]\s+)?)\[[ x]\]\s+/);
-  if(cm){
-    // Empty checkbox — clear line
-    if(/^\s*(?:[-*]\s+)?\[[ x]\]\s*$/.test(text)){
-      view.dispatch({changes:{from:line.from,to:line.to,insert:''}});
-      return true;
-    }
-    // Continue with a fresh unchecked checkbox preserving bullet prefix (if any)
-    const prefix=cm[1]+'[ ] ';
-    view.dispatch({changes:{from:pos,insert:'\n'+prefix},selection:{anchor:pos+1+prefix.length}});
-    // The user just pressed Enter — the line they left is complete.
-    // Sync it to create/update a linked task immediately.
-    if(cmNoteId){
-      const title=extractCheckboxTitle(text);
-      if(title)syncCheckboxToTask(cmNoteId,text,text.includes('[x]'));
-    }
-    return true;
-  }
   // Bullet: - or *
   const bm=text.match(/^(\s*[-*]\s+)/);
   if(bm){
@@ -5068,9 +4943,23 @@ const SLASH_COMMANDS=[
   {name:'status',label:'Status',desc:'Insert a status badge',run:_slashStatus},
 ];
 function _slashTask(view,slashStart,slashEnd){
+  // Create a task via the expanding card UI, then insert {{task:id}} token
   const line=view.state.doc.lineAt(slashStart);
-  view.dispatch({changes:{from:line.from,to:slashEnd,insert:'[ ] '},selection:{anchor:line.from+4}});
+  // Clear the /task text first
+  view.dispatch({changes:{from:line.from,to:slashEnd,insert:''}});
+  // Show a quick title prompt (Phase 6 modal will replace this)
+  const title=prompt('Task title:');
+  if(!title||!title.trim()){view.focus();return;}
+  const task=createTask({title:title.trim(),note_id:cmNoteId});
+  if(!task){view.focus();return;}
+  // If on Today view context, star it
+  if(activeTab==='today'){task.today=true;save('tasks');}
+  // Insert the token on its own line
+  const token='\n{{task:'+task.id+'}}\n';
+  const pos=line.from;
+  view.dispatch({changes:{from:pos,insert:token},selection:{anchor:pos+token.length}});
   view.focus();
+  renderSidebar();
 }
 function _slashStatus(view,slashStart,slashEnd){
   showStatusEditor(null,null,(color,text)=>{
@@ -5340,8 +5229,7 @@ function noteContentChanged(id,val){
   // Uses a flag to prevent recursion: the expansion dispatch triggers another
   // noteContentChanged, but the flag is still true so we skip the second check.
   if(!_macroExpandPending&&!(e.tags||[]).some(t=>t.toLowerCase()==='template')){
-    // Trigger macro expansion for {{date}} etc. AND auto-format [ ] checkboxes
-    if(/\{\{(date|time|datetime)\}\}/i.test(val)||/\[[ x]\][^\s]/.test(val)){
+    if(/\{\{(date|time|datetime)\}\}/i.test(val)){
       _macroExpandPending=true;
       setTimeout(()=>{
         _expandMacrosInEditor();
@@ -5369,35 +5257,6 @@ function noteContentChanged(id,val){
   clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderAllSections();},300);
 }
 // Scan a note's content for checkbox patterns and create/sync linked tasks.
-function syncNoteCheckboxes(noteId,content){
-  if(!content)return;
-  const lines=content.split('\n');
-  const checkboxRe=/^(?:\s*(?:[-*]\s+)?)?\[([ x])\]\s+(.+)/;
-  let changed=false;
-  for(const line of lines){
-    const m=line.match(checkboxRe);
-    if(!m)continue;
-    const checked=m[1]==='x';
-    const title=m[2].trim();
-    if(!title)continue;
-    // Find existing linked task
-    let task=(db.tasks||[]).find(t=>t.note_id===noteId&&t.title===title);
-    if(!task){
-      // Create new task linked to this note
-      task=createTask({title,note_id:noteId});
-      changed=true;
-    }
-    // Sync completion state
-    if(task&&checked&&!task.completed){
-      completeTask(task.id,true);
-      changed=true;
-    } else if(task&&!checked&&task.completed){
-      completeTask(task.id,false);
-      changed=true;
-    }
-  }
-  if(changed){renderSidebar();}
-}
 function noteKey(e,noteId){
   // Autocomplete takes priority
   if(acState){if(e.key==='Tab'||e.key==='Enter'){e.preventDefault();selectAC();return;}if(e.key==='Escape'){e.preventDefault();closeAC();return;}if(e.key==='ArrowDown'){e.preventDefault();navAC(1);return;}if(e.key==='ArrowUp'){e.preventDefault();navAC(-1);return;}}
@@ -8468,37 +8327,6 @@ function ensureDefaultColumns(){
   ];
   save('columns');
 }
-// One-time migration: scan all existing notes for [ ] checkboxes and
-// create linked tasks for any that don't have one yet.
-function migrateExistingCheckboxes(){
-  if(db.checkboxesMigrated)return;
-  const notes=db.entries.filter(e=>e.isNote&&!e.isHelp&&!e.eventType&&e.content);
-  let created=0;
-  notes.forEach(n=>{
-    const lines=n.content.split('\n');
-    const re=/^(?:\s*(?:[-*]\s+)?)?\[([ x])\]\s+(.+)/;
-    lines.forEach(line=>{
-      const m=line.match(re);
-      if(!m)return;
-      const checked=m[1]==='x';
-      const title=m[2].trim();
-      if(!title)return;
-      // Skip if task already exists
-      if((db.tasks||[]).some(t=>t.note_id===n.id&&t.title===title))return;
-      const task=createTask({title,note_id:n.id});
-      if(task&&checked){
-        task.completed=true;
-        task.completed_at=Date.now();
-        const doneCol=getDoneColumn();
-        if(doneCol)task.column_id=doneCol.id;
-      }
-      created++;
-    });
-  });
-  db.checkboxesMigrated=true;
-  if(created)save('tasks');
-  save('settings');
-}
 function getDoneColumn(){
   return(db.columns||[]).find(c=>c.isDone)||null;
 }
@@ -8551,8 +8379,6 @@ function completeTask(id,completed){
   }
   t.order=getNextTaskOrder(t.column_id);
   save('tasks');
-  // Sync the checkbox in the linked note (if any)
-  syncTaskToNote(id);
 }
 function deleteTask(id){
   db.tasks=(db.tasks||[]).filter(t=>t.id!==id);
@@ -8822,7 +8648,6 @@ async function init(){
   if(!db.tagColors)db.tagColors={};
   if(!db.people)db.people=[];
   ensureDefaultColumns();
-  migrateExistingCheckboxes();
   ensureHelpNotes();
   if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
   // First-launch: open the home tab once so new users get the landing page.
