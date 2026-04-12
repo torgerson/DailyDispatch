@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sections — Test Suite</title>
+<style>
+  :root { --sans: -apple-system, sans-serif; --mono: ui-monospace, monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--sans); font-size: 13px; padding: 30px; background: #faf8f5; color: #37352f; }
+  h1 { font-size: 18px; margin-bottom: 4px; }
+  .subtitle { font-size: 11px; color: #787774; margin-bottom: 20px; }
+  .suite { margin-bottom: 24px; }
+  .suite-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; border-bottom: 1px solid #e8e0d4; padding-bottom: 4px; }
+  .test { padding: 3px 0; font-size: 12px; font-family: var(--mono); }
+  .test.pass { color: #166534; }
+  .test.fail { color: #991b1b; }
+  .summary { margin-top: 20px; padding: 12px 16px; border-radius: 6px; font-size: 12px; font-family: var(--mono); }
+  .summary.all-pass { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+  .summary.has-fail { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+  /* DOM test container */
+  #dom-container { display: none; }
+  .rs-panel { padding: 4px; border: 1px solid #ccc; margin: 2px 0; min-height: 20px; }
+  .rs-panel.sec-dragging { opacity: 0.15; height: 0 !important; min-height: 0 !important; overflow: hidden; padding: 0 !important; margin: 0 !important; border: none !important; }
+  .backlinks-panel { padding: 4px; border: 1px solid #aaf; margin: 2px 0; }
+</style>
+</head>
+<body>
+
+<h1>Sections — Test Suite</h1>
+<p class="subtitle">Tests section creation, seeding, ordering, drag reorder, deletion, and render output.</p>
+
+<div id="results"></div>
+<div id="summary"></div>
+
+<!-- Hidden DOM for render tests -->
+<div id="dom-container">
+  <div id="sb-sections-body"></div>
+  <div id="sb-backlinks-body"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// MOCK: Minimal app infrastructure
+// ═══════════════════════════════════════════
+let _idCounter = 0;
+function genId(prefix) { return prefix + '_test_' + (++_idCounter); }
+function save() { /* no-op in tests */ }
+function logEvent() { /* no-op */ }
+function renderAllSections() { /* no-op — we call renderSidebarSections directly */ }
+function renderActiveView() { /* no-op */ }
+function escH(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+let db = { sections: [], entries: [], defaultSectionsSeeded: false };
+
+// ═══════════════════════════════════════════
+// EXTRACTED: Section functions (from index.html)
+// ═══════════════════════════════════════════
+function ensureHelpSection() {
+  if (db.defaultSectionsSeeded) return;
+  const hasHelp = db.sections.some(s => (s.query || '').toLowerCase().includes('#dailydispatchhelp'));
+  if (!hasHelp) {
+    db.sections.push({ id: 'sec_help', name: 'Help', query: '#DailyDispatchHelp', height: 260, col: 'left' });
+  }
+  const hasMeetings = db.sections.some(s => (s.name || '').toLowerCase() === 'meetings');
+  if (!hasMeetings) {
+    db.sections.push({ id: 'sec_meetings', name: 'Meetings', query: '#meeting', height: 260, col: 'right' });
+  }
+  db.defaultSectionsSeeded = true;
+  save();
+}
+
+function addSection() {
+  const sec = { id: genId('sec'), name: '', query: '', height: 200, col: 'right', _setupMode: true, _isNew: true };
+  db.sections.push(sec);
+  return sec;
+}
+
+function delSection(id) {
+  db.sections = db.sections.filter(s => s.id !== id);
+  save();
+}
+
+// Simplified reorder (the FIX we're testing against)
+function reorderSection(dragId, targetId, above) {
+  if (dragId === targetId) return false;
+  const secs = db.sections;
+  const fromIdx = secs.findIndex(s => s.id === dragId);
+  const toIdx = secs.findIndex(s => s.id === targetId);
+  if (fromIdx < 0 || toIdx < 0) return false;
+  const [moved] = secs.splice(fromIdx, 1);
+  const insertIdx = secs.findIndex(s => s.id === targetId);
+  secs.splice(above ? insertIdx : insertIdx + 1, 0, moved);
+  return true;
+}
+
+// Render function — produces HTML into #sb-sections-body
+function renderSidebarSections() {
+  const el = document.getElementById('sb-sections-body');
+  if (!el) return;
+  const secs = db.sections || [];
+  if (!secs.length) {
+    el.innerHTML = '<div class="empty">No sections</div>';
+    return;
+  }
+  el.innerHTML = secs.map(sec =>
+    `<div class="rs-panel" data-sid="${sec.id}"><strong>${escH(sec.name || '(untitled)')}</strong> — ${escH(sec.query || '(no query)')}</div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════
+// TEST FRAMEWORK
+// ═══════════════════════════════════════════
+let _pass = 0, _fail = 0;
+const _results = [];
+
+function suite(name) { _results.push({ type: 'suite', name }); }
+function test(name, fn) {
+  try {
+    const result = fn();
+    if (result === true) {
+      _pass++;
+      _results.push({ type: 'test', name, pass: true });
+    } else {
+      _fail++;
+      _results.push({ type: 'test', name, pass: false, msg: String(result) });
+    }
+  } catch (e) {
+    _fail++;
+    _results.push({ type: 'test', name, pass: false, msg: 'ERROR: ' + e.message });
+  }
+}
+function reset() {
+  db = { sections: [], entries: [], defaultSectionsSeeded: false };
+  _idCounter = 0;
+  document.getElementById('sb-sections-body').innerHTML = '';
+  document.getElementById('sb-backlinks-body').innerHTML = '';
+}
+function assertEq(a, b, label) {
+  if (a === b) return true;
+  return `${label || ''} expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`;
+}
+function assertLen(arr, n, label) {
+  if (arr.length === n) return true;
+  return `${label || ''} expected length ${n}, got ${arr.length}`;
+}
+
+// ═══════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════
+
+// ── T1: Section creation ──
+suite('T1: Section Creation');
+reset();
+test('addSection creates section with _setupMode', () => {
+  const sec = addSection();
+  if (!sec._setupMode) return '_setupMode not set';
+  if (!sec._isNew) return '_isNew not set';
+  return assertLen(db.sections, 1, 'db.sections');
+});
+test('New section appears at end of array', () => {
+  const sec2 = addSection();
+  return assertEq(db.sections[db.sections.length - 1].id, sec2.id, 'last section');
+});
+test('Section has required fields', () => {
+  const sec = db.sections[0];
+  if (!sec.id) return 'missing id';
+  if (sec.height === undefined) return 'missing height';
+  return true;
+});
+
+// ── T2: Help section seeding ──
+suite('T2: Help Section Seeding');
+reset();
+test('ensureHelpSection creates Help if not present', () => {
+  ensureHelpSection();
+  const help = db.sections.find(s => s.id === 'sec_help');
+  if (!help) return 'Help section not found';
+  return assertEq(help.query, '#DailyDispatchHelp');
+});
+test('ensureHelpSection also creates Meetings', () => {
+  const mtg = db.sections.find(s => s.id === 'sec_meetings');
+  if (!mtg) return 'Meetings section not found';
+  return true;
+});
+test('Calling ensureHelpSection again does NOT duplicate', () => {
+  db.defaultSectionsSeeded = false; // reset flag
+  ensureHelpSection();
+  const helpCount = db.sections.filter(s => s.id === 'sec_help').length;
+  // Should still be 1 since the query check prevents duplicates
+  // But defaultSectionsSeeded was true after first call, so second call returns early
+  // Reset the flag to test the query-based dedup
+  return assertEq(helpCount, 1, 'help count');
+});
+test('Help exists in db.sections alongside other sections', () => {
+  addSection(); // add a user section
+  const help = db.sections.find(s => s.id === 'sec_help');
+  if (!help) return 'Help disappeared after adding user section';
+  return assertLen(db.sections, 3, 'total sections (help + meetings + 1 user)');
+});
+
+// ── T3: Section ordering ──
+suite('T3: Section Ordering');
+reset();
+test('After seeding + creating 2 user sections, all 4 present', () => {
+  ensureHelpSection(); // adds Help + Meetings
+  const u1 = addSection(); u1.name = 'UserSec1'; u1.query = '#test1'; delete u1._setupMode;
+  const u2 = addSection(); u2.name = 'UserSec2'; u2.query = '#test2'; delete u2._setupMode;
+  return assertLen(db.sections, 4, 'total');
+});
+test('Help does not push others out', () => {
+  const ids = db.sections.map(s => s.id);
+  if (!ids.includes('sec_help')) return 'Help missing';
+  if (!ids.includes('sec_meetings')) return 'Meetings missing';
+  const userSecs = db.sections.filter(s => s.id.startsWith('sec_test_'));
+  return assertLen(userSecs, 2, 'user sections');
+});
+test('Sections maintain array position', () => {
+  const r1 = assertEq(db.sections[0].id, 'sec_help', 'index 0');
+  if (r1 !== true) return r1;
+  const r2 = assertEq(db.sections[1].id, 'sec_meetings', 'index 1');
+  if (r2 !== true) return r2;
+  return true;
+});
+
+// ── T4: Section reorder (drag) ──
+suite('T4: Section Reorder');
+// db.sections is [Help, Meetings, UserSec1, UserSec2] from T3
+test('Move UserSec2 (idx 3) above Help (idx 0)', () => {
+  const u2id = db.sections[3].id;
+  reorderSection(u2id, 'sec_help', true);
+  const r = assertEq(db.sections[0].id, u2id, 'first');
+  if (r !== true) return r;
+  return assertLen(db.sections, 4, 'count after reorder');
+});
+test('Move Help (now idx 1) to end (below UserSec1)', () => {
+  const u1id = db.sections[3].id; // UserSec1 is now last
+  reorderSection('sec_help', u1id, false);
+  const r = assertEq(db.sections[3].id, 'sec_help', 'Help at end');
+  if (r !== true) return r;
+  return assertLen(db.sections, 4, 'count still 4');
+});
+test('All sections still present after multiple reorders', () => {
+  const ids = new Set(db.sections.map(s => s.id));
+  if (ids.size !== 4) return `Expected 4 unique IDs, got ${ids.size}`;
+  if (!ids.has('sec_help')) return 'Help missing';
+  if (!ids.has('sec_meetings')) return 'Meetings missing';
+  return true;
+});
+test('Reorder with same source and target does nothing', () => {
+  const before = db.sections.map(s => s.id).join(',');
+  reorderSection('sec_help', 'sec_help', true);
+  const after = db.sections.map(s => s.id).join(',');
+  return assertEq(after, before, 'unchanged');
+});
+test('Reorder with invalid ID returns false', () => {
+  const result = reorderSection('nonexistent', 'sec_help', true);
+  return assertEq(result, false, 'return value');
+});
+
+// ── T5: Section deletion ──
+suite('T5: Section Deletion');
+test('delSection removes only target', () => {
+  const before = db.sections.length;
+  delSection('sec_meetings');
+  const r = assertLen(db.sections, before - 1, 'after delete');
+  if (r !== true) return r;
+  if (db.sections.find(s => s.id === 'sec_meetings')) return 'Meetings still present';
+  return true;
+});
+test('Other sections unaffected after deletion', () => {
+  if (!db.sections.find(s => s.id === 'sec_help')) return 'Help missing';
+  const userSecs = db.sections.filter(s => s.id.startsWith('sec_test_'));
+  return assertLen(userSecs, 2, 'user sections');
+});
+test('Deleting Help works (it is just a section)', () => {
+  delSection('sec_help');
+  if (db.sections.find(s => s.id === 'sec_help')) return 'Help still present';
+  return true;
+});
+
+// ── T6: Render output ──
+suite('T6: Render Output');
+reset();
+test('Render produces one .rs-panel per section', () => {
+  document.getElementById('dom-container').style.display = 'block';
+  ensureHelpSection();
+  const u1 = addSection(); u1.name = 'Alpha'; u1.query = '#a'; delete u1._setupMode;
+  const u2 = addSection(); u2.name = 'Beta'; u2.query = '#b'; delete u2._setupMode;
+  renderSidebarSections();
+  const panels = document.querySelectorAll('#sb-sections-body .rs-panel');
+  return assertEq(panels.length, db.sections.length, 'panel count');
+});
+test('Panel data-sid attributes match db.sections IDs in order', () => {
+  const panels = document.querySelectorAll('#sb-sections-body .rs-panel');
+  for (let i = 0; i < db.sections.length; i++) {
+    const r = assertEq(panels[i].dataset.sid, db.sections[i].id, `panel ${i}`);
+    if (r !== true) return r;
+  }
+  return true;
+});
+test('Backlinks in separate container does NOT affect section count', () => {
+  // Simulate backlinks being added to its own container
+  document.getElementById('sb-backlinks-body').innerHTML = '<div class="backlinks-panel">Backlinks here</div>';
+  // Re-render sections
+  renderSidebarSections();
+  const panels = document.querySelectorAll('#sb-sections-body .rs-panel');
+  return assertEq(panels.length, db.sections.length, 'panel count after backlinks');
+});
+test('Backlinks container is separate from sections container', () => {
+  const blPanels = document.querySelectorAll('#sb-backlinks-body .backlinks-panel');
+  const secPanels = document.querySelectorAll('#sb-sections-body .rs-panel');
+  if (blPanels.length !== 1) return `Expected 1 backlinks panel, got ${blPanels.length}`;
+  if (secPanels.length !== db.sections.length) return `Section count mismatch`;
+  // Verify they're in different containers
+  const blParent = blPanels[0].parentElement.id;
+  const secParent = secPanels[0].parentElement.id;
+  if (blParent === secParent) return `Same parent! backlinks=${blParent}, sections=${secParent}`;
+  return true;
+});
+
+// ── T7: Drag simulation — other sections must NOT disappear ──
+suite('T7: Drag Simulation (DOM)');
+// Uses the state from T6: 4 sections (Help, Meetings, Alpha, Beta) already rendered
+test('Before drag: all panels visible with non-zero height', () => {
+  renderSidebarSections();
+  const panels = document.querySelectorAll('#sb-sections-body .rs-panel');
+  for (const p of panels) {
+    if (p.offsetHeight === 0) return `Panel ${p.dataset.sid} has zero height before drag`;
+  }
+  return assertEq(panels.length, db.sections.length, 'panel count');
+});
+test('During drag: dragged panel collapses, others stay visible', () => {
+  // Simulate dragging the first section (Help)
+  const dragId = db.sections[0].id;
+  const panels = document.querySelectorAll('#sb-sections-body .rs-panel');
+  // Apply sec-dragging class (what dragSecStart does via setTimeout)
+  const dragPanel = document.querySelector(`#sb-sections-body .rs-panel[data-sid="${dragId}"]`);
+  if (!dragPanel) return 'Drag panel not found';
+  dragPanel.classList.add('sec-dragging');
+  // Check: dragged panel should be collapsed (height 0)
+  if (dragPanel.offsetHeight !== 0) return `Dragged panel height: ${dragPanel.offsetHeight}, expected 0`;
+  // Check: OTHER panels must still be visible
+  const otherPanels = [...document.querySelectorAll('#sb-sections-body .rs-panel:not(.sec-dragging)')];
+  const otherCount = otherPanels.length;
+  if (otherCount !== db.sections.length - 1) return `Expected ${db.sections.length - 1} visible panels, got ${otherCount}`;
+  for (const p of otherPanels) {
+    if (p.offsetHeight === 0) return `Panel ${p.dataset.sid} disappeared (height 0) during drag!`;
+  }
+  return true;
+});
+test('During drag: non-dragged panels still in DOM', () => {
+  const allPanels = document.querySelectorAll('#sb-sections-body .rs-panel');
+  return assertEq(allPanels.length, db.sections.length, 'total DOM panels (including collapsed)');
+});
+test('During drag: drop indicator on target does not hide other panels', () => {
+  // Add drop indicator to second section
+  const targetId = db.sections[1].id;
+  const targetPanel = document.querySelector(`#sb-sections-body .rs-panel[data-sid="${targetId}"]`);
+  if (!targetPanel) return 'Target panel not found';
+  targetPanel.classList.add('sec-drop-below');
+  // Verify all non-dragged panels still visible
+  const visible = [...document.querySelectorAll('#sb-sections-body .rs-panel:not(.sec-dragging)')];
+  for (const p of visible) {
+    if (p.offsetHeight === 0) return `Panel ${p.dataset.sid} hidden after indicator applied`;
+  }
+  // Clean up
+  targetPanel.classList.remove('sec-drop-below');
+  return true;
+});
+test('After drag end: all panels restored to visible', () => {
+  // Simulate dragSecEnd — clear all drag classes
+  document.querySelectorAll('.rs-panel.sec-dragging').forEach(p => p.classList.remove('sec-dragging'));
+  document.querySelectorAll('.rs-panel.sec-drop-above,.rs-panel.sec-drop-below').forEach(p => {
+    p.classList.remove('sec-drop-above', 'sec-drop-below');
+  });
+  const panels = document.querySelectorAll('#sb-sections-body .rs-panel');
+  for (const p of panels) {
+    if (p.offsetHeight === 0) return `Panel ${p.dataset.sid} still collapsed after drag end`;
+  }
+  return assertEq(panels.length, db.sections.length, 'all panels restored');
+});
+test('After reorder + re-render: section count preserved', () => {
+  // Simulate a full drag-drop cycle: move Beta above Help
+  const betaId = db.sections[3].id; // Beta
+  const helpId = db.sections[0].id; // Help
+  reorderSection(betaId, helpId, true);
+  renderSidebarSections();
+  const panels = document.querySelectorAll('#sb-sections-body .rs-panel');
+  return assertEq(panels.length, db.sections.length, 'panel count after reorder+render');
+});
+
+// ═══════════════════════════════════════════
+// OUTPUT
+// ═══════════════════════════════════════════
+const resultsEl = document.getElementById('results');
+let html = '';
+for (const r of _results) {
+  if (r.type === 'suite') {
+    html += `<div class="suite"><div class="suite-title">${r.name}</div>`;
+  } else {
+    html += `<div class="test ${r.pass ? 'pass' : 'fail'}">${r.pass ? '  PASS' : '  FAIL'} ${r.name}${r.msg ? ' — ' + r.msg : ''}</div>`;
+  }
+}
+html += '</div>';
+resultsEl.innerHTML = html;
+
+const summaryEl = document.getElementById('summary');
+summaryEl.className = 'summary ' + (_fail === 0 ? 'all-pass' : 'has-fail');
+summaryEl.textContent = `${_pass} passed, ${_fail} failed`;
+</script>
+</body>
+</html>

@@ -77,8 +77,40 @@
   .sb-nav-badge-count { background: var(--border); color: var(--text3); }
   .sb-divider { height: 1px; background: var(--border-light); margin: 4px 14px; flex-shrink: 0; }
   /* Collapsible groups */
+  .sb-cal-fixed { flex-shrink: 0; border-bottom: 1px solid var(--border-light); }
+  .sb-tags-fixed { flex-shrink: 0; border-bottom: 1px solid var(--border-light); }
+  .sb-sections-hdr {
+    flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px 3px; font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3);
+    border-bottom: 1px solid var(--border-light);
+  }
+  .sb-sections-hdr .sb-group-title { flex: 1; }
+  .sb-sections-hdr .sb-group-btn { opacity: 1; }
+  .sb-tags-hint { font-size: 9px; color: var(--text3); padding: 0 14px 4px; font-style: italic; }
   .sb-groups-scroll { flex: 1; overflow-y: auto; }
-  .sb-group { flex-shrink: 0; }
+  .sb-group { flex-shrink: 0; transition: opacity 0.1s; position: relative; }
+  .sb-group[draggable="true"] .sb-group-hdr { cursor: grab; }
+  .sb-group[draggable="true"]:active .sb-group-hdr { cursor: grabbing; }
+  .sb-group.sb-dragging { opacity: 0.15; height: 0; overflow: hidden; }
+  .sb-group.sb-drop-above::before {
+    content: ''; position: absolute; left: 14px; right: 14px; top: -1px;
+    height: 2px; background: var(--accent); border-radius: 1px;
+  }
+  .sb-group.sb-drop-above::after {
+    content: ''; position: absolute; left: 10px; top: -4px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 2px var(--sidebar-bg);
+  }
+  .sb-group.sb-drop-below::before {
+    content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px;
+    height: 2px; background: var(--accent); border-radius: 1px;
+  }
+  .sb-group.sb-drop-below::after {
+    content: ''; position: absolute; left: 10px; bottom: -4px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 2px var(--sidebar-bg);
+  }
   .sb-group-hdr {
     display: flex; align-items: center; gap: 6px; padding: 8px 14px 3px;
     cursor: pointer; font-size: 9px; font-weight: 700; text-transform: uppercase;
@@ -114,17 +146,6 @@
     cursor: pointer; font-weight: 500; display: none; margin-left: auto;
   }
   #today-btn:hover { background: var(--accent); color: #fff; }
-  /* Sidebar notes list */
-  .sb-note-list { padding: 2px 8px 4px; }
-  .sb-note-item {
-    display: flex; align-items: center; gap: 6px;
-    padding: 4px 8px; border-radius: var(--radius-sm); cursor: pointer;
-    font-size: 11px; color: var(--text2);
-  }
-  .sb-note-item:hover { background: rgba(0,0,0,0.03); color: var(--text); }
-  .sb-note-item .sb-note-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .sb-note-item .sb-note-date { font-size: 9px; color: var(--text3); font-family: var(--mono); }
-  .sb-note-item .sb-note-icon { font-size: 9px; color: var(--text3); }
   /* Sidebar sections list */
   .sb-sec-list { padding: 2px 8px 4px; }
   .sb-sec-item {
@@ -272,10 +293,17 @@
   #tab-bar-tabs::-webkit-scrollbar-track { background: transparent; }
   #tab-bar-tabs::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
   #tab-bar-icons {
-    flex-shrink: 0; display: flex; align-items: stretch;
+    flex-shrink: 0; display: flex; align-items: center; gap: 2px;
+    padding-left: 8px; margin-left: 4px;
+    border-left: 1px solid var(--border-light);
     background: var(--surface);
   }
-  #tab-bar-icons:empty { display: none; }
+  .tab-icon-btn {
+    background: none; border: none; padding: 4px 5px; border-radius: var(--radius-sm);
+    color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .tab-icon-btn:hover { color: var(--accent); background: var(--accent-light); }
+  .tab-icon-btn svg { width: 14px; height: 14px; }
   .tab {
     display: flex; align-items: center; gap: 4px; padding: 4px 10px;
     font-size: 11px; font-weight: 500; color: var(--text2); cursor: pointer;
@@ -1324,10 +1352,27 @@
     background: var(--capture-bg, #fdf9f3); border-radius: var(--radius-md); border: 1px solid var(--border-light);
     margin-bottom: 8px;
   }
-  .rs-panel.dragging { opacity: 0.4; }
-  .rs-panel.drag-over-top { box-shadow: 0 -3px 0 0 var(--accent); }
-  .rs-panel.drag-over-bottom { box-shadow: 0 3px 0 0 var(--accent); }
-  #right-sections.drag-append-zone, #left-sections.drag-append-zone {
+  .rs-panel.sec-dragging { opacity: 0.15; height: 0 !important; min-height: 0 !important; overflow: hidden; padding: 0 !important; margin: 0 !important; border: none !important; flex: none !important; }
+  .rs-panel.sec-drop-above, .rs-panel.sec-drop-below { position: relative; }
+  .rs-panel.sec-drop-above::before {
+    content: ''; position: absolute; left: 4px; right: 4px; top: -5px;
+    height: 2px; background: var(--accent); border-radius: 1px; z-index: 2;
+  }
+  .rs-panel.sec-drop-above::after {
+    content: ''; position: absolute; left: 0; top: -8px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 2px var(--sidebar-bg); z-index: 2;
+  }
+  .rs-panel.sec-drop-below::after {
+    content: ''; position: absolute; left: 4px; right: 4px; bottom: -5px;
+    height: 2px; background: var(--accent); border-radius: 1px; z-index: 2;
+  }
+  .rs-panel.sec-drop-below::before {
+    content: ''; position: absolute; left: 0; bottom: -8px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 2px var(--sidebar-bg); z-index: 2;
+  }
+  #sb-sections-body.drag-append-zone {
     outline: 2px dashed var(--accent); outline-offset: -4px;
   }
   .rs-header {
@@ -1723,7 +1768,7 @@
     border-bottom: 2px solid var(--accent);
   }
   .kanban-col-hdr:active { cursor: grabbing; }
-  .kanban-col-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; flex: 1; }
+  .kanban-col-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; flex: 1; cursor: text; }
   .kanban-col-count {
     font-size: 9px; font-weight: 600; color: var(--text3);
     background: var(--surface); padding: 1px 6px; border-radius: 8px;
@@ -1843,7 +1888,7 @@
     cursor: grab; transition: background 0.1s; position: relative;
   }
   .tl-row:active { cursor: grabbing; }
-  .tl-row:hover { background: var(--surface); }
+  .tl-row:hover { background: var(--accent-light); }
   .tl-row.done { opacity: 0.5; }
   .tl-row.tl-dragging { opacity: 0.15; height: 0; overflow: hidden; padding: 0; border: none; }
   .tl-row.tl-drop-above::before {
@@ -2099,10 +2144,7 @@
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div class="sb-brand">
-    <div class="logo" onclick="openHome()" title="Home">
-      <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg>
-      Daily<span>Dispatch</span>
-    </div>
+    <div class="logo" onclick="openHome()" title="Home"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg> Daily<span>Dispatch</span></div>
   </div>
   <div class="sb-nav">
     <div class="sb-nav-item active" id="nav-today" onclick="switchToNav('today')">
@@ -2120,62 +2162,46 @@
     </div>
   </div>
   <div class="sb-divider"></div>
-  <div class="sb-groups-scroll">
-    <!-- Calendar -->
-    <div class="sb-group" id="sb-calendar">
-      <div class="sb-group-hdr" onclick="toggleSbGroup('calendar')">
-        <span class="sb-chevron" id="chev-calendar">&#9660;</span>
-        <span class="sb-group-title">Calendar</span>
-      </div>
-      <div class="sb-group-body" id="body-calendar">
-        <div style="padding:0 12px 6px">
-          <div class="cal-nav">
-            <button class="dn-btn" onclick="navMonth(-1)" style="width:18px;height:18px;font-size:7px">&#9664;</button>
-            <span id="cal-month" style="font-size:10px"></span>
-            <button class="dn-btn" onclick="navMonth(1)" style="width:18px;height:18px;font-size:7px">&#9654;</button>
-          </div>
-          <div class="cal-grid" id="cal-grid"></div>
+  <!-- Calendar — anchored above scroll area -->
+  <div class="sb-group sb-cal-fixed" id="sb-calendar">
+    <div class="sb-group-hdr" onclick="toggleSbGroup('calendar')">
+      <span class="sb-chevron" id="chev-calendar">&#9660;</span>
+      <span class="sb-group-title">Calendar</span>
+    </div>
+    <div class="sb-group-body" id="body-calendar">
+      <div style="padding:0 12px 6px">
+        <div class="cal-nav">
+          <button class="dn-btn" onclick="navMonth(-1)" style="width:18px;height:18px;font-size:7px">&#9664;</button>
+          <span id="cal-month" style="font-size:10px"></span>
+          <button class="dn-btn" onclick="navMonth(1)" style="width:18px;height:18px;font-size:7px">&#9654;</button>
         </div>
-      </div>
-    </div>
-    <!-- Notes -->
-    <div class="sb-group" id="sb-notes">
-      <div class="sb-group-hdr" onclick="toggleSbGroup('notes')">
-        <span class="sb-chevron" id="chev-notes">&#9660;</span>
-        <span class="sb-group-title">Notes</span>
-        <button class="sb-group-btn" onclick="event.stopPropagation();createNote()" title="New note (Cmd+;)">+</button>
-      </div>
-      <div class="sb-group-body" id="body-notes">
-        <div class="sb-note-list" id="sb-notes-list"></div>
-      </div>
-    </div>
-    <!-- Sections -->
-    <div class="sb-group" id="sb-sections">
-      <div class="sb-group-hdr" onclick="toggleSbGroup('sections')">
-        <span class="sb-chevron" id="chev-sections">&#9660;</span>
-        <span class="sb-group-title">Sections</span>
-        <button class="sb-group-btn" id="backlinks-toggle" onclick="event.stopPropagation();toggleBacklinks()" title="Backlinks"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11.5 L6 14 A3.2 3.2 0 0 1 1.8 9.8 L5.5 6"/><path d="M11.5 8.5 L14 6 A3.2 3.2 0 0 1 18.2 10.2 L14.5 14"/><line x1="7.5" y1="12.5" x2="12.5" y2="7.5"/></svg></button>
-        <button class="sb-group-btn" onclick="event.stopPropagation();addSection()" title="Add section">+</button>
-      </div>
-      <div class="sb-group-body" id="body-sections">
-        <div id="sb-sections-body"></div>
-      </div>
-    </div>
-    <!-- Tags -->
-    <div class="sb-group" id="sb-tags">
-      <div class="sb-group-hdr" onclick="toggleSbGroup('tags')">
-        <span class="sb-chevron" id="chev-tags">&#9660;</span>
-        <span class="sb-group-title">Tags</span>
-      </div>
-      <div class="sb-group-body" id="body-tags">
-        <div class="sb-tag-cloud" id="sb-tags-cloud"></div>
+        <div class="cal-grid" id="cal-grid"></div>
       </div>
     </div>
   </div>
-  <div class="sb-footer">
-    <button class="sb-footer-btn" onclick="openFloatingNote()" title="Floating note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14"/><circle cx="5.5" cy="6" r="0.5" fill="currentColor"/><circle cx="7.5" cy="6" r="0.5" fill="currentColor"/><line x1="6" y1="11" x2="14" y2="11"/><line x1="6" y1="14" x2="11" y2="14"/></svg></button>
-    <button class="sb-footer-btn" onclick="openGallery()" title="Image gallery"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg></button>
-    <button class="sb-footer-btn" onclick="openSettings()" title="Settings"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.8"/><path d="M10 2 v2.5 M10 15.5 v2.5 M2 10 h2.5 M15.5 10 h2.5 M4.4 4.4 l1.8 1.8 M13.8 13.8 l1.8 1.8 M15.6 4.4 l-1.8 1.8 M6.2 13.8 l-1.8 1.8"/></svg></button>
+  <!-- Tags — anchored below calendar, not movable -->
+  <div class="sb-group sb-tags-fixed" id="sb-tags">
+    <div class="sb-group-hdr" onclick="toggleSbGroup('tags')">
+      <span class="sb-chevron" id="chev-tags">&#9660;</span>
+      <span class="sb-group-title">Tags</span>
+    </div>
+    <div class="sb-group-body" id="body-tags">
+      <div class="sb-tags-hint">Click a tag to filter your feed</div>
+      <div class="sb-tag-cloud" id="sb-tags-cloud"></div>
+    </div>
+  </div>
+  <!-- Sections header — fixed, always visible, not collapsible -->
+  <div class="sb-sections-hdr">
+    <span class="sb-group-title">Sections</span>
+    <button class="sb-group-btn" id="backlinks-toggle" onclick="toggleBacklinks()" title="Backlinks"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11.5 L6 14 A3.2 3.2 0 0 1 1.8 9.8 L5.5 6"/><path d="M11.5 8.5 L14 6 A3.2 3.2 0 0 1 18.2 10.2 L14.5 14"/><line x1="7.5" y1="12.5" x2="12.5" y2="7.5"/></svg></button>
+    <button class="sb-group-btn" onclick="addSection()" title="Add section">+</button>
+  </div>
+  <!-- Sections body — scrollable -->
+  <div class="sb-groups-scroll" id="sb-sections" ondragover="sbScrollDragOver(event)" ondrop="sbScrollDrop(event)">
+    <div id="sb-backlinks-body"></div>
+    <div id="sb-sections-body"></div>
+  </div>
+  <div class="sb-footer" style="display:none">
   </div>
 </div>
 
@@ -2391,6 +2417,7 @@ async function loadDB(){
   db.checkboxesMigrated=s.checkboxesMigrated||false;
   db.checkboxesMigrated2=s.checkboxesMigrated2||false;
   if(s.sbGroupState)sbGroupState=s.sbGroupState;
+  if(s.sbGroupOrder)sbGroupOrder=s.sbGroupOrder.filter(id=>id!=='tags'&&id!=='calendar');
   // Restore tab session
   if(s.openTabs&&s.openTabs.length){
     const validId=id=>id==='today'||id==='feed'||id==='home'||id==='tasks'||id==='settings'||id==='gallery'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
@@ -2480,7 +2507,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,checkboxesMigrated2:db.checkboxesMigrated2||false,sbGroupState,openTabs,activeTab,searchTabs}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,checkboxesMigrated2:db.checkboxesMigrated2||false,sbGroupState,sbGroupOrder,openTabs,activeTab,searchTabs}]);
     } else if(store==='sections'&&db.sections){
       // Strip transient session-only flags and drop unsaved drafts
       const sanitized=db.sections
@@ -2705,8 +2732,12 @@ function renderTabBar(){
   // Tabs scroll in their own container; icons sit in a fixed-width strip to the right
   // so they can't be overlapped when there are many tabs open.
   let h=`<div id="tab-bar-tabs">${tabsHtml}</div>`;
-  // Tab bar icons strip (search moved to sidebar nav)
-  h+=`<div id="tab-bar-icons"></div>`;
+  // Tab bar icons — anchored far right
+  h+=`<div id="tab-bar-icons">`;
+  h+=`<button class="tab-icon-btn" onclick="openFloatingNote()" title="Floating note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14"/><circle cx="5.5" cy="6" r="0.5" fill="currentColor"/><circle cx="7.5" cy="6" r="0.5" fill="currentColor"/><line x1="6" y1="11" x2="14" y2="11"/><line x1="6" y1="14" x2="11" y2="14"/></svg></button>`;
+  h+=`<button class="tab-icon-btn" onclick="openGallery()" title="Image gallery"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg></button>`;
+  h+=`<button class="tab-icon-btn" onclick="openSettings()" title="Settings"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.8"/><path d="M10 2 v2.5 M10 15.5 v2.5 M2 10 h2.5 M15.5 10 h2.5 M4.4 4.4 l1.8 1.8 M13.8 13.8 l1.8 1.8 M15.6 4.4 l-1.8 1.8 M6.2 13.8 l-1.8 1.8"/></svg></button>`;
+  h+=`</div>`;
   document.getElementById('tab-bar').innerHTML=h;
   save('settings');
 }
@@ -2925,7 +2956,7 @@ function renderKanbanBoard(tasks,cols){
     const colTasks=tasks.filter(t=>t.column_id===col.id&&!t.completed).sort((a,b)=>(a.order||0)-(b.order||0));
     h+=`<div class="kanban-col" data-col="${col.id}">
       <div class="kanban-col-hdr" style="border-bottom-color:${col.color||'var(--accent)'}" draggable="true" ondragstart="kanbanColDragStart(event,'${col.id}')" ondragover="kanbanColDragOver(event)" ondrop="kanbanColDrop(event,'${col.id}')">
-        <span class="kanban-col-title">${escH(col.name)}</span>
+        <span class="kanban-col-title" ondblclick="event.stopPropagation();inlineRenameColumn('${col.id}')">${escH(col.name)}</span>
         <span class="kanban-col-count">${colTasks.length}</span>
         <button class="kanban-col-menu" onclick="showColMenu('${col.id}',event)" title="Column options">&#8943;</button>
       </div>
@@ -3132,10 +3163,31 @@ function showColMenu(colId,e){
 }
 function closeColMenu(){const m=document.getElementById('col-ctx-menu');if(m)m.remove();}
 function colMenuRename(colId){
+  inlineRenameColumn(colId);
+}
+function inlineRenameColumn(colId){
   const col=(db.columns||[]).find(c=>c.id===colId);if(!col)return;
-  showPrompt('Column name:',{title:'Rename Column',defaultVal:col.name}).then(n=>{
-    if(n&&n.trim()){col.name=n.trim();save('columns');renderActiveView();}
-  });
+  // Find the title span — could be in kanban header or list group header
+  const kanbanTitle=document.querySelector(`.kanban-col[data-col="${colId}"] .kanban-col-title`);
+  const listTitle=document.querySelector(`.tl-group-hdr[data-col="${colId}"] .tl-group-name`);
+  const titleEl=kanbanTitle||listTitle;
+  if(!titleEl)return;
+  // Replace with an input
+  const origText=titleEl.textContent;
+  const input=document.createElement('input');
+  input.type='text';
+  input.value=col.name;
+  input.style.cssText='font-size:inherit;font-weight:inherit;text-transform:inherit;letter-spacing:inherit;color:var(--text);border:none;border-bottom:1.5px solid var(--accent);outline:none;background:transparent;width:100%;padding:0;font-family:var(--sans);';
+  const commit=()=>{
+    const v=input.value.trim();
+    if(v&&v!==col.name){col.name=v;save('columns');}
+    renderActiveView();
+  };
+  input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();commit();}if(e.key==='Escape'){renderActiveView();}};
+  input.onblur=commit;
+  titleEl.replaceWith(input);
+  input.focus();
+  input.select();
 }
 function colMenuColor(colId,e){
   const col=(db.columns||[]).find(c=>c.id===colId);if(!col)return;
@@ -3258,20 +3310,24 @@ function renderTaskList(tasks,cols){
   const today=todayStr();
   let h='<div class="task-list-view">';
   cols.forEach(col=>{
-    const colTasks=tasks.filter(t=>t.column_id===col.id).sort((a,b)=>{
-      if(a.completed!==b.completed)return a.completed?1:-1;
-      return(a.order||0)-(b.order||0);
-    });
-    if(!colTasks.length&&!tasksFilter.showDone&&col.isDone)return;
-    if(col.isDone&&!tasksFilter.showDone){
-      // Show toggle instead of full list
-      const doneCount=tasks.filter(t=>t.completed).length;
-      if(doneCount){
-        h+=`<div class="tl-group-hdr"><span>${escH(col.name)}</span><span class="tl-group-line"></span><span class="tl-group-toggle" onclick="tasksFilter.showDone=true;renderActiveView()">Show ${doneCount} completed</span></div>`;
+    let colTasks;
+    if(col.isDone){
+      // Done column: sort by most recently completed, limit to 10
+      colTasks=tasks.filter(t=>t.column_id===col.id||t.completed)
+        .sort((a,b)=>(b.completed_at||b.created_at||0)-(a.completed_at||a.created_at||0));
+      const totalDone=colTasks.length;
+      if(!totalDone&&!tasksFilter.showDone)return;
+      if(!tasksFilter.showDone){
+        h+=`<div class="tl-group-hdr" data-col="${col.id}"><span class="tl-group-name" ondblclick="event.stopPropagation();inlineRenameColumn('${col.id}')">${escH(col.name)}</span><span class="tl-group-line"></span><span class="tl-group-toggle" onclick="tasksFilter.showDone=true;renderActiveView()">Show ${totalDone} completed</span></div>`;
+        return;
       }
-      return;
+      colTasks=colTasks.slice(0,10);
+      h+=`<div class="tl-group-hdr" data-col="${col.id}"><span class="tl-group-name" ondblclick="event.stopPropagation();inlineRenameColumn('${col.id}')">${escH(col.name)}</span><span class="tl-group-line"></span><span class="tl-group-count">${colTasks.length} of ${totalDone}</span></div>`;
+    } else {
+      colTasks=tasks.filter(t=>t.column_id===col.id&&!t.completed).sort((a,b)=>(a.order||0)-(b.order||0));
+      if(!colTasks.length)return;
+      h+=`<div class="tl-group-hdr" data-col="${col.id}"><span class="tl-group-name" ondblclick="event.stopPropagation();inlineRenameColumn('${col.id}')">${escH(col.name)}</span><span class="tl-group-line"></span><span class="tl-group-count">${colTasks.length}</span></div>`;
     }
-    h+=`<div class="tl-group-hdr"><span>${escH(col.name)}</span><span class="tl-group-line"></span><span class="tl-group-count">${colTasks.length}</span></div>`;
     colTasks.forEach(t=>{
       const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
       const isDone=t.completed;
@@ -3296,12 +3352,17 @@ function renderTaskList(tasks,cols){
 }
 
 function showNewTaskForm(){
-  // Switch to Today tab and expand the task-add card
-  switchTab('today');
-  setTimeout(()=>{
-    const trigger=document.querySelector('.task-add-trigger');
-    if(trigger)expandTaskAdd(trigger);
-  },50);
+  // Add task to the first non-done column (e.g. Inbox) and stay on tasks page
+  const cols=(db.columns||[]).filter(c=>!c.isDone).sort((a,b)=>(a.order||0)-(b.order||0));
+  const firstCol=cols[0];
+  if(!firstCol)return;
+  showPrompt('Task title:',{title:'New Task'}).then(title=>{
+    if(!title||!title.trim())return;
+    const task=createTask({title:title.trim(),column_id:firstCol.id});
+    if(!task)return;
+    save('tasks');
+    renderActiveView();renderSidebar();
+  });
 }
 
 function renderToday(area){
@@ -5814,8 +5875,15 @@ function selectAC(){
 function closeAC(){acState=null;document.getElementById('autocomplete').classList.remove('open');}
 
 /* ═══════════ TAG CLOUD ═══════════ */
-function toggleFilter(tag){const i=activeTagFilters.indexOf(tag);if(i>=0)activeTagFilters.splice(i,1);else activeTagFilters.push(tag);renderAllSections();renderActiveView();}
-function clearFilters(){activeTagFilters=[];renderAllSections();renderActiveView();}
+function toggleFilter(tag){
+  const i=activeTagFilters.indexOf(tag);
+  if(i>=0)activeTagFilters.splice(i,1);else activeTagFilters.push(tag);
+  // Switch to Today feed to show filtered results
+  if(activeTab!=='today'){switchTab('today');}
+  else{renderActiveView();}
+  renderAllSections();renderSidebarTags();
+}
+function clearFilters(){activeTagFilters=[];renderAllSections();renderSidebarTags();renderActiveView();}
 
 /* ═══════════ QUESTIONS ═══════════ */
 function addQuestion(text){text=text.trim();if(!text)return;db.questions.push({id:genId('q'),question:text,askedBy:[],status:'open',answer:'',tags:extractTags(text),date:todayStr(),ts:Date.now()});save();document.querySelector('.q-input').value='';renderQuestions();}
@@ -5834,11 +5902,11 @@ function ensureHelpSection(){
   if(db.defaultSectionsSeeded)return;
   const hasHelp=db.sections.some(s=>(s.query||'').toLowerCase().includes('#dailydispatchhelp'));
   if(!hasHelp){
-    db.sections.push({id:'sec_help',name:'Help',query:'#DailyDispatchHelp',height:260,col:'left'});
+    db.sections.push({id:'sec_help',name:'Help',query:'#DailyDispatchHelp',height:260});
   }
   const hasMeetings=db.sections.some(s=>(s.name||'').toLowerCase()==='meetings');
   if(!hasMeetings){
-    db.sections.push({id:'sec_meetings',name:'Meetings',query:'#meeting',height:260,col:'right'});
+    db.sections.push({id:'sec_meetings',name:'Meetings',query:'#meeting',height:260});
   }
   db.defaultSectionsSeeded=true;
   save();
@@ -5855,8 +5923,9 @@ function toggleBacklinks(){
   renderBacklinks();
 }
 function renderBacklinks(){
-  // Remove any existing backlinks panel wherever it is (right or left sections)
-  document.querySelectorAll('.backlinks-panel').forEach(el=>el.remove());
+  // Clear the dedicated backlinks container
+  const blContainer=document.getElementById('sb-backlinks-body');
+  if(blContainer)blContainer.innerHTML='';
   if(!_backlinksOpen)return;
 
   // Determine current note: only show backlinks when viewing a note tab
@@ -5929,9 +5998,9 @@ function _insertBacklinksPanel(bodyHtml){
     </div>
     <div class="backlinks-body">${bodyHtml}</div>
   `;
-  // Insert at the top of sections body in sidebar (before regular sections)
-  const container=document.getElementById('sb-sections-body');
-  if(container)container.prepend(panel);
+  // Insert into dedicated backlinks container (separate from sections)
+  const container=document.getElementById('sb-backlinks-body');
+  if(container){container.innerHTML='';container.appendChild(panel);}
 }
 
 // Recent and Tags are now virtual section panels rendered by _doRenderAllSections.
@@ -5981,7 +6050,7 @@ function selCalDay(ds){selectedDate=ds;feedTopDate=ds>=todayStr()?null:ds;feedDa
 /* ═══════════ RIGHT SIDEBAR: CUSTOM SECTIONS ═══════════ */
 function addSection(){
   // Create a draft section in setup mode — user commits via "Create section" button
-  const sec={id:genId('sec'),name:'',query:'',height:200,col:'right',_setupMode:true,_isNew:true};
+  const sec={id:genId('sec'),name:'',query:'',height:200,_setupMode:true,_isNew:true};
   db.sections.push(sec);
   renderAllSections();
   setTimeout(()=>{
@@ -6132,7 +6201,6 @@ function _doRenderAllSections(){
   // In the new sidebar layout, sections render into #sb-sections-body (single column).
   // This function is now a redirect to renderSidebarSections + sidebar updates.
   renderSidebarSections();
-  renderSidebarNotes();
   renderSidebarTags();
 }
 function _renderVirtualPanel(id){
@@ -6185,106 +6253,114 @@ function _renderTagsPanel(){
 
 /* ═══════════ SECTION DRAG & DROP ═══════════ */
 let dragSecId=null;
+function _clearSecDropOnly(){
+  document.querySelectorAll('.rs-panel.sec-drop-above,.rs-panel.sec-drop-below').forEach(p=>p.classList.remove('sec-drop-above','sec-drop-below'));
+  document.querySelectorAll('.drag-append-zone').forEach(el=>el.classList.remove('drag-append-zone'));
+}
+function _clearAllSecDrag(){
+  _clearSecDropOnly();
+  document.querySelectorAll('.rs-panel.sec-dragging').forEach(p=>p.classList.remove('sec-dragging'));
+}
 function dragSecStart(e,secId){
   dragSecId=secId;
   e.dataTransfer.effectAllowed='move';
   e.dataTransfer.setData('text/plain',secId);
-  setTimeout(()=>{
-    const el=document.querySelector(`.rs-panel[data-sid="${secId}"]`);
-    if(el)el.classList.add('dragging');
-    // left-drop-zone removed in v2 sidebar layout
-  },0);
+  setTimeout(()=>{const el=document.querySelector(`.rs-panel[data-sid="${secId}"]`);if(el)el.classList.add('sec-dragging');},0);
 }
 function dragSecEnd(e){
-  document.querySelectorAll('.rs-panel').forEach(p=>{p.classList.remove('dragging','drag-over','drag-over-top','drag-over-bottom');});
-  document.querySelectorAll('.drag-append-zone').forEach(el=>el.classList.remove('drag-append-zone'));
+  _clearAllSecDrag();
   dragSecId=null;
 }
 function dragSecOver(e){
+  if(!dragSecId)return;
   e.preventDefault();
   e.dataTransfer.dropEffect='move';
-  // Highlight drop target; decide whether drop lands ABOVE or BELOW based
-  // on cursor Y relative to the panel midpoint.
-  const panel=e.currentTarget.closest('.rs-panel');
-  if(panel&&panel.dataset.sid!==dragSecId){
-    document.querySelectorAll('.rs-panel.drag-over-top,.rs-panel.drag-over-bottom').forEach(p=>p.classList.remove('drag-over-top','drag-over-bottom'));
-    const rect=panel.getBoundingClientRect();
-    const mid=rect.top+rect.height/2;
-    panel.classList.add(e.clientY<mid?'drag-over-top':'drag-over-bottom');
+  // Only clear drop indicators, NOT the dragging class
+  _clearSecDropOnly();
+  // Find nearest visible panel
+  const panels=[...document.querySelectorAll('#sb-sections-body .rs-panel:not(.sec-dragging)')];
+  if(!panels.length)return;
+  let closest=null,closestDist=Infinity,above=true;
+  for(const p of panels){
+    const r=p.getBoundingClientRect();
+    const mid=r.top+r.height/2;
+    const dist=Math.abs(e.clientY-mid);
+    if(dist<closestDist){closestDist=dist;closest=p;above=e.clientY<mid;}
+  }
+  if(closest&&closest.dataset.sid!==dragSecId){
+    closest.classList.add(above?'sec-drop-above':'sec-drop-below');
   }
 }
 function dragSecDrop(e,targetId){
   e.preventDefault();
   e.stopPropagation();
-  if(!dragSecId||dragSecId===targetId)return;
-  const panel=e.currentTarget.closest('.rs-panel');
-  const insertAfter=panel&&panel.classList.contains('drag-over-bottom');
-  // Handle virtual panels (Recent, Tags) — just update their column
-  const isVirtualSrc=dragSecId.startsWith('_');
-  const isVirtualTgt=targetId.startsWith('_');
-  if(isVirtualSrc){
-    if(!db.virtualPanels)db.virtualPanels={};
-    const vp=db.virtualPanels[dragSecId.slice(1)];
-    // Determine target column
-    const tgtCol=isVirtualTgt?(db.virtualPanels[targetId.slice(1)]||{}).col||'left':
-      (db.sections.find(s=>s.id===targetId)||{}).col||'right';
-    if(vp)vp.col=tgtCol;
-    save('settings');renderAllSections();
-    return;
-  }
-  const srcIdx=db.sections.findIndex(s=>s.id===dragSecId);
-  const tgtIdx=isVirtualTgt?-1:db.sections.findIndex(s=>s.id===targetId);
-  if(srcIdx<0)return;
-  if(isVirtualTgt){
-    // Moving a regular section onto a virtual panel — just change column
-    const tgtCol=(db.virtualPanels[targetId.slice(1)]||{}).col||'left';
-    db.sections[srcIdx].col=tgtCol;
-    save();renderAllSections();
-    return;
-  }
-  if(tgtIdx<0)return;
-  const tgtSec=db.sections[tgtIdx];
-  db.sections[srcIdx].col=tgtSec.col;
-  const [moved]=db.sections.splice(srcIdx,1);
-  let newTgtIdx=db.sections.findIndex(s=>s.id===targetId);
-  if(insertAfter)newTgtIdx++;
-  db.sections.splice(newTgtIdx,0,moved);
+  if(!dragSecId||dragSecId===targetId){_clearAllSecDrag();dragSecId=null;return;}
+  // Determine above/below from indicator
+  const targetEl=document.querySelector(`.rs-panel[data-sid="${targetId}"]`);
+  const above=targetEl?.classList.contains('sec-drop-above');
+  _clearAllSecDrag();
+  // Clean reorder
+  const secs=db.sections;
+  const fromIdx=secs.findIndex(s=>s.id===dragSecId);
+  const toIdx=secs.findIndex(s=>s.id===targetId);
+  if(fromIdx<0||toIdx<0){dragSecId=null;return;}
+  const [moved]=secs.splice(fromIdx,1);
+  const insertIdx=secs.findIndex(s=>s.id===targetId);
+  secs.splice(above?insertIdx:insertIdx+1,0,moved);
+  dragSecId=null;
   save();renderAllSections();
 }
-// Section drop zone — now a single sidebar container (#sb-sections-body).
-// No more left/right column distinction.
+// Container drop zone — for drops in empty space
 (function(){
-  ['sb-sections-body'].forEach(id=>{
-    const container=document.getElementById(id);
-    if(!container)return;
-    const targetCol='right'; // single column, keep 'right' as default
-    container.addEventListener('dragover',e=>{
-      if(!dragSecId)return;
-      // Only show append-zone when the cursor is not over a child panel
-      if(e.target.closest('.rs-panel'))return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect='move';
-      container.classList.add('drag-append-zone');
-    });
-    container.addEventListener('dragleave',e=>{
-      if(!container.contains(e.relatedTarget))container.classList.remove('drag-append-zone');
-    });
-    container.addEventListener('drop',e=>{
-      if(!dragSecId)return;
-      if(e.target.closest('.rs-panel'))return; // panel handler takes precedence
-      e.preventDefault();
-      container.classList.remove('drag-append-zone');
-      const sec=db.sections.find(s=>s.id===dragSecId);
-      if(!sec)return;
-      sec.col=targetCol;
-      // Move to end of db.sections so it renders last in its column
-      const idx=db.sections.findIndex(s=>s.id===dragSecId);
-      if(idx>=0){
-        const [moved]=db.sections.splice(idx,1);
-        db.sections.push(moved);
+  const container=document.getElementById('sb-sections-body');
+  if(!container)return;
+  container.addEventListener('dragover',e=>{
+    if(!dragSecId)return;
+    if(e.target.closest('.rs-panel:not(.sec-dragging)'))return; // let panel handler manage
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+    _clearSecDropOnly();
+    // Find nearest visible panel for drop indicator even in empty space
+    const panels=[...container.querySelectorAll('.rs-panel:not(.sec-dragging)')];
+    if(panels.length){
+      let closest=null,closestDist=Infinity,above=true;
+      for(const p of panels){
+        const r=p.getBoundingClientRect();
+        const mid=r.top+r.height/2;
+        const dist=Math.abs(e.clientY-mid);
+        if(dist<closestDist){closestDist=dist;closest=p;above=e.clientY<mid;}
       }
-      save();renderAllSections();
-    });
+      if(closest)closest.classList.add(above?'sec-drop-above':'sec-drop-below');
+    } else {
+      container.classList.add('drag-append-zone');
+    }
+  });
+  container.addEventListener('dragleave',e=>{
+    if(!container.contains(e.relatedTarget))container.classList.remove('drag-append-zone');
+  });
+  container.addEventListener('drop',e=>{
+    if(!dragSecId)return;
+    if(e.target.closest('.rs-panel:not(.sec-dragging)'))return; // panel handler takes precedence
+    e.preventDefault();
+    // Find drop target from indicators
+    const dropAbove=container.querySelector('.rs-panel.sec-drop-above');
+    const dropBelow=container.querySelector('.rs-panel.sec-drop-below');
+    const targetId=dropAbove?dropAbove.dataset.sid:dropBelow?dropBelow.dataset.sid:null;
+    const above=!!dropAbove;
+    _clearAllSecDrag();
+    const secs=db.sections;
+    const fromIdx=secs.findIndex(s=>s.id===dragSecId);
+    if(fromIdx<0){dragSecId=null;return;}
+    if(targetId){
+      const [moved]=secs.splice(fromIdx,1);
+      const insertIdx=secs.findIndex(s=>s.id===targetId);
+      secs.splice(above?insertIdx:insertIdx+1,0,moved);
+    } else {
+      const [moved]=secs.splice(fromIdx,1);
+      secs.push(moved);
+    }
+    dragSecId=null;
+    save();renderAllSections();
   });
 })();
 
@@ -6775,7 +6851,8 @@ function generateWrapUp(){
 function toggleSb(hdr){hdr.classList.toggle('collapsed');}
 
 /* ═══════════ NEW SIDEBAR ═══════════ */
-let sbGroupState={calendar:true,notes:true,sections:true,tags:false};
+let sbGroupState={calendar:true,tags:false};
+let sbGroupOrder=[]; // no group-level dragging — individual sections drag within the scroll area
 function toggleSbGroup(groupId){
   sbGroupState[groupId]=!sbGroupState[groupId];
   const body=document.getElementById('body-'+groupId);
@@ -6784,6 +6861,103 @@ function toggleSbGroup(groupId){
   if(chev)chev.classList.toggle('collapsed',!sbGroupState[groupId]);
   save('settings');
 }
+/* ── Sidebar group drag-to-reorder ── */
+function applySbGroupOrder(){
+  // Tags and Calendar are fixed — strip them from order if persisted from old sessions
+  sbGroupOrder=sbGroupOrder.filter(id=>id!=='tags'&&id!=='calendar');
+  const container=document.querySelector('.sb-groups-scroll');
+  if(!container)return;
+  // Only draggable groups (sections) go inside the scroll area
+  sbGroupOrder.forEach(id=>{
+    const el=document.getElementById('sb-'+id);
+    if(el)container.appendChild(el);
+  });
+}
+let _sbDragGroup=null;
+function sbGroupDragStart(e,groupId){
+  _sbDragGroup=groupId;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',groupId);
+  setTimeout(()=>{const el=document.getElementById('sb-'+groupId);if(el)el.classList.add('sb-dragging');},0);
+}
+function _clearSbDropIndicators(){
+  document.querySelectorAll('.sb-group.sb-drop-above,.sb-group.sb-drop-below').forEach(g=>{
+    g.classList.remove('sb-drop-above','sb-drop-below');
+  });
+}
+function sbGroupDragOver(e,targetId){
+  if(!_sbDragGroup||_sbDragGroup===targetId)return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  _clearSbDropIndicators();
+  const target=document.getElementById('sb-'+targetId);
+  if(!target)return;
+  const rect=target.getBoundingClientRect();
+  const mid=rect.top+rect.height/2;
+  target.classList.add(e.clientY<mid?'sb-drop-above':'sb-drop-below');
+}
+function sbGroupDrop(e,targetId){
+  e.preventDefault();
+  if(!_sbDragGroup||_sbDragGroup===targetId)return;
+  const target=document.getElementById('sb-'+targetId);
+  const above=target?.classList.contains('sb-drop-above');
+  _clearSbDropIndicators();
+  // Reorder
+  const fromIdx=sbGroupOrder.indexOf(_sbDragGroup);
+  let toIdx=sbGroupOrder.indexOf(targetId);
+  if(fromIdx<0||toIdx<0)return;
+  sbGroupOrder.splice(fromIdx,1);
+  toIdx=sbGroupOrder.indexOf(targetId);
+  sbGroupOrder.splice(above?toIdx:toIdx+1,0,_sbDragGroup);
+  applySbGroupOrder();
+  save('settings');
+  _sbDragGroup=null;
+  sbGroupDragEnd();
+}
+function sbGroupDragEnd(){
+  _sbDragGroup=null;
+  _clearSbDropIndicators();
+  document.querySelectorAll('.sb-group.sb-dragging').forEach(g=>g.classList.remove('sb-dragging'));
+}
+// Container-level fallback — finds nearest draggable group when hovering in empty space
+function _findNearestSbGroup(y){
+  const groups=sbGroupOrder.map(id=>document.getElementById('sb-'+id)).filter(el=>el&&!el.classList.contains('sb-dragging'));
+  let closest=null, closestDist=Infinity, above=true;
+  for(const g of groups){
+    const r=g.getBoundingClientRect();
+    const mid=r.top+r.height/2;
+    const dist=Math.abs(y-mid);
+    if(dist<closestDist){closestDist=dist;closest=g;above=y<mid;}
+  }
+  return closest?{id:closest.id.replace('sb-',''),above}:null;
+}
+function sbScrollDragOver(e){
+  if(!_sbDragGroup)return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  _clearSbDropIndicators();
+  const target=_findNearestSbGroup(e.clientY);
+  if(target&&target.id!==_sbDragGroup){
+    const el=document.getElementById('sb-'+target.id);
+    if(el)el.classList.add(target.above?'sb-drop-above':'sb-drop-below');
+  }
+}
+function sbScrollDrop(e){
+  e.preventDefault();
+  if(!_sbDragGroup)return;
+  const target=_findNearestSbGroup(e.clientY);
+  if(!target||target.id===_sbDragGroup){sbGroupDragEnd();return;}
+  const fromIdx=sbGroupOrder.indexOf(_sbDragGroup);
+  let toIdx=sbGroupOrder.indexOf(target.id);
+  if(fromIdx<0||toIdx<0){sbGroupDragEnd();return;}
+  sbGroupOrder.splice(fromIdx,1);
+  toIdx=sbGroupOrder.indexOf(target.id);
+  sbGroupOrder.splice(target.above?toIdx:toIdx+1,0,_sbDragGroup);
+  applySbGroupOrder();
+  save('settings');
+  sbGroupDragEnd();
+}
+
 function switchToNav(view){
   if(view==='today'){switchTab('today');}
   else if(view==='tasks'){
@@ -6808,10 +6982,10 @@ function updateSidebarNav(){
 }
 function renderSidebar(){
   renderCalendar();
-  renderSidebarNotes();
   renderSidebarSections();
   renderSidebarTags();
   updateSidebarNav();
+  applySbGroupOrder();
   // Restore collapse state
   Object.entries(sbGroupState).forEach(([id,open])=>{
     const body=document.getElementById('body-'+id);
@@ -6838,7 +7012,8 @@ function renderSidebarSections(){
   const secs=db.sections||[];
   if(!secs.length){el.innerHTML='<div style="padding:6px 8px;font-size:10px;color:var(--text3)">No sections yet. Click + to add.</div>';return;}
   el.innerHTML=secs.map(sec=>renderSectionPanel(sec)).join('');
-  if(_backlinksOpen)renderBacklinks();
+  // Backlinks render independently into #sb-backlinks-body
+  renderBacklinks();
   const btn=document.getElementById('backlinks-toggle');
   if(btn)btn.classList.toggle('active',_backlinksOpen);
 }
