@@ -54,8 +54,9 @@
   }
   .sb-brand .logo {
     font-weight: 700; font-size: 14px; letter-spacing: -0.2px; color: var(--brown);
-    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    cursor: pointer; display: flex; align-items: center; gap: 0;
   }
+  .sb-brand .logo svg { margin-right: 6px; }
   .sb-brand .logo:hover { color: var(--accent); }
   .sb-brand .logo span { color: var(--accent); }
   /* Primary nav */
@@ -2692,7 +2693,7 @@ async function saveAll(){
     id:'main',
     tagColors:db.tagColors,
     people:db.people||[],
-    theme:db.theme||'Warm Notion',
+    theme:db.theme||'Hot Pink',
     defaultSectionsSeeded:db.defaultSectionsSeeded||false,
     startersSeeded:db.startersSeeded||false,
     homeShownOnce:db.homeShownOnce||false,
@@ -2718,7 +2719,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,checkboxesMigrated2:db.checkboxesMigrated2||false,sbGroupState,sbGroupOrder,openTabs,activeTab,searchTabs,onboardingDone:db.onboardingDone||[],onboardingDismissed:db.onboardingDismissed||false}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Hot Pink',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,checkboxesMigrated2:db.checkboxesMigrated2||false,sbGroupState,sbGroupOrder,openTabs,activeTab,searchTabs,onboardingDone:db.onboardingDone||[],onboardingDismissed:db.onboardingDismissed||false}]);
     } else if(store==='sections'&&db.sections){
       // Strip transient session-only flags and drop unsaved drafts
       const sanitized=db.sections
@@ -7260,7 +7261,7 @@ async function initFloatingMode(){
   document.body.classList.add('floating-mode');
   // Load DB for theme + settings only
   await loadDB();
-  if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
+  if(db.theme&&db.theme!=='Hot Pink')applyTheme(db.theme);
 
   // Read the note from localStorage (written by main window before opening popup)
   const noteId=window.location.hash.slice(1);
@@ -8545,16 +8546,6 @@ function closeChangelog(){document.getElementById('changelog-modal').classList.r
 
 const THEMES={};
 // ── Light themes ──
-THEMES['Warm Notion']={
-  bg:'#faf8f5',surface:'#fff','surface-hover':'#f5f2ed','sidebar-bg':'#f5f2ed',
-  border:'#e8e0d4','border-light':'#f0ece6','border-strong':'#d4cbbf',
-  text:'#37352f',text2:'#787774',text3:'#9b9a97',
-  accent:'#cb912f','accent-light':'rgba(203,145,47,0.12)',
-  danger:'#e16259',green:'#4daa57',blue:'#5b9bd5',purple:'#9065b0',brown:'#8b7355',
-  'capture-bg':'#fdf9f3','note-bg':'#fdf9f3',
-  'shadow-sm':'0 1px 2px rgba(0,0,0,0.04)','shadow-md':'0 4px 12px rgba(0,0,0,0.06)',
-  _preview:['#faf8f5','#cb912f','#8b7355','#e8e0d4'],_group:'light'
-};
 THEMES['Hot Pink']={
   bg:'#f5f5f5',surface:'#ffffff','surface-hover':'#f0f0f0','sidebar-bg':'#f0f0f0',
   border:'#e0e0e0','border-light':'#ebebeb','border-strong':'#cccccc',
@@ -8564,6 +8555,16 @@ THEMES['Hot Pink']={
   'capture-bg':'#fafafa','note-bg':'#fafafa',
   'shadow-sm':'0 1px 2px rgba(0,0,0,0.06)','shadow-md':'0 4px 12px rgba(0,0,0,0.1)',
   _preview:['#f5f5f5','#e20074','#000000','#e0e0e0'],_group:'light'
+};
+THEMES['Warm Notion']={
+  bg:'#faf8f5',surface:'#fff','surface-hover':'#f5f2ed','sidebar-bg':'#f5f2ed',
+  border:'#e8e0d4','border-light':'#f0ece6','border-strong':'#d4cbbf',
+  text:'#37352f',text2:'#787774',text3:'#9b9a97',
+  accent:'#cb912f','accent-light':'rgba(203,145,47,0.12)',
+  danger:'#e16259',green:'#4daa57',blue:'#5b9bd5',purple:'#9065b0',brown:'#8b7355',
+  'capture-bg':'#fdf9f3','note-bg':'#fdf9f3',
+  'shadow-sm':'0 1px 2px rgba(0,0,0,0.04)','shadow-md':'0 4px 12px rgba(0,0,0,0.06)',
+  _preview:['#faf8f5','#cb912f','#8b7355','#e8e0d4'],_group:'light'
 };
 THEMES['Mint']={
   bg:'#f0faf6',surface:'#ffffff','surface-hover':'#e8f5ef','sidebar-bg':'#e8f5ef',
@@ -8995,7 +8996,7 @@ function exportData(){
     sections:db.sections||[],
     tagColors:db.tagColors||{},
     people:db.people||[],
-    theme:db.theme||'Warm Notion',
+    theme:db.theme||'Hot Pink',
     floatingNote:db.floatingNote||{position:'right',width:300},
     tasks:db.tasks||[],
     columns:db.columns||[],
@@ -9535,7 +9536,7 @@ Click the ⚙ gear icon in the tab bar (far right).
 
 Choose from **15 themes** — 10 light and 5 dark:
 
-**Light:** Warm Notion (default), Hot Pink, Mint, Solarized, Nordic, Sepia, Lavender, Rose, Sand, Clean
+**Light:** Hot Pink (default), Warm Notion, Mint, Solarized, Nordic, Sepia, Lavender, Rose, Sand, Clean
 
 **Dark:** Dark, Midnight, Charcoal, Forest Night, Amethyst
 
@@ -10239,7 +10240,7 @@ async function init(){
   ensureDefaultColumns();
   migrateCheckboxesToTaskWidgets();
   ensureHelpNotes();
-  if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
+  if(db.theme&&db.theme!=='Hot Pink')applyTheme(db.theme);
   // First-launch: open the home tab once so new users get the landing page.
   // Users can close it; if they click the home icon later, it comes back.
   if(!db.homeShownOnce){

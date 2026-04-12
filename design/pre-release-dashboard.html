@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DailyDispatch v3.3.0 — Pre-Release Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :root { --accent:#e20074; --green:#16a34a; --amber:#d97706; --red:#dc2626; --text:#1a1a1a; --text2:#555; --text3:#999; --bg:#f8f8f8; --surface:#fff; --border:#e5e5e5; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
+  .header{background:linear-gradient(135deg,#1a1a1a,#333);color:#fff;padding:32px 40px;}
+  .header h1{font-size:28px;font-weight:800;margin-bottom:4px;}
+  .header .sub{font-size:13px;color:#aaa;margin-bottom:16px;}
+  .stats{display:flex;gap:20px;flex-wrap:wrap;}
+  .stat{background:rgba(255,255,255,0.08);border-radius:8px;padding:12px 20px;min-width:120px;}
+  .stat-num{font-size:28px;font-weight:800;line-height:1;}
+  .stat-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#aaa;margin-top:4px;}
+  .stat.must .stat-num{color:#f87171;}
+  .stat.should .stat-num{color:#fbbf24;}
+  .stat.nice .stat-num{color:#6ee7b7;}
+  .stat.done .stat-num{color:var(--green);}
+
+  .container{max-width:1100px;margin:0 auto;padding:24px 20px 80px;}
+  .section-title{font-size:18px;font-weight:700;margin:32px 0 12px;display:flex;align-items:center;gap:10px;}
+  .section-title .badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;}
+  .badge-must{background:var(--red);}
+  .badge-should{background:var(--amber);}
+  .badge-nice{background:var(--green);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.1s;}
+  .card:hover{border-color:#ccc;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+  .card-row{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;cursor:pointer;}
+  .card-check{
+    width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;
+    font-size:12px;font-weight:700;color:transparent;margin-top:1px;
+  }
+  .card-check:hover{border-color:var(--accent);}
+  .card-check.done{background:var(--green);border-color:var(--green);color:#fff;}
+  .card-check.deferred{background:var(--text3);border-color:var(--text3);color:#fff;}
+  .card-body{flex:1;min-width:0;}
+  .card-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+  .card.is-done .card-title{text-decoration:line-through;color:var(--text3);}
+  .card.is-deferred .card-title{text-decoration:line-through;color:var(--text3);font-style:italic;}
+  .card-details{font-size:11px;color:var(--text2);line-height:1.5;}
+  .card-meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}
+  .card-tag{font-size:9px;font-weight:600;padding:1px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:0.3px;}
+  .tag-ux{background:#fce4ec;color:#c2185b;}
+  .tag-arch{background:#e3f2fd;color:#1565c0;}
+  .tag-feat{background:#fff3e0;color:#e65100;}
+  .tag-ia{background:#f3e5f5;color:#7b1fa2;}
+  .tag-must{background:#fef2f2;color:var(--red);}
+  .tag-should{background:#fffbeb;color:var(--amber);}
+  .tag-nice{background:#f0fdf4;color:var(--green);}
+
+  .progress-bar{width:100%;height:6px;background:#e5e5e5;border-radius:3px;overflow:hidden;margin-top:8px;}
+  .progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width 0.3s;}
+  .progress-label{font-size:10px;color:var(--text3);margin-top:4px;text-align:right;}
+
+  .legend{display:flex;gap:16px;margin:16px 0;font-size:11px;color:var(--text2);}
+  .legend-item{display:flex;align-items:center;gap:4px;}
+  .legend-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border);}
+  .legend-dot.done{background:var(--green);border-color:var(--green);}
+  .legend-dot.deferred{background:var(--text3);border-color:var(--text3);}
+
+  .filter-bar{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap;}
+  .filter-btn{padding:4px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.1s;}
+  .filter-btn:hover{border-color:var(--accent);}
+  .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .card-actions{display:flex;gap:6px;margin-top:6px;}
+  .copy-btn{
+    padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--surface);
+    font-size:9px;font-weight:600;cursor:pointer;color:var(--text2);transition:all 0.1s;
+    display:flex;align-items:center;gap:3px;
+  }
+  .copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .copy-btn.copied{background:var(--green);color:#fff;border-color:var(--green);}
+  .fix-order-num{
+    width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;
+    font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;margin-top:1px;
+  }
+  .toast{
+    position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;
+    padding:10px 16px;border-radius:6px;font-size:12px;font-weight:500;
+    box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:999;opacity:0;transition:opacity 0.2s;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>DailyDispatch v3.3.0 — Pre-Release Dashboard</h1>
+  <div class="sub">Comprehensive audit across UX, Architecture, Features, and Information Architecture. Click circles to cycle: Open > Done > Deferred > Open.</div>
+  <div class="stats">
+    <div class="stat must"><div class="stat-num" id="stat-must">0</div><div class="stat-label">Must Fix</div></div>
+    <div class="stat should"><div class="stat-num" id="stat-should">0</div><div class="stat-label">Should Fix</div></div>
+    <div class="stat nice"><div class="stat-num" id="stat-nice">0</div><div class="stat-label">Nice to Have</div></div>
+    <div class="stat done"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Completed</div></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="progress-label" id="progress-label">0% complete</div>
+</div>
+
+<div class="container">
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot"></div> Open</div>
+    <div class="legend-item"><div class="legend-dot done"></div> Done</div>
+    <div class="legend-item"><div class="legend-dot deferred"></div> Deferred</div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn" data-filter="recommended" style="background:#1a1a1a;color:#fff;border-color:#1a1a1a">&#9733; Recommended Order</button>
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="must">Must Fix</button>
+    <button class="filter-btn" data-filter="should">Should Fix</button>
+    <button class="filter-btn" data-filter="nice">Nice to Have</button>
+    <button class="filter-btn" data-filter="open">Open Only</button>
+    <button class="filter-btn" data-filter="ux">UX/UI</button>
+    <button class="filter-btn" data-filter="arch">Architecture</button>
+    <button class="filter-btn" data-filter="feat">Features</button>
+    <button class="filter-btn" data-filter="ia">Info Arch</button>
+  </div>
+
+  <div id="items-container"></div>
+</div>
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<script>
+// fixOrder: recommended fix sequence (lower = fix first). Groups: 1-5 data safety, 6-10 security, 11-15 dark mode, 16-20 discoverability, 21-30 polish, 31+ nice-to-have
+const ITEMS = [
+  // === MUST FIX ===
+  {id:'ar1',cat:'Architecture',sev:'MUST FIX',fixOrder:1,title:'IndexedDB clear-then-rewrite risks data loss on crash',details:'flushSave() calls idbClearStore() then idbPutAll() as separate transactions. A crash between them loses all data. Should use a single readwrite transaction.',prompt:'In DailyDispatch (index.html), the flushSave() function at ~line 2728 calls idbClearStore(store) and then idbPutAll(store, data) as TWO separate IndexedDB transactions. If the browser crashes between the clear and the put, all data in that store is permanently lost. Refactor flushSave() to use a SINGLE readwrite transaction that does store.clear() followed by store.put() for each item, all within one transaction. The oncomplete fires only when both operations succeed atomically. Do NOT change the function signature — it should still be async and return a Promise. Test by verifying the transaction pattern in the code.'},
+  {id:'fe3',cat:'Features',sev:'MUST FIX',fixOrder:2,title:'No error handling for IndexedDB failures or quota exceeded',details:'IDB operations silently fail on storage quota errors. User has no idea saves are failing. Add visible error toast on save failures.',prompt:'In DailyDispatch (index.html), add error handling to all IndexedDB operations (idbPutAll, idbClearStore, idbDelete, flushSave). When any IDB operation fails (transaction onerror, or promise rejection), show a visible toast notification to the user saying "Save failed — your data may not be persisted. Try exporting a backup." Use the existing showToast function if available, or create one. Also detect if IDB is unavailable entirely (e.g., Firefox private browsing) and show a persistent warning banner. Check the onerror handlers on transactions in idbPutAll (~line 2575), idbClearStore (~line 2586), and idbDelete (~line 2577).'},
+  {id:'ar2',cat:'Architecture',sev:'MUST FIX',fixOrder:3,title:'Mention pill onclick handler has potential XSS vector',details:'@mention regex capture inserted into onclick without escH(). Currently safe due to strict regex, but fragile if regex is relaxed.',prompt:'In DailyDispatch (index.html), find all places where @mention text is inserted into onclick HTML attributes without escaping. Search for regex replacements that produce onclick="toggleFilter(\'@$1\')" — the $1 capture group is not passed through escH(). Fix by passing the captured text through escH() before inserting into the onclick attribute. Check renderMdInline (~line 2895), renderMd, and any other mention rendering. The pattern should be: onclick="toggleFilter(\'@\'+escH(capturedName)+\'\')" or use data attributes with addEventListener instead of inline onclick.'},
+  {id:'ar3',cat:'Architecture',sev:'MUST FIX',fixOrder:4,title:'Help crosslink handler allows JS injection',details:'renderHelpInline() unescapes HTML entities then injects into onclick with only single-quote escaping. Crafted crosslinks could execute arbitrary JS.',prompt:'In DailyDispatch (index.html), find the renderHelpInline() function (~line 4343). It handles [[crosslinks]] by unescaping HTML entities (&amp; &lt; &gt; → raw chars) and then inserting the result into an onclick attribute with only single-quote replacement. This allows JS injection via crafted crosslink titles. Fix by: (1) using escH() on the raw title before inserting into onclick, or (2) switching from inline onclick to a data-attribute + addEventListener pattern. The crosslink title should be treated as untrusted user input.'},
+  {id:'fe1',cat:'Features',sev:'MUST FIX',fixOrder:5,title:'No automatic backup — data loss if browser clears IndexedDB',details:'All data in IndexedDB with no File System Access API sync. Browser can clear storage. Only backup is manual JSON export. Add auto-save to user-chosen folder or backup reminders.',prompt:'In DailyDispatch (index.html), implement a backup reminder system. Track db.lastBackupTs (already exists in the settings schema). On app startup (in init()), if lastBackupTs is older than 7 days, show a non-blocking toast or banner: "You haven\'t backed up in X days. Export a backup in Settings." Add a "Remind me later" dismiss that suppresses for 24 hours. Also consider adding a File System Access API integration: a "Choose backup folder" button in Settings that, when clicked, uses window.showDirectoryPicker() to let the user choose a folder, then auto-saves the JSON backup to that folder on every flushSave(). Store the directory handle in IndexedDB. This is the single most impactful data safety feature.'},
+  {id:'fe2',cat:'Features',sev:'MUST FIX',fixOrder:6,title:'No undo for destructive actions',details:'Deleting notes, tasks, entries is permanent. No undo toast, no soft-delete, no trash. Add 10-second undo toast at minimum.',prompt:'In DailyDispatch (index.html), implement an undo system for destructive actions. When a note, task, or entry is deleted: (1) Don\'t actually delete it immediately — store it in a temporary _undoBuffer variable with a 10-second timer. (2) Show a toast at the bottom of the screen: "[Item] deleted. Undo" with the Undo text being a clickable link. (3) If the user clicks Undo within 10 seconds, restore the item to db.entries/db.tasks and re-render. (4) If 10 seconds pass, actually delete it and call save(). Apply this pattern to: confirmDelete/doDelete for entries, deleteTask for tasks, and deleteImage for images. Create a generic showUndoToast(message, undoCallback, commitCallback) function.'},
+  {id:'ux1',cat:'UX/UI',sev:'MUST FIX',fixOrder:7,title:'Hardcoded heading colors break dark themes',details:'Lines 516, 1651: .cm-dd-h1 uses color: #2c1810 which is invisible on dark backgrounds. Should use var(--text).',prompt:'In DailyDispatch (index.html), search for all hardcoded hex color values in CSS that should be theme-aware CSS variables. Priority fixes: (1) .cm-dd-h1 at ~line 516 uses color: #2c1810 — change to color: var(--text). (2) .help-h1 at ~line 1651 also uses #2c1810 — same fix. (3) Search for any other #2c1810 references. These colors are invisible on dark theme backgrounds. After fixing, test by switching to each of the 5 dark themes (Dark, Midnight, Charcoal, Forest Night, Amethyst) and verifying H1 headings are visible.'},
+  {id:'ux2',cat:'UX/UI',sev:'MUST FIX',fixOrder:8,title:'Hardcoded light backgrounds on due-date badges break dark themes',details:'~8 occurrences of background: #fef2f2 and #fefce8 on .overdue/.today badges. Appear as bright rectangles on dark surfaces. Use rgba theme variables.',prompt:'In DailyDispatch (index.html), search for all occurrences of background: #fef2f2 (light red for overdue badges) and background: #fefce8 (light yellow for today badges). There are ~8 occurrences across .overdue and .today CSS classes for different views (task cards, kanban, list view, today view, etc.). Replace each with theme-aware alternatives: for overdue use background: color-mix(in srgb, var(--danger) 10%, transparent) and for today use background: color-mix(in srgb, var(--amber) 10%, transparent). This ensures the badges have subtle tinted backgrounds that work on both light and dark themes. Test on all 5 dark themes.'},
+  {id:'ia3',cat:'Info Arch',sev:'MUST FIX',fixOrder:9,title:'Slash commands undiscoverable in capture rail',details:'Placeholder says "#tags supported" but never mentions /task, /smartlist, /table. New users who never open help will miss core features.',prompt:'In DailyDispatch (index.html), update the capture input placeholder text to hint at slash commands. Find the textarea with placeholder "What\'s happening? (#tags supported)" (~line 3592). Change the placeholder to something like: "What\'s happening? Use #tags, @people, or type / for commands". Also consider adding a small "tip" text below the capture input that rotates through hints on each render: "Tip: Type /task to create a task", "Tip: Type /smartlist to embed search results", "Tip: Use #tags to organize entries". Show one random tip per render, styled as a small italic text below the capture bar.'},
+  {id:'ar4',cat:'Architecture',sev:'MUST FIX',fixOrder:10,title:'Floating note IDB flush in beforeunload is unreliable',details:'Async flushSave() called from synchronous beforeunload — browser drops the IDB writes. localStorage backup covers this but the IDB bonus flush should not be relied upon.',prompt:'In DailyDispatch (index.html), the floating note close handler in initFloatingMode() (~line 7288) calls flushSave() in the beforeunload handler. Since flushSave() is async and beforeunload is synchronous, the IDB writes are almost always dropped. The localStorage backup at line 7294 handles this correctly. To fix: (1) Remove the flushSave() call from the beforeunload handler since it gives false confidence. (2) Add a comment explaining that localStorage is the ONLY reliable persistence during window teardown. (3) The main window\'s _recoverFloatingNote function already reads from localStorage, so data safety is maintained. This is about code clarity, not functionality.'},
+  {id:'ux3',cat:'UX/UI',sev:'MUST FIX',fixOrder:11,title:'No sidebar collapse on narrow screens',details:'Sidebar is fixed at 240px with zero @media rules. Below ~1000px the app is unusable. Need a collapse/hide mechanism.',prompt:'In DailyDispatch (index.html), add responsive behavior for the sidebar. Add a @media query at max-width: 900px that: (1) Hides the sidebar by default: #sidebar { display: none; } (2) Adds a hamburger menu button in the tab bar (left side) that toggles a .sidebar-open class on body. (3) When .sidebar-open is active, show the sidebar as a fixed overlay with a semi-transparent backdrop. (4) Clicking the backdrop or any nav item closes the sidebar. CSS: body.sidebar-open #sidebar { display: flex; position: fixed; top: 0; left: 0; bottom: 0; z-index: 999; } Add a .sidebar-backdrop element. Also adjust the grid to grid-template-columns: 1fr when sidebar is hidden.'},
+  {id:'ia1',cat:'Info Arch',sev:'MUST FIX',fixOrder:12,title:'Four different names for the same concept (Sections, Smart Lists, Search, Tag filters)',details:'All are query-based filtering but use different names, different UIs, different locations. Unify terminology or clearly differentiate roles.',prompt:'This is a design/naming decision, not a code fix. In DailyDispatch, consider these options: (1) DIFFERENTIATE: Keep all four but add clear subtitles — Sections: "Saved sidebar filters", Smart Lists: "Embedded search in notes", Search tabs: "Full-text search workspace", Tag filters: "Quick tag toggle". Add these descriptions to the UI where each appears. (2) UNIFY: Rename Sections to "Saved Searches" and Smart Lists to "Embedded Search". The underlying engine (matchEntries) is the same. Pick one approach and update: help pages, onboarding, homepage copy, and any UI labels. This is about consistent communication, not code architecture.'},
+  {id:'ia2',cat:'Info Arch',sev:'MUST FIX',fixOrder:13,title:'Two competing navigation systems (sidebar nav + tab bar)',details:'Today appears in both. Tasks only in sidebar. Settings/Gallery only in tab bar icons. No single mental model for navigation.',prompt:'In DailyDispatch, clarify the navigation model. The sidebar nav should be the PRIMARY navigation (where you go). The tab bar should be the WORKSPACE (what you have open). To fix: (1) Add Settings and Gallery to the sidebar nav, below Search. Remove their icon buttons from the tab bar strip. (2) Keep Today in both (sidebar = navigate there, tab = it\'s always open). (3) Add a visual separator in the tab bar between the pinned Today tab and user-opened content tabs (a subtle vertical line). (4) Consider making the Today tab label dynamic — show the selected date when viewing a past date. Update the renderTabBar function and sidebar nav HTML.'},
+
+  // === SHOULD FIX ===
+  {id:'ar10',cat:'Architecture',sev:'SHOULD FIX',fixOrder:14,title:'Silent catch(e){} blocks in critical save paths',details:'8+ catch blocks swallow errors with no logging. Data loss goes undetected.',prompt:'In DailyDispatch (index.html), find all catch(e){} and catch(err){} blocks that silently swallow errors. There are 8+ instances, particularly in the floating note recovery code (~lines 7272, 7292, 7297, 7299), the save path, and various IDB operations. For each one: (1) Add console.error(\'[DD] context:\', e) so errors appear in DevTools. (2) For save-critical paths (IDB writes, floating note backup), also call showToast if the function exists. Do NOT add try/catch where there isn\'t one — only fix existing silent catches. Search for: catch(e){}, catch(err){}, catch(e){ } with empty bodies.'},
+  {id:'ar5',cat:'Architecture',sev:'SHOULD FIX',fixOrder:15,title:'Dead db.questions/db.contexts still loaded, saved, exported',details:'Collections removed from UI but still in data pipeline. Wasted storage, confusing schema.',prompt:'In DailyDispatch (index.html), remove all references to db.questions and db.contexts from the data pipeline. (1) Remove from COLLECTIONS array (~line 2510). (2) Remove from loadDB (~lines 2612-2613). (3) Remove from saveAll (~lines 2687-2688). (4) Remove from flushSave. (5) Keep them in import/export for backward compatibility — if an imported file has questions/contexts, just ignore them silently. (6) Remove virtualPanels from the settings save (~line 2702) since it\'s write-only dead data. (7) Remove the comment stub at ~line 6513. (8) Search for any remaining references to db.questions or db.contexts.'},
+  {id:'ar7',cat:'Architecture',sev:'SHOULD FIX',fixOrder:16,title:'saveAll() and flushSave() have divergent settings schemas',details:'Different fields written by each function. Migration via saveAll() can silently drop settings.',prompt:'In DailyDispatch (index.html), unify the settings schema between saveAll() (~line 2685) and flushSave() (~line 2722). Create a single function buildSettingsObject() that returns the complete settings object with ALL fields: tagColors, people, theme, defaultSectionsSeeded, startersSeeded, homeShownOnce, floatingNote, lastBackupTs, checkboxesMigrated, checkboxesMigrated2, sbGroupState, sbGroupOrder, openTabs, activeTab, searchTabs, onboardingDone, onboardingDismissed. Call this function from both saveAll() and flushSave() so they always write identical schemas. Remove virtualPanels from the output.'},
+  {id:'ux1b',cat:'UX/UI',sev:'SHOULD FIX',fixOrder:17,title:'Hardcoded highlight colors (#fef08a, #fefce8) break dark themes',details:'Search highlight and entry highlight use hardcoded yellows that clash on dark themes.',prompt:'In DailyDispatch (index.html), search for background: #fef08a (mark/search highlight) and background: #fefce8 (entry highlight). Replace with theme-aware alternatives: mark { background: color-mix(in srgb, var(--accent) 20%, transparent); } and .entry-card.highlight { background: color-mix(in srgb, var(--accent) 8%, transparent); }. Also search for #fef3c7 (drag-over-merge background at ~line 1336) and replace similarly. Test on all dark themes.'},
+  {id:'ia9',cat:'Info Arch',sev:'SHOULD FIX',fixOrder:18,title:'Today tab label doesn\'t change when viewing a past date',details:'Tab still says "Today" when showing April 3. Should reflect actual date.',prompt:'In DailyDispatch (index.html), update the renderTabBar() function. When rendering the Today tab, check if selectedDate !== todayStr(). If viewing a past date, show the date instead of "Today" — e.g., "Apr 3" or the day name for recent dates ("Yesterday", "Wednesday"). Find the Today tab HTML generation in renderTabBar (~line 2877) and conditionally change the label. Keep the clock icon. When the user scrolls back to today or clicks Today in the sidebar, it should revert to "Today".'},
+  {id:'fe7',cat:'Features',sev:'SHOULD FIX',fixOrder:19,title:'Kanban board has no empty-state guidance',details:'Empty columns show blank space. No "Drag tasks here" or "+ Add" prompt.',prompt:'In DailyDispatch (index.html), add empty state prompts to Kanban columns. Find renderKanbanBoard() (~line 2940). When a column has zero tasks (colTasks.length === 0), instead of rendering nothing, render a helpful prompt: <div class="kanban-empty">Drag tasks here or click + below</div>. Style .kanban-empty with: padding: 20px; text-align: center; color: var(--text3); font-size: 11px; font-style: italic; border: 1px dashed var(--border-light); border-radius: var(--radius-md); margin: 4px 6px;. This gives visual structure to empty columns and guides new users.'},
+  {id:'fe11',cat:'Features',sev:'SHOULD FIX',fixOrder:20,title:'Cmd+Shift+O not documented in help shortcuts page',details:'Quick Open works but isn\'t listed in keyboard shortcuts help.',prompt:'In DailyDispatch (index.html), find the help_shortcuts entry in the HELP_NOTES array. Add Cmd+Shift+O to the Global Shortcuts table with description "Quick Open — fuzzy search notes by title". Also check the Welcome help page and add it to the Key Shortcuts section if missing.'},
+  {id:'ux7',cat:'UX/UI',sev:'SHOULD FIX',fixOrder:21,title:'Feed empty state is plain text, not helpful guidance',details:'Just "No entries. Start typing above." Compare to the designed gallery empty state with icon and subtitle.',prompt:'In DailyDispatch (index.html), find the feed empty state at ~line 3752 which renders <div class="empty">No entries... Start typing above.</div>. Replace with a designed empty state similar to the gallery: add an icon (e.g., a pencil or feed icon SVG), a title ("Your feed is empty"), a subtitle ("Type in the capture box above and press Cmd+Enter to add your first entry. Use #tags to organize."), and style it with centered text, icon above, and muted colors. Use the existing .empty class or create a .feed-empty class.'},
+  {id:'ar11',cat:'Architecture',sev:'SHOULD FIX',fixOrder:22,title:'setInterval polling every 1s forever for floating note recovery',details:'Runs thousands of unnecessary calls over a work day. Should pause when no floating window is open.',prompt:'In DailyDispatch (index.html), find the setInterval(_recoverFloatingNote, 1000) at ~line 10307. Replace with a smarter approach: (1) Only start polling when openFloatingNote() is called — set a flag like _floatingWindowOpen = true. (2) In _recoverFloatingNote, check this flag first — if false, return immediately. (3) When the floating note is recovered (tab opened), set _floatingWindowOpen = false. (4) Also keep the storage event listener and focus/visibility listeners as they are — those are event-driven and don\'t waste cycles. The polling is a fallback that should only run when a floating window is actually expected to be open.'},
+  {id:'fe5',cat:'Features',sev:'SHOULD FIX',fixOrder:23,title:'No single-note export (markdown or HTML)',details:'Copy-to-clipboard exists but no download-as-file. Sharing requires manual paste.',prompt:'In DailyDispatch (index.html), add a "Download .md" button to the note toolbar. Find the note toolbar in renderNoteEditor (~line 4396). Add a button next to "Copy": <button class="copy-btn" onclick="downloadNoteAsMarkdown(\'${noteId}\')">Download</button>. Create the function: function downloadNoteAsMarkdown(noteId) { const e = db.entries.find(x => x.id === noteId); if (!e) return; const md = noteContentToMarkdown(e); const blob = new Blob([md], {type: \'text/markdown\'}); const url = URL.createObjectURL(blob); const a = document.createElement(\'a\'); a.href = url; a.download = (e.noteTitle || \'note\').replace(/[^a-z0-9]/gi, \'-\').slice(0, 50) + \'.md\'; a.click(); URL.revokeObjectURL(url); }'},
+  {id:'ux5',cat:'UX/UI',sev:'SHOULD FIX',fixOrder:24,title:'No ARIA attributes anywhere in the app',details:'Zero aria-label, role, or aria-checked on custom checkboxes, modals, tabs, sidebar. Screen readers cannot use the app.',prompt:'In DailyDispatch (index.html), add ARIA attributes to the most critical interactive elements. Priority order: (1) Modals: add role="dialog" aria-modal="true" to .modal-overlay and #dd-dialog. (2) Tabs: add role="tablist" to #tab-bar-tabs, role="tab" to each .tab, aria-selected="true" on active tab. (3) Custom checkboxes: add role="checkbox" aria-checked="true/false" to all .tt-chk, .kc-chk, .tl-chk, .tm-chk, .rs-task-chk elements. (4) Sidebar nav: add role="navigation" to .sb-nav. (5) Sidebar groups: add role="button" aria-expanded="true/false" to .sb-group-hdr elements. This is a first pass — full WCAG compliance is a larger effort.'},
+  {id:'ux6',cat:'UX/UI',sev:'SHOULD FIX',fixOrder:25,title:'No focus-visible styles on buttons',details:'Only text inputs have focus styles. Keyboard users cannot see which button is focused.',prompt:'In DailyDispatch (index.html), add a global focus-visible rule for all interactive elements. Add to the CSS: *:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; } button:focus-visible, .tab:focus-visible, .sb-nav-item:focus-visible, .fmt-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; } This uses :focus-visible (not :focus) so it only shows for keyboard navigation, not mouse clicks. Test by tabbing through the app.'},
+  {id:'ux9',cat:'UX/UI',sev:'SHOULD FIX',fixOrder:26,title:'var(--text3) has poor contrast in some themes',details:'#9b9a97 barely passes WCAG AA on white. Fails on some light theme backgrounds like Solarized.',prompt:'In DailyDispatch (index.html), audit the --text3 value in each of the 10 light themes. For each theme, check the contrast ratio of text3 against the bg color using the WCAG formula. Minimum 4.5:1 for AA compliance. Themes likely failing: Solarized (text3: #93a1a1 on bg: #fdf6e3 ≈ 3.3:1). Fix by darkening text3 in those themes to achieve at least 4.5:1. A safe general approach: ensure text3 is never lighter than #777 on light backgrounds or darker than #888 on dark backgrounds.'},
+  {id:'fe8',cat:'Features',sev:'SHOULD FIX',fixOrder:27,title:'Help pages missing settings documentation',details:'Themes & Settings page omits backup indicator, danger zone, onboarding reset, changelog.',prompt:'In DailyDispatch (index.html), find the help_themes entry in HELP_NOTES. Add sections for: (1) Data & Backup — "Settings > Data shows your last backup date. Export JSON to save all entries, notes, tasks, and images. Import replaces all data." (2) Danger Zone — "Purge All Data permanently deletes everything. Type PURGE to confirm." (3) Onboarding — "Reset Getting Started re-shows the checklist. Useful for learning new features." (4) Version & Changelog — "The version number and full changelog are shown at the bottom of Settings."'},
+  {id:'ia4',cat:'Info Arch',sev:'SHOULD FIX',fixOrder:28,title:'No visual distinction between quick entries and notes in the feed',details:'Both look identical. Users can\'t tell at a glance which are one-liners vs developed notes.',prompt:'In DailyDispatch (index.html), the feed timeline already shows amber dots for notes via .entry-note::before. But the distinction is subtle. Enhance by: (1) Making note entries show their title in bold with a subtle note icon (📝 or a small SVG) before the title. (2) Quick entries (non-notes) show without the icon and without bold. The existing entry-note class and amber dot are good — just add a small note icon inline. Find renderEntryCard (~line 3742) where isNote entries render <strong> title. Add a small icon before the strong tag for note entries.'},
+  {id:'ux11',cat:'UX/UI',sev:'SHOULD FIX',fixOrder:29,title:'Button styling patterns inconsistent (4+ primary button variants)',details:'Different padding, border-radius, font-size across submit-btn, home-btn, tm-save, task-add-submit.',prompt:'In DailyDispatch (index.html), create a unified .btn-primary CSS class and apply it to all primary action buttons. The class should use: padding: 5px 14px; border-radius: var(--radius-sm); border: none; background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all 0.1s. Then find and update: #submit-btn, .home-btn.primary, .tm-save, .task-add-submit, .float-done-btn, .gs-footer-link (when it acts as primary). Some may need size overrides (.btn-primary.big for homepage). This is a CSS-only change — no JS modification needed.'},
+  {id:'ia6',cat:'Info Arch',sev:'SHOULD FIX',fixOrder:30,title:'System tabs and content tabs visually identical in tab bar',details:'No divider between Today (pinned) and user-opened note tabs. Easy to confuse.',prompt:'In DailyDispatch (index.html), add a visual separator between the pinned Today tab and user-opened content tabs. In renderTabBar(), after rendering the Today tab div, add a <span class="tab-divider"></span> element. CSS: .tab-divider { width: 1px; height: 16px; background: var(--border-strong); margin: 0 4px; flex-shrink: 0; align-self: center; }. This creates a subtle vertical line that separates the permanent navigation tab from the workspace tabs. The Today tab already has no close button — the divider reinforces that it\'s different.'},
+  {id:'fe4',cat:'Features',sev:'SHOULD FIX',fixOrder:31,title:'Getting Started checklist is passive, not interactive',details:'Auto-detects completion but does not guide users step-by-step. No tooltips or highlights.',prompt:'In DailyDispatch (index.html), enhance the Getting Started checklist to be more interactive. For each uncompleted step, when the user clicks on the step item in the checklist panel: (1) Scroll/navigate to the relevant UI element (e.g., clicking "Add a quick entry" scrolls to the capture input and focuses it). (2) Add a brief pulsing highlight (CSS animation) on the target element for 2 seconds. Implementation: add onclick handlers to each .gs-item that is not done. For gs_entry: focus capture input. For gs_note: call createNote(). For gs_task: switch to a note and show a tooltip. For gs_kanban: switchToNav(\'tasks\'). For gs_search: openSearch(). This makes each step actionable rather than just observational.'},
+  {id:'ux8',cat:'UX/UI',sev:'SHOULD FIX',fixOrder:32,title:'No loading indicator during IndexedDB initialization',details:'Blank screen until DB loads on startup. Need spinner or skeleton.',prompt:'In DailyDispatch (index.html), add a loading indicator that shows during init(). Before the init() call at ~line 10233, add a simple CSS-only loading screen: a centered spinner or the DailyDispatch logo with a subtle animation. In the HTML body, add: <div id="app-loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:9999"><div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--brown)">Daily<span style="color:var(--accent)">Dispatch</span></div><div style="margin-top:12px;font-size:11px;color:var(--text3)">Loading...</div></div></div>. At the end of init(), remove it: document.getElementById(\'app-loader\')?.remove().'},
+  {id:'ux10',cat:'UX/UI',sev:'SHOULD FIX',fixOrder:33,title:'Font size hierarchy is inconsistent (9px to 16px arbitrary)',details:'No defined typographic scale. Sizes appear ad-hoc across views.',prompt:'This is a design audit task, not a single fix. In DailyDispatch, define a typographic scale in CSS variables and gradually migrate to it. Proposed scale: --fs-xs: 9px (badges, hints); --fs-sm: 11px (labels, meta, tags); --fs-base: 13px (body text, feed entries); --fs-md: 14px (note editor, settings); --fs-lg: 16px (section titles); --fs-xl: 20px (page headings); --fs-2xl: 28px (hero). Add these to :root. Then do a find-and-replace pass, starting with the most common sizes: font-size: 11px → font-size: var(--fs-sm), font-size: 13px → font-size: var(--fs-base). This makes future size adjustments trivial and enables a user font-size preference setting later.'},
+  {id:'ux12',cat:'UX/UI',sev:'SHOULD FIX',fixOrder:34,title:'Sidebar keyboard accessibility missing (no tabindex on group headers)',details:'Group headers use onclick but no keydown handler for Enter/Space.',prompt:'In DailyDispatch (index.html), add keyboard support to sidebar group headers. Find all .sb-group-hdr elements in the HTML (~lines 2357, 2376, 2388). Add tabindex="0" and onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}" to each. This allows keyboard users to Tab to group headers and press Enter or Space to toggle them. Also add the same pattern to .rs-header (section panel headers) and any other clickable-but-not-button elements.'},
+  {id:'ar8',cat:'Architecture',sev:'SHOULD FIX',fixOrder:35,title:'matchEntries() O(N*M) scan with repeated toLowerCase()',details:'No index, no caching. Each OR group re-scans all entries. Jank on large datasets.',prompt:'In DailyDispatch (index.html), optimize matchEntries() (~line 6996). The main optimization: pre-compute the lowercased content+noteTitle string once per entry, not inside the loop. Before the OR group loop, create a Map: const contentCache = new Map(); base.forEach(e => contentCache.set(e.id, (e.content + \' \' + (e.noteTitle || \'\')).toLowerCase())); Then inside the loop, use contentCache.get(e.id) instead of recomputing. This reduces from O(N*M*S) (where S is string length) to O(N*M) with cached strings. For the common case of 1 OR group, this halves the string operations.'},
+  {id:'ar9',cat:'Architecture',sev:'SHOULD FIX',fixOrder:36,title:'renderToday() full DOM rebuild via innerHTML on every render',details:'Destroys and recreates all nodes. Loses scroll context. Called on every edit/filter change.',prompt:'This is a larger refactor. In DailyDispatch, the renderToday() function rebuilds the entire feed DOM on every call via area.innerHTML = html. A pragmatic improvement without a full virtual DOM: (1) Cache the scroll position before render and restore after. (2) Only rebuild the command card (tasks section) and feed sections that changed. (3) For the feed, use a DocumentFragment and replaceChild on changed day groups. Start with the scroll position fix: at the start of renderToday, save const scrollTop = area.scrollTop. At the end, after innerHTML assignment, set area.scrollTop = scrollTop. This alone fixes the most visible symptom.'},
+  {id:'ar12',cat:'Architecture',sev:'SHOULD FIX',fixOrder:37,title:'30+ mutable module-scope globals with no encapsulation',details:'State interactions hard to reason about. Naming collisions possible.',prompt:'This is a refactoring task for a future iteration. The current architecture uses 30+ let variables at module scope. A pragmatic first step: group related globals into namespace objects. For example: const AppState = { selectedDate, activeTab, openTabs, feedTopDate, feedDaysLoaded, ... }. const UIState = { acState, appendingId, resizeState, dragSecId, ... }. const EditorState = { cmEditorView, cmNoteId }. This doesn\'t change functionality but makes dependencies visible. Do NOT attempt this as a single commit — it touches every function in the app. Plan it as a series of small, testable refactors.'},
+  {id:'fe6',cat:'Features',sev:'SHOULD FIX',fixOrder:38,title:'No mobile or responsive layout for main app',details:'Only homepage has @media query. Core app breaks on narrow screens.',prompt:'In DailyDispatch (index.html), add a basic responsive layout. This overlaps with ux3 (sidebar collapse). The combined fix: (1) @media (max-width: 900px): hide sidebar, add hamburger toggle, full-width content area. (2) @media (max-width: 600px): reduce note toolbar to essential icons only (B, I, H1, bullet, task), stack the Today command card vertically, reduce padding. (3) Kanban board: on narrow screens, show one column at a time with horizontal swipe or tabs. (4) Keep the full experience on desktop — responsive is additive, not reductive. Start with the sidebar collapse at 900px as the minimum viable responsive fix.'},
+  {id:'fe9',cat:'Features',sev:'SHOULD FIX',fixOrder:39,title:'Import replaces all data with no merge option',details:'No way to combine data from two machines. Merge-import would enable multi-device story.',prompt:'In DailyDispatch (index.html), add a merge-import option alongside the existing replace-import. In the importData function (~line 9015), after reading the JSON file, show a dialog with two options: "Replace all data" (current behavior) and "Merge — add new items, skip duplicates". For merge: iterate imported entries/tasks/sections. For each, check if db.entries/tasks/sections already has an item with the same ID. If yes, skip (or optionally update if the imported version has a newer updatedTs). If no, add it. Merge tags and people lists (union). This enables a basic multi-device workflow: export from device A, merge-import on device B.'},
+  {id:'fe10',cat:'Features',sev:'SHOULD FIX',fixOrder:40,title:'Quick Open only searches note titles, not tasks/tags/commands',details:'Needs to be a full command palette like VS Code Cmd+P.',prompt:'In DailyDispatch (index.html), enhance the Quick Open palette (Cmd+Shift+O) to search across multiple types. Find the Quick Open implementation (~line 7730). Currently it only fuzzy-matches note titles. Expand to search: (1) Notes by title (existing). (2) Tasks by title — prefix results with a checkbox icon. (3) Slash commands — prefix with /. (4) Navigation commands: "Go to Today", "Open Tasks", "Open Settings", "Open Search". The search should fuzzy-match across all types and show results grouped by type. Each result type has a different click handler: notes open in a tab, tasks open the detail modal, commands execute, navigation switches tabs.'},
+  {id:'ia5',cat:'Info Arch',sev:'SHOULD FIX',fixOrder:41,title:'Sidebar has 5 vertical zones consuming ~400px before sections',details:'Calendar particularly large. Consider collapsing by default or moving behind toggle.',prompt:'In DailyDispatch (index.html), change the default calendar collapse state. Find sbGroupState at ~line 7354. Change calendar default to false: let sbGroupState = {calendar: false, tags: false}. This means the calendar starts collapsed on first use, saving ~180px of vertical space. Users can expand it with one click. The Tags group is already collapsed by default. This is a one-line change with significant impact on sidebar usability.'},
+  {id:'ia7',cat:'Info Arch',sev:'SHOULD FIX',fixOrder:42,title:'Sections look like folders but are actually dynamic queries',details:'No visual cue that sections are live filters, not static containers.',prompt:'In DailyDispatch (index.html), add a visual cue to sections that communicates they are dynamic filters. In renderSectionPanel(), the query display row already shows the filter icon and query text. Enhance by: (1) Adding a small "live" dot (green pulsing circle) next to the section name to indicate it auto-updates. CSS: .rs-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 4px; animation: pulse 2s infinite; } @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }. (2) Add this dot before the section title in the rs-header.'},
+  {id:'ia8',cat:'Info Arch',sev:'SHOULD FIX',fixOrder:43,title:'Task completion has no undo/confirmation — task vanishes from Today',details:'Checking a task removes it from view with no toast or undo. Where did it go?',prompt:'This overlaps with fe2 (undo for destructive actions). For task completion specifically: when a task is checked off from the Today view or a section, show a brief toast: "Task completed — moved to Done. Undo?" with an undo link that uncompletes the task. The toast should auto-dismiss after 5 seconds. Find completeTask() and the onclick handlers on .tt-chk, .rs-task-chk. After completeTask() is called, show the toast with the task title and an undo callback that calls completeTask(id, false).'},
+
+  // === NICE TO HAVE ===
+  {id:'ux13',cat:'UX/UI',sev:'NICE TO HAVE',fixOrder:44,title:'Dead CSS from Questions feature (~35 lines)',details:'CSS for .q-card, .q-input etc still present. Dead code bloat.',prompt:'In DailyDispatch (index.html), search for CSS rules starting with .q-card, .q-input, .q-status, .q-text, .q-meta, .q-answer, .q-del, .q-askedby. These are ~35 lines of dead CSS from the removed Questions feature. Delete all of them. Also search for #left CSS rules (~lines 176-179) which have a "Legacy" comment and contradictory display values. Delete those too.'},
+  {id:'ux14',cat:'UX/UI',sev:'NICE TO HAVE',fixOrder:45,title:'5 checkbox implementations duplicated (~70 lines CSS)',details:'Custom checkboxes reimplemented at 12px, 14px, 15px, 16px, 18px, 20px sizes.',prompt:'In DailyDispatch (index.html), create a parameterized checkbox CSS class that accepts a size via CSS custom property. Create .dd-checkbox { width: var(--chk-size, 14px); height: var(--chk-size, 14px); border: 2px solid var(--border-strong); border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; } .dd-checkbox:hover { border-color: var(--green); } .dd-checkbox.checked { background: var(--green); border-color: var(--green); } .dd-checkbox.checked::after { content: "\\2713"; color: #fff; font-size: calc(var(--chk-size, 14px) * 0.5); font-weight: 700; }. Then gradually replace the 5 checkbox implementations by using this class with --chk-size overrides.'},
+  {id:'ux15',cat:'UX/UI',sev:'NICE TO HAVE',fixOrder:46,title:'Note editor max-width: 75% is unpredictable on ultra-wide vs small screens',details:'Fixed max-width (720px) with min-width would be more predictable.',prompt:'In DailyDispatch (index.html), change .note-editor max-width from 75% to a fixed value with a percentage fallback. CSS: .note-editor { max-width: min(75%, 820px); min-width: 400px; }. This caps at 820px on wide screens (comfortable reading width), uses 75% on medium screens, and never goes below 400px. The min() function is supported in all modern browsers.'},
+  {id:'ar13',cat:'Architecture',sev:'NICE TO HAVE',fixOrder:47,title:'contextId field set on every entry but never used',details:'Dead schema weight from removed Contexts feature.',prompt:'In DailyDispatch (index.html), search for contextId:null in entry creation code. There are ~8 occurrences where new entries are created with contextId:null. Remove the field from all new entry creation. Existing entries in IDB will still have the field — that\'s fine, it\'s just ignored. This is a cleanup task, not a functional change.'},
+  {id:'ar14',cat:'Architecture',sev:'NICE TO HAVE',fixOrder:48,title:'CSS :has() selector used without fallback for older browsers',details:'Chrome 105+, Safari 15.4+, Firefox 121+ required. Older versions silently break task card layout.',prompt:'In DailyDispatch (index.html), the CSS at ~lines 531-533 uses .cm-line:has(> .cm-task-card) and .cm-line:has(> .cm-smartlist) to collapse line-height. For browsers that don\'t support :has(), task cards will have ~24px gaps. Add a @supports not selector(:has(*)) fallback that uses the cmTaskCardSpacingPlugin ViewPlugin approach (which was previously removed). Alternatively, accept that :has() is supported in Chrome 105+ (Dec 2022), Safari 15.4+ (Mar 2022), and Firefox 121+ (Dec 2023) — all 18+ months old — and document the browser requirement.'},
+  {id:'fe12',cat:'Features',sev:'NICE TO HAVE',fixOrder:49,title:'Homepage has no screenshots, demo, or social proof',details:'Strong copy but no visual proof of the app. Would strengthen the pitch.',prompt:'In DailyDispatch (index.html), enhance the homepage with visual evidence. (1) Add a screenshot or animated GIF of the app in use — since this is a single-file app, you could include a base64-encoded PNG or use CSS art to simulate a screenshot. (2) Alternatively, add a "Live preview" section that renders a miniature version of the feed using actual (or sample) data. (3) For social proof, if there are no real users yet, add a "Built with" or "Designed for" section showing target user personas. This is a marketing enhancement, not a technical fix.'},
+  {id:'fe13',cat:'Features',sev:'NICE TO HAVE',fixOrder:50,title:'No font size, density, or sidebar width settings',details:'Common power-user requests. Obsidian and Bear offer these.',prompt:'In DailyDispatch (index.html), add a "Display" settings section with: (1) Base font size slider (12px-18px) that sets a CSS variable --fs-base on :root. (2) Feed density toggle: "Comfortable" (current) vs "Compact" (reduced padding, smaller timestamps). (3) Sidebar width slider (180px-300px) that sets --sidebar-w. Store these in db settings. Apply via root.style.setProperty() on load. This enables personalization without affecting the core design.'},
+  {id:'fe14',cat:'Features',sev:'NICE TO HAVE',fixOrder:51,title:'No subtasks, recurring tasks, or calendar task view',details:'Competitive gap vs Linear, Notion, Trello. Kanban rated "Adequate" in mock review.',prompt:'This is a feature roadmap item, not a single fix. (1) Subtasks: add a subtasks array to the task schema. Render as indented checkboxes in the task detail modal. Each subtask is {id, text, completed}. (2) Recurring tasks: add recurrence field to task schema (daily, weekly, monthly). When a recurring task is completed, auto-create the next occurrence. (3) Calendar task view: show tasks with due dates on the calendar grid using small colored dots (different from entry dots). These are significant features — scope and prioritize individually.'},
+  {id:'fe15',cat:'Features',sev:'NICE TO HAVE',fixOrder:52,title:'Export includes images as base64 — no size warning',details:'Large journals could produce 100MB+ JSON. No size estimate shown.',prompt:'In DailyDispatch (index.html), add a size estimate before export. In the exportData function (~line 8989), before creating the download, calculate the approximate size: const size = new Blob([JSON.stringify(data)]).size. Show a brief info line in the UI: "Backup size: ~X MB (includes Y images)". If size > 50MB, show a warning: "Large backup. Consider exporting without images." Add a checkbox in the export UI: "Include images" (default checked). When unchecked, omit the images array from the export.'},
+  {id:'ia10',cat:'Info Arch',sev:'NICE TO HAVE',fixOrder:53,title:'Gallery only accessible from tab bar icon strip, not sidebar',details:'Asymmetry: Today/Tasks in sidebar, Gallery/Settings only in tab bar.',prompt:'In DailyDispatch (index.html), add Gallery and Settings to the sidebar nav. Find the sidebar nav HTML (~line 2362-2371). Add two more nav items after Search: a Gallery item with an image icon that calls openGallery(), and a Settings item with a gear icon that calls openSettings(). Keep the tab-bar icon buttons as well — they serve as quick-access shortcuts. This fixes the nav asymmetry where some views are only discoverable via small icons.'},
+  {id:'ia11',cat:'Info Arch',sev:'NICE TO HAVE',fixOrder:54,title:'"Board" vs "Kanban" naming inconsistency',details:'Toggle says "Board" but help/changelog says "Kanban board."',prompt:'In DailyDispatch (index.html), standardize on "Board" as the user-facing term and "kanban" as the internal code term. (1) Update the Tasks & Kanban help page title to "Tasks & Board". (2) In the help content, change "Kanban board" to "Board view" or just "Board". (3) In the changelog, the historical references can stay as-is. (4) In CSS class names, keep kanban-* (these are internal). This is a copy/naming consistency pass, not a code change.'},
+];
+
+// State
+const LS_KEY = 'dd_prerelease_state';
+let state = {};
+try { state = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e) {}
+
+function saveState() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function getStatus(id) { return state[id] || 'open'; }
+function cycleStatus(id) {
+  const cur = getStatus(id);
+  if (cur === 'open') state[id] = 'done';
+  else if (cur === 'done') state[id] = 'deferred';
+  else state[id] = 'open';
+  saveState();
+  render();
+}
+
+let activeFilter = 'all';
+
+function render() {
+  const container = document.getElementById('items-container');
+  const sevOrder = {'MUST FIX':0, 'SHOULD FIX':1, 'NICE TO HAVE':2};
+  const catTag = {'UX/UI':'ux','Architecture':'arch','Features':'feat','Info Arch':'ia'};
+  const sevTag = {'MUST FIX':'must','SHOULD FIX':'should','NICE TO HAVE':'nice'};
+
+  // Filter
+  let filtered = ITEMS;
+  if (activeFilter === 'recommended') filtered = ITEMS.filter(i => getStatus(i.id) === 'open');
+  else if (activeFilter === 'must') filtered = ITEMS.filter(i => i.sev === 'MUST FIX');
+  else if (activeFilter === 'should') filtered = ITEMS.filter(i => i.sev === 'SHOULD FIX');
+  else if (activeFilter === 'nice') filtered = ITEMS.filter(i => i.sev === 'NICE TO HAVE');
+  else if (activeFilter === 'open') filtered = ITEMS.filter(i => getStatus(i.id) === 'open');
+  else if (activeFilter === 'ux') filtered = ITEMS.filter(i => i.cat === 'UX/UI');
+  else if (activeFilter === 'arch') filtered = ITEMS.filter(i => i.cat === 'Architecture');
+  else if (activeFilter === 'feat') filtered = ITEMS.filter(i => i.cat === 'Features');
+  else if (activeFilter === 'ia') filtered = ITEMS.filter(i => i.cat === 'Info Arch');
+
+  // Sort
+  if (activeFilter === 'recommended') {
+    filtered.sort((a,b) => (a.fixOrder||99) - (b.fixOrder||99));
+  } else {
+    filtered.sort((a,b) => (sevOrder[a.sev]||9) - (sevOrder[b.sev]||9));
+  }
+
+  // Group and render
+  let html = '';
+  let lastSev = '';
+  const isRecommended = activeFilter === 'recommended';
+  filtered.forEach((item, idx) => {
+    if (!isRecommended && item.sev !== lastSev) {
+      lastSev = item.sev;
+      const count = filtered.filter(i => i.sev === item.sev).length;
+      html += `<div class="section-title">${item.sev} <span class="badge badge-${sevTag[item.sev]}">${count}</span></div>`;
+    }
+    if (isRecommended && idx === 0) {
+      html += `<div class="section-title">Recommended Fix Order <span class="badge" style="background:#1a1a1a">${filtered.length} open</span></div>`;
+    }
+    const status = getStatus(item.id);
+    const checkClass = status === 'done' ? 'done' : status === 'deferred' ? 'deferred' : '';
+    const cardClass = status === 'done' ? 'is-done' : status === 'deferred' ? 'is-deferred' : '';
+    const checkText = status === 'done' ? '\u2713' : status === 'deferred' ? '\u2013' : '';
+    html += `<div class="card ${cardClass}" data-id="${item.id}">
+      <div class="card-row">
+        ${isRecommended ? `<div class="fix-order-num">${item.fixOrder}</div>` : ''}
+        <div class="card-check ${checkClass}" onclick="event.stopPropagation();cycleStatus('${item.id}')">${checkText}</div>
+        <div class="card-body">
+          <div class="card-title">${item.title}</div>
+          <div class="card-details">${item.details}</div>
+          <div class="card-meta">
+            <span class="card-tag tag-${catTag[item.cat]}">${item.cat}</span>
+            <span class="card-tag tag-${sevTag[item.sev]}">${item.sev}</span>
+            ${isRecommended ? `<span class="card-tag" style="background:#f0f0f0;color:#666">#${item.fixOrder}</span>` : ''}
+          </div>
+          <div class="card-actions">
+            <button class="copy-btn" onclick="event.stopPropagation();copyPrompt('${item.id}')" id="copy-${item.id}">&#128203; Copy Fix Prompt</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+
+  // Stats
+  const mustOpen = ITEMS.filter(i => i.sev === 'MUST FIX' && getStatus(i.id) === 'open').length;
+  const shouldOpen = ITEMS.filter(i => i.sev === 'SHOULD FIX' && getStatus(i.id) === 'open').length;
+  const niceOpen = ITEMS.filter(i => i.sev === 'NICE TO HAVE' && getStatus(i.id) === 'open').length;
+  const doneCount = ITEMS.filter(i => getStatus(i.id) === 'done').length;
+  document.getElementById('stat-must').textContent = mustOpen;
+  document.getElementById('stat-should').textContent = shouldOpen;
+  document.getElementById('stat-nice').textContent = niceOpen;
+  document.getElementById('stat-done').textContent = doneCount;
+
+  const total = ITEMS.length;
+  const resolved = ITEMS.filter(i => getStatus(i.id) !== 'open').length;
+  const pct = Math.round((resolved / total) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${resolved}/${total} resolved (${pct}%)`;
+
+  // Filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === activeFilter);
+  });
+}
+
+function copyPrompt(id) {
+  const item = ITEMS.find(i => i.id === id);
+  if (!item || !item.prompt) return;
+  navigator.clipboard.writeText(item.prompt).then(() => {
+    const btn = document.getElementById('copy-' + id);
+    if (btn) { btn.classList.add('copied'); btn.innerHTML = '&#10003; Copied!'; setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '&#128203; Copy Fix Prompt'; }, 2000); }
+    showToastMsg('Prompt copied — paste into Claude to fix this item');
+  });
+}
+function showToastMsg(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+document.querySelector('.filter-bar').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  activeFilter = btn.dataset.filter;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
