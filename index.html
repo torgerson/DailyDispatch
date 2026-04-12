@@ -2433,14 +2433,16 @@ function insertAtCursor(el,text){
   autoGrow(el);
 }
 
-// Auto-expand macro tokens like {{date}} into their literal values.
+// Auto-expand macro tokens like {{date}} into their literal values,
+// and auto-format [ ] into a proper checkbox with trailing space.
 // Runs deferred (setTimeout) from the CM6 update listener so we don't
 // dispatch inside an active update cycle.
 function _expandMacrosInEditor(){
   if(!cmEditorView)return;
   const text=cmEditorView.state.doc.toString();
-  const macroRe=/\{\{(date|time|datetime)\}\}/gi;
   const changes=[];
+  // Macro expansion: {{date}}, {{time}}, {{datetime}}
+  const macroRe=/\{\{(date|time|datetime)\}\}/gi;
   let m;
   while((m=macroRe.exec(text))!==null){
     const name=m[1].toLowerCase();
@@ -2450,6 +2452,20 @@ function _expandMacrosInEditor(){
     else if(name==='datetime')val=todayStr()+' '+fmtTime(Date.now());
     else continue;
     changes.push({from:m.index,to:m.index+m[0].length,insert:val});
+  }
+  // Auto-format: typing "[ ] " at start of line (user manually typed checkbox)
+  // Ensure it matches the /task format. Also handle "[ ]" followed by text
+  // without the space — insert the space to normalize.
+  const doc=cmEditorView.state.doc;
+  const cursor=cmEditorView.state.selection.main.head;
+  const curLine=doc.lineAt(cursor);
+  // Check if current line has [ ] or [x] without proper spacing
+  const fixRe=/^(\s*(?:[-*] )?)\[([ x])\]([^\s])/;
+  const fixM=curLine.text.match(fixRe);
+  if(fixM){
+    // Insert a space after ] so "[ ]text" becomes "[ ] text"
+    const pos=curLine.from+fixM[1].length+3;
+    changes.push({from:pos,to:pos,insert:' '});
   }
   if(changes.length){
     cmEditorView.dispatch({changes});
@@ -5323,7 +5339,8 @@ function noteContentChanged(id,val){
   // Uses a flag to prevent recursion: the expansion dispatch triggers another
   // noteContentChanged, but the flag is still true so we skip the second check.
   if(!_macroExpandPending&&!(e.tags||[]).some(t=>t.toLowerCase()==='template')){
-    if(/\{\{(date|time|datetime)\}\}/i.test(val)){
+    // Trigger macro expansion for {{date}} etc. AND auto-format [ ] checkboxes
+    if(/\{\{(date|time|datetime)\}\}/i.test(val)||/\[[ x]\][^\s]/.test(val)){
       _macroExpandPending=true;
       setTimeout(()=>{
         _expandMacrosInEditor();
