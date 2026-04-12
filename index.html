@@ -482,11 +482,14 @@
   /* Task card widget inside notes */
   .cm-task-card {
     display: flex; align-items: center; gap: 10px;
-    padding: 8px 12px; margin: 3px 0;
+    padding: 8px 12px; margin: 1px 0;
     background: var(--surface); border: 1px solid var(--border-light);
     border-radius: var(--radius-md); cursor: pointer;
     transition: all 0.12s;
   }
+  /* Tighten consecutive task cards — remove CM6 line gap between them */
+  .cm-line:has(+ .cm-line .cm-task-card) { min-height: 0; }
+  .cm-line .cm-task-card { margin-bottom: -2px; }
   .cm-task-card:hover { border-color: var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
   .cm-task-card.done { opacity: 0.55; }
   .cm-task-card.done .cm-tc-title { text-decoration: line-through; color: var(--text3); }
