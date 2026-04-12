@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Onboarding — Three Options</title>
+<style>
+:root {
+  --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+  --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+  --text:#37352f; --text2:#787774; --text3:#9b9a97;
+  --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+  --danger:#e16259; --amber:#d97706; --green:#4daa57; --brown:#8b7355;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --radius-sm:4px; --radius-md:6px; --radius-lg:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);font-size:14px;color:var(--text);background:#d4cbbf;padding:30px;}
+h1{font-size:20px;font-weight:700;margin-bottom:6px;}
+.subtitle{font-size:12px;color:var(--text2);margin-bottom:30px;line-height:1.5;}
+
+.option{
+  max-width:900px;margin:0 auto 50px;
+  border-radius:var(--radius-md);overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.12);
+}
+.option-label{
+  background:var(--accent);color:#fff;padding:8px 16px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+}
+.option-desc{
+  padding:12px 16px;font-size:11px;color:var(--text2);
+  background:var(--surface);border-bottom:1px solid var(--border);line-height:1.5;
+}
+
+/* ═══════════════════════════════════════ */
+/* Shared app frame                       */
+/* ═══════════════════════════════════════ */
+.app-frame{
+  display:grid;grid-template-columns:200px 1fr;min-height:480px;
+  background:var(--bg);position:relative;
+}
+.sb{background:var(--sidebar-bg);border-right:1px solid var(--border);padding:14px;font-size:11px;color:var(--text2);}
+.sb-brand{font-size:13px;font-weight:700;color:var(--brown);margin-bottom:14px;}
+.sb-brand span{color:var(--accent);}
+.sb-item{padding:5px 10px;border-radius:var(--radius-sm);margin-bottom:2px;display:flex;align-items:center;gap:7px;}
+.sb-item.active{background:var(--accent-light);color:var(--accent);font-weight:600;}
+.main-area{display:flex;flex-direction:column;overflow:hidden;}
+.tab-bar{height:32px;background:var(--surface);border-bottom:1px solid var(--border-light);display:flex;align-items:center;padding:0 8px;font-size:11px;color:var(--text2);}
+.tab-bar .tab{padding:4px 10px;border-radius:var(--radius-sm);}
+.tab-bar .tab.active{background:var(--accent-light);color:var(--accent);font-weight:600;}
+.content{flex:1;padding:20px;overflow-y:auto;position:relative;}
+
+/* ═══════════════════════════════════════ */
+/* Mock content elements                  */
+/* ═══════════════════════════════════════ */
+.mock-card{border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:16px;}
+.mock-capture{background:#fdf9f3;padding:10px 14px;border-bottom:1px solid var(--border-light);}
+.mock-capture-input{width:100%;border:none;outline:none;font-size:13px;color:var(--text3);background:transparent;font-family:var(--sans);}
+.mock-tasks{padding:10px 14px;background:var(--surface);}
+.mock-tasks-hdr{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:6px;}
+.mock-feed-day{font-size:12px;font-weight:700;color:var(--text);margin:16px 0 6px;}
+.mock-entry{padding:4px 0;font-size:11px;color:var(--text2);border-left:2px solid var(--border-light);padding-left:10px;margin-left:12px;margin-bottom:4px;}
+
+/* ═══════════════════════════════════════ */
+/* OPTION A: Step-by-step tooltip walkthrough */
+/* ═══════════════════════════════════════ */
+.tooltip{
+  position:absolute;z-index:10;background:var(--text);color:#fff;
+  border-radius:var(--radius-md);padding:16px 18px;max-width:280px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.25);font-size:12px;line-height:1.5;
+}
+.tooltip::after{
+  content:'';position:absolute;width:12px;height:12px;background:var(--text);
+  transform:rotate(45deg);
+}
+.tooltip.arrow-top::after{top:-6px;left:24px;}
+.tooltip.arrow-left::after{left:-6px;top:20px;}
+.tooltip.arrow-bottom::after{bottom:-6px;left:24px;}
+.tooltip-step{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:6px;}
+.tooltip-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.tooltip-body{color:#ccc;margin-bottom:12px;}
+.tooltip-actions{display:flex;gap:8px;align-items:center;}
+.tooltip-btn{
+  padding:6px 14px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;
+  cursor:pointer;border:none;font-family:var(--sans);
+}
+.tooltip-btn.primary{background:var(--accent);color:#fff;}
+.tooltip-btn.skip{background:transparent;color:#888;border:1px solid #555;}
+.tooltip-dots{display:flex;gap:4px;margin-left:auto;}
+.tooltip-dot{width:6px;height:6px;border-radius:50%;background:#555;}
+.tooltip-dot.active{background:var(--accent);}
+.tooltip-highlight{
+  outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-sm);
+  animation:pulse-outline 1.5s ease-in-out infinite;
+}
+@keyframes pulse-outline{
+  0%,100%{outline-color:var(--accent);}
+  50%{outline-color:rgba(203,145,47,0.3);}
+}
+
+/* ═══════════════════════════════════════ */
+/* OPTION B: Checklist sidebar panel      */
+/* ═══════════════════════════════════════ */
+.checklist-panel{
+  position:absolute;right:16px;top:16px;width:260px;z-index:10;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+  box-shadow:0 8px 24px rgba(0,0,0,0.1);overflow:hidden;
+}
+.cl-header{
+  padding:14px 16px 10px;background:linear-gradient(135deg,var(--brown),var(--accent));
+  color:#fff;
+}
+.cl-header-title{font-size:14px;font-weight:700;margin-bottom:2px;}
+.cl-header-sub{font-size:10px;opacity:0.8;}
+.cl-progress{height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:10px;overflow:hidden;}
+.cl-progress-bar{height:100%;background:#fff;border-radius:2px;width:40%;transition:width 0.3s;}
+.cl-body{padding:8px 0;}
+.cl-item{
+  display:flex;align-items:flex-start;gap:10px;padding:10px 16px;
+  cursor:pointer;transition:background 0.1s;
+}
+.cl-item:hover{background:var(--bg);}
+.cl-item.done{opacity:0.5;}
+.cl-check{
+  width:18px;height:18px;border:2px solid var(--border-strong);border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;
+}
+.cl-check.checked{background:var(--green);border-color:var(--green);}
+.cl-check.checked::after{content:'\2713';color:#fff;font-size:10px;font-weight:700;}
+.cl-item-text{flex:1;}
+.cl-item-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.cl-item-desc{font-size:10px;color:var(--text3);line-height:1.4;}
+.cl-footer{padding:8px 16px;border-top:1px solid var(--border-light);text-align:center;}
+.cl-footer-link{font-size:10px;color:var(--text3);cursor:pointer;}
+.cl-footer-link:hover{color:var(--accent);}
+
+/* ═══════════════════════════════════════ */
+/* OPTION C: Inline coach marks in feed   */
+/* ═══════════════════════════════════════ */
+.coach-card{
+  border:1px dashed var(--accent);border-radius:var(--radius-md);
+  padding:16px;margin-bottom:12px;background:var(--accent-light);
+  position:relative;
+}
+.coach-dismiss{
+  position:absolute;top:8px;right:10px;background:none;border:none;
+  color:var(--text3);font-size:14px;cursor:pointer;
+}
+.coach-dismiss:hover{color:var(--danger);}
+.coach-step{
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  color:var(--accent);margin-bottom:6px;
+}
+.coach-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.coach-body{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:10px;}
+.coach-action{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;background:var(--accent);color:#fff;
+  border-radius:var(--radius-sm);font-size:11px;font-weight:600;
+  cursor:pointer;border:none;font-family:var(--sans);
+}
+.coach-kbd{
+  display:inline-block;padding:1px 5px;font-family:var(--mono);font-size:10px;
+  background:rgba(255,255,255,0.2);border-radius:3px;margin:0 2px;
+}
+.coach-visual{
+  margin-top:10px;padding:8px 12px;background:var(--surface);
+  border:1px solid var(--border-light);border-radius:var(--radius-sm);
+  font-size:11px;color:var(--text2);font-family:var(--mono);
+}
+</style>
+</head>
+<body>
+
+<h1>Onboarding — Three Approaches</h1>
+<p class="subtitle">How do we teach new users the core loop (capture, task, tag, search) without making them read help pages?</p>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- OPTION A: Tooltip walkthrough          -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option A — Tooltip Walkthrough (5 Steps)</div>
+  <div class="option-desc">Focused tooltips appear one at a time, pointing at the specific UI element they're teaching. A pulsing outline highlights the target. Each step has a clear action: "Try it" or "Next." Progress dots show where you are. Can be dismissed at any point with "Skip tour." Feels like Notion's or Linear's first-run experience.</div>
+  <div class="app-frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+    </div>
+    <div class="main-area">
+      <div class="tab-bar">
+        <div class="tab active">Today</div>
+      </div>
+      <div class="content">
+        <div class="mock-card">
+          <div class="mock-capture tooltip-highlight">
+            <div class="mock-capture-input">What's happening? (#tags supported)</div>
+          </div>
+          <div class="mock-tasks">
+            <div class="mock-tasks-hdr">Tasks 0</div>
+            <div style="font-size:10px;color:var(--text3);padding:4px 0">+ Add a task</div>
+          </div>
+        </div>
+
+        <!-- Tooltip pointing at capture -->
+        <div class="tooltip arrow-top" style="top:110px;left:40px;">
+          <div class="tooltip-step">Step 1 of 5</div>
+          <div class="tooltip-title">Capture a thought</div>
+          <div class="tooltip-body">Type anything here and press <strong>Cmd+Enter</strong>. Quick entries land in your timeline, timestamped and tagged automatically.</div>
+          <div class="tooltip-actions">
+            <button class="tooltip-btn primary">Try it</button>
+            <button class="tooltip-btn skip">Skip tour</button>
+            <div class="tooltip-dots">
+              <div class="tooltip-dot active"></div>
+              <div class="tooltip-dot"></div>
+              <div class="tooltip-dot"></div>
+              <div class="tooltip-dot"></div>
+              <div class="tooltip-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mock-feed-day">Today — April 12, 2026</div>
+        <div class="mock-entry">No entries yet. Type something above to get started.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- OPTION B: Floating checklist panel     -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option B — Getting Started Checklist</div>
+  <div class="option-desc">A floating card in the top-right corner with 5 tasks to complete. Each item has a short description. Items check off as you do them (auto-detected). Progress bar fills up. The card can be minimized or dismissed permanently. Feels like Stripe's or Vercel's dashboard onboarding. Non-blocking — you can use the app freely while the checklist sits there.</div>
+  <div class="app-frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+    </div>
+    <div class="main-area">
+      <div class="tab-bar">
+        <div class="tab active">Today</div>
+      </div>
+      <div class="content">
+        <div class="mock-card">
+          <div class="mock-capture">
+            <div class="mock-capture-input">What's happening? (#tags supported)</div>
+          </div>
+          <div class="mock-tasks">
+            <div class="mock-tasks-hdr">Tasks 0</div>
+            <div style="font-size:10px;color:var(--text3);padding:4px 0">+ Add a task</div>
+          </div>
+        </div>
+
+        <!-- Checklist panel -->
+        <div class="checklist-panel">
+          <div class="cl-header">
+            <div class="cl-header-title">Getting Started</div>
+            <div class="cl-header-sub">5 steps to learn DailyDispatch</div>
+            <div class="cl-progress"><div class="cl-progress-bar" style="width:40%"></div></div>
+          </div>
+          <div class="cl-body">
+            <div class="cl-item done">
+              <div class="cl-check checked"></div>
+              <div class="cl-item-text">
+                <div class="cl-item-title">Open the app</div>
+                <div class="cl-item-desc">You're here!</div>
+              </div>
+            </div>
+            <div class="cl-item done">
+              <div class="cl-check checked"></div>
+              <div class="cl-item-text">
+                <div class="cl-item-title">Add a quick entry</div>
+                <div class="cl-item-desc">Type in the box above, press Cmd+Enter</div>
+              </div>
+            </div>
+            <div class="cl-item">
+              <div class="cl-check"></div>
+              <div class="cl-item-text">
+                <div class="cl-item-title">Create a task in a note</div>
+                <div class="cl-item-desc">Open a note, type /task, give it a title</div>
+              </div>
+            </div>
+            <div class="cl-item">
+              <div class="cl-check"></div>
+              <div class="cl-item-text">
+                <div class="cl-item-title">Use a #tag</div>
+                <div class="cl-item-desc">Add #meeting or #idea to any entry</div>
+              </div>
+            </div>
+            <div class="cl-item">
+              <div class="cl-check"></div>
+              <div class="cl-item-text">
+                <div class="cl-item-title">Search for something</div>
+                <div class="cl-item-desc">Press Cmd+K and type a query</div>
+              </div>
+            </div>
+          </div>
+          <div class="cl-footer">
+            <span class="cl-footer-link">Dismiss forever</span>
+          </div>
+        </div>
+
+        <div class="mock-feed-day">Today — April 12, 2026</div>
+        <div class="mock-entry">Deployed v2.4 to production</div>
+        <div class="mock-entry"><strong>Meeting notes</strong> — sprint planning</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- OPTION C: Inline coach cards in feed   -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option C — Inline Coach Cards in the Feed</div>
+  <div class="option-desc">Teaching cards appear directly in the feed, mixed with your content. Each card teaches one concept with a clear call-to-action. Cards dismiss individually (x button) or all at once. They feel like part of the content, not a modal overlay. As you complete each action, the next card appears. Feels like Slack's or GitHub's contextual tips.</div>
+  <div class="app-frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+    </div>
+    <div class="main-area">
+      <div class="tab-bar">
+        <div class="tab active">Today</div>
+      </div>
+      <div class="content">
+        <div class="mock-card">
+          <div class="mock-capture">
+            <div class="mock-capture-input">What's happening? (#tags supported)</div>
+          </div>
+          <div class="mock-tasks">
+            <div class="mock-tasks-hdr">Tasks 0</div>
+          </div>
+        </div>
+
+        <div class="mock-feed-day">Today — April 12, 2026</div>
+
+        <!-- Coach card 1 -->
+        <div class="coach-card">
+          <button class="coach-dismiss">&times;</button>
+          <div class="coach-step">Try this</div>
+          <div class="coach-title">Capture your first thought</div>
+          <div class="coach-body">Type anything in the box above and press <span class="coach-kbd">Cmd</span>+<span class="coach-kbd">Enter</span>. It lands here in your timeline — tagged, timestamped, searchable.</div>
+          <div class="coach-visual">
+            Try: "Reviewed PR #42 — looks good #dev" <span style="color:var(--accent)">Cmd+Enter</span>
+          </div>
+        </div>
+
+        <!-- Coach card 2 -->
+        <div class="coach-card">
+          <button class="coach-dismiss">&times;</button>
+          <div class="coach-step">Next up</div>
+          <div class="coach-title">Create a task inside a note</div>
+          <div class="coach-body">Click <strong>+</strong> in the tab bar to create a note. Then type <span class="coach-kbd">/task</span> and give it a title. It appears on your Kanban board automatically.</div>
+          <div class="coach-visual">
+            In a note, type: /task Review API migration plan
+          </div>
+        </div>
+
+        <!-- Coach card 3 -->
+        <div class="coach-card">
+          <button class="coach-dismiss">&times;</button>
+          <div class="coach-step">Power move</div>
+          <div class="coach-title">Search across everything</div>
+          <div class="coach-body">Press <span class="coach-kbd">Cmd</span>+<span class="coach-kbd">K</span> to open search. Try <code>#dev @sarah</code> to find all dev entries mentioning Sarah.</div>
+        </div>
+
+        <div style="text-align:center;padding:12px;font-size:10px;color:var(--text3);">
+          <span style="cursor:pointer;text-decoration:underline">Hide all tips</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

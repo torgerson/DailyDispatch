@@ -2021,6 +2021,14 @@
   .tm-field select:focus, .tm-field input:focus { border-color: var(--accent); }
   .tm-pri-pills { display: flex; gap: 6px; flex: 1; }
   .tm-pri-pills .tap-pill { cursor: pointer; padding: 4px 12px; font-size: 11px; }
+  .tm-col-pills { display: flex; gap: 5px; flex: 1; flex-wrap: wrap; }
+  .tm-col-pill {
+    padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600;
+    cursor: pointer; border: 1.5px solid var(--border); color: var(--text2);
+    transition: all 0.1s; white-space: nowrap;
+  }
+  .tm-col-pill:hover { opacity: 0.85; }
+  .tm-col-pill.active { font-weight: 700; }
   .tm-due-set {
     padding: 5px 12px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm);
     background: transparent; color: var(--text3); font-size: 11px; font-family: var(--sans);
@@ -2082,6 +2090,51 @@
   }
   .tm-comment-text { flex: 1; color: var(--text); line-height: 1.4; }
   .tm-comment-empty { font-size: 11px; color: var(--text3); font-style: italic; padding: 4px 0; }
+
+  /* Getting Started checklist */
+  .gs-panel {
+    position: fixed; right: 20px; top: 70px; width: 280px; z-index: 400;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12); overflow: hidden;
+    transition: all 0.2s;
+  }
+  .gs-panel.minimized .gs-body, .gs-panel.minimized .gs-footer { display: none; }
+  .gs-panel.minimized { width: 200px; }
+  .gs-header {
+    padding: 14px 16px 10px;
+    background: linear-gradient(135deg, var(--brown), var(--accent));
+    color: #fff; cursor: pointer;
+  }
+  .gs-header-top { display: flex; align-items: center; justify-content: space-between; }
+  .gs-header-title { font-size: 13px; font-weight: 700; }
+  .gs-header-toggle { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 14px; cursor: pointer; }
+  .gs-header-toggle:hover { color: #fff; }
+  .gs-header-sub { font-size: 10px; opacity: 0.8; margin-top: 2px; }
+  .gs-progress { height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .gs-progress-bar { height: 100%; background: #fff; border-radius: 2px; transition: width 0.3s; }
+  .gs-body { padding: 6px 0; max-height: 340px; overflow-y: auto; }
+  .gs-item {
+    display: flex; align-items: flex-start; gap: 10px; padding: 9px 16px;
+    transition: background 0.1s;
+  }
+  .gs-item:hover { background: var(--bg); }
+  .gs-item.done { opacity: 0.45; }
+  .gs-check {
+    width: 16px; height: 16px; border: 2px solid var(--border-strong); border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .gs-check.checked { background: var(--green); border-color: var(--green); }
+  .gs-check.checked::after { content: '\2713'; color: #fff; font-size: 9px; font-weight: 700; }
+  .gs-item-text { flex: 1; }
+  .gs-item-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 1px; }
+  .gs-item-desc { font-size: 10px; color: var(--text3); line-height: 1.4; }
+  .gs-item-desc code { font-family: var(--mono); font-size: 9px; background: var(--sidebar-bg); padding: 1px 4px; border-radius: 2px; }
+  .gs-item-desc kbd { font-family: var(--mono); font-size: 9px; background: var(--sidebar-bg); border: 1px solid var(--border); padding: 0 3px; border-radius: 2px; }
+  .gs-footer {
+    padding: 8px 16px; border-top: 1px solid var(--border-light); text-align: center;
+  }
+  .gs-footer-link { font-size: 10px; color: var(--text3); cursor: pointer; background: none; border: none; font-family: var(--sans); }
+  .gs-footer-link:hover { color: var(--accent); text-decoration: underline; }
 
   .summary-banner {
     display: flex; align-items: center; gap: 8px;
@@ -2508,6 +2561,8 @@ async function loadDB(){
   db.checkboxesMigrated2=s.checkboxesMigrated2||false;
   if(s.sbGroupState)sbGroupState=s.sbGroupState;
   if(s.sbGroupOrder)sbGroupOrder=s.sbGroupOrder.filter(id=>id!=='tags'&&id!=='calendar');
+  if(s.onboardingDone)db.onboardingDone=s.onboardingDone;
+  if(s.onboardingDismissed)db.onboardingDismissed=s.onboardingDismissed;
   // Restore tab session
   if(s.openTabs&&s.openTabs.length){
     const validId=id=>id==='today'||id==='feed'||id==='home'||id==='tasks'||id==='settings'||id==='gallery'||id.startsWith('search_')||db.entries.some(e=>e.id===id);
@@ -2597,7 +2652,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,checkboxesMigrated2:db.checkboxesMigrated2||false,sbGroupState,sbGroupOrder,openTabs,activeTab,searchTabs}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,checkboxesMigrated2:db.checkboxesMigrated2||false,sbGroupState,sbGroupOrder,openTabs,activeTab,searchTabs,onboardingDone:db.onboardingDone||[],onboardingDismissed:db.onboardingDismissed||false}]);
     } else if(store==='sections'&&db.sections){
       // Strip transient session-only flags and drop unsaved drafts
       const sanitized=db.sections
@@ -3643,6 +3698,23 @@ function getEntryBorderColor(tags){
   if(!tags||!tags.length)return 'var(--border)';
   return getTagColor(tags[0]);
 }
+// Humanize widget tokens for feed preview — replaces {{...}} with readable text
+function humanizeTokens(text,entry){
+  return text
+    // Task widgets → task title
+    .replace(/\{\{task:([a-z0-9_]+)\}\}/gi,(m,id)=>{
+      const t=(db.tasks||[]).find(x=>x.id===id);
+      return t?'\u2611 '+t.title:'';
+    })
+    // Table widgets → "[table]"
+    .replace(/\{\{table:[a-z0-9_]+\}\}/gi,'[table]')
+    // Status badges → render as text
+    .replace(/\{\{status:([a-z]+):([^}]+)\}\}/gi,(m,color,label)=>'['+label+']')
+    // Smart lists → show query
+    .replace(/\{\{smartlist:(.+?)\}\}/gi,(m,query)=>'[list: '+query+']')
+    // Catch any remaining unknown tokens
+    .replace(/\{\{[^}]+\}\}/g,'');
+}
 function renderEntryCard(e,isEditRef){
   const noteClass=e.isNote?' entry-note':'';
   let h=`<div class="entry-card${noteClass}" data-id="${e.id}" data-action="open">`;
@@ -3650,10 +3722,13 @@ function renderEntryCard(e,isEditRef){
   if(isEditRef){h+=`<span class="entry-edit-badge">edited</span>`;}
   // Extract image IDs and strip tokens from display content
   const imgIds=[...e.content.matchAll(/!\[\]\((img_[a-z0-9_]+)(?:\|w=\d+)?\)/g)].map(m=>m[1]);
-  const contentNoImgs=e.content.replace(/\n?!\[\]\(img_[a-z0-9_]+(?:\|w=\d+)?\)\n?/g,' ').trim();
+  let contentNoImgs=e.content.replace(/\n?!\[\]\(img_[a-z0-9_]+(?:\|w=\d+)?\)\n?/g,' ').trim();
+  // Humanize widget tokens for display
+  contentNoImgs=humanizeTokens(contentNoImgs,e);
   // Content
   if(e.isNote){
-    const cleanTitle=substituteTemplateVars((e.noteTitle||'Untitled').replace(/!\[\]\(img_[a-z0-9_]+(?:\|w=\d+)?\)/g,'').replace(/^#+\s+/,'').trim()||'Untitled',e.ts);
+    let cleanTitle=substituteTemplateVars((e.noteTitle||'Untitled').replace(/!\[\]\(img_[a-z0-9_]+(?:\|w=\d+)?\)/g,'').replace(/^#+\s+/,'').trim()||'Untitled',e.ts);
+    cleanTitle=humanizeTokens(cleanTitle,e);
     const preview=substituteTemplateVars(contentNoImgs.replace(/#[a-zA-Z0-9_-]+/g,'').replace(/\[\[([^\]]+)\]\]/g,'$1').replace(/[*`_~#\[\]]/g,'').trim(),e.ts);
     const titleText=escH(cleanTitle);
     const previewText=preview&&preview!==cleanTitle?(' — '+escH(preview.slice(0,80))+(preview.length>80?'...':'')):'';
@@ -3823,7 +3898,7 @@ function setupFeedDayTracker(){
   };
   container.addEventListener('scroll',_feedScrollHandler,{passive:true});
 }
-function getCtxLabel(cid){const c=db.contexts.find(x=>x.id===cid);return c?c.label:null;}
+// getCtxLabel removed — Contexts system was never shipped
 function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,160)+'px';}
 function captureKey(e){
   if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();submitEntry();}
@@ -3837,6 +3912,8 @@ function submitEntry(){
   db.entries.push({id:genId('e'),content,tags:extractTags(content),mentions,date:todayStr(),ts,isNote:false,noteTitle:'',contextId:null});
   registerMentions(mentions);
   save();inp.value='';inp.style.height='auto';renderActiveView();renderAllSections();
+  completeOnboardingStep('gs_entry');
+  if(extractTags(content).length)completeOnboardingStep('gs_tag');
   // Re-focus capture input so user can keep typing
   setTimeout(()=>{const el=document.getElementById('capture-input');if(el)el.focus();},10);
 }
@@ -3989,6 +4066,7 @@ function createNote(){
   if(!openTabs.includes(entry.id))openTabs.push(entry.id);
   activeTab=entry.id;
   updateDateBar();renderTabBar();renderActiveView();renderAllSections();renderTagCloud();renderRecent();renderCalendar();
+  completeOnboardingStep('gs_note');
 }
 function openNoteTab(id){if(!openTabs.includes(id))openTabs.push(id);activeTab=id;renderTabBar();renderActiveView();}
 /* ═══════════ CM6 INTEGRATION LAYER — START (rip-out safe) ═══════════ */
@@ -4807,7 +4885,7 @@ class CmSmartListWidget extends CM6.WidgetType{
         // Title + preview
         const titleWrap=document.createElement('span');
         titleWrap.className='cm-sl-title';
-        const cleanContent=(entry.content||'').replace(/\{\{[^}]+\}\}/g,'').replace(/!\[\]\([^)]+\)/g,'').replace(/#[a-zA-Z0-9_-]+/g,'').replace(/@[a-zA-Z0-9_-]+/g,'').replace(/[*`_~#\[\]>]/g,'').trim();
+        const cleanContent=humanizeTokens(entry.content||'',entry).replace(/!\[\]\([^)]+\)/g,'').replace(/#[a-zA-Z0-9_-]+/g,'').replace(/@[a-zA-Z0-9_-]+/g,'').replace(/[*`_~#\[\]>]/g,'').trim();
         if(entry.isNote){
           const name=(entry.noteTitle||'Untitled').replace(/^#+\s+/,'').slice(0,50);
           titleWrap.innerHTML='<strong>'+escH(name)+'</strong>';
@@ -5854,6 +5932,9 @@ function noteContentChanged(id,val){
   e.tags=extractTags(val);
   e.mentions=extractMentions(val);
   e.updatedTs=Date.now();
+  // Onboarding: detect markdown usage and tags in notes
+  if(e.tags&&e.tags.length)completeOnboardingStep('gs_tag');
+  if(/(\*\*|__|^#+\s|^- |^\d+\.\s|^>\s|`)/m.test(val))completeOnboardingStep('gs_md');
   // Track edit dates — one entry per day, latest ts wins
   const today=todayStr();
   if(today!==e.date){ // don't track edits on creation day — already in feed
@@ -6133,16 +6214,9 @@ function toggleFilter(tag){
 function clearFilters(){activeTagFilters=[];renderAllSections();renderSidebarTags();renderActiveView();}
 
 /* ═══════════ QUESTIONS ═══════════ */
-function addQuestion(text){text=text.trim();if(!text)return;db.questions.push({id:genId('q'),question:text,askedBy:[],status:'open',answer:'',tags:extractTags(text),date:todayStr(),ts:Date.now()});save();document.querySelector('.q-input').value='';renderQuestions();}
-function renderQuestions(){
-  const el=document.getElementById('q-list');const qs=db.questions.filter(q=>q.status==='open').concat(db.questions.filter(q=>q.status==='answered')).slice(0,15);
-  if(!qs.length){el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:4px">No questions</div>';return;}
-  el.innerHTML=qs.map(q=>`<div class="q-card ${q.status}" data-qid="${q.id}" onclick="toggleQExpand('${q.id}')"><span class="q-status" onclick="event.stopPropagation();toggleQStatus('${q.id}')">${q.status}</span><button class="q-del" onclick="event.stopPropagation();delQuestion('${q.id}')">&times;</button><div class="q-text">${escH(q.question)}</div><div class="q-meta">${q.askedBy.length?'By: '+escH(q.askedBy.join(', ')):''} ${q.date}</div><div class="q-answer-area"><input class="q-askedby-input" placeholder="Asked by..." value="${escH(q.askedBy.join(', '))}" onclick="event.stopPropagation()" onchange="updateQ('${q.id}','askedBy',this.value)"><textarea class="q-answer-input" placeholder="Answer..." onclick="event.stopPropagation()" onchange="updateQ('${q.id}','answer',this.value)">${escH(q.answer)}</textarea></div></div>`).join('');
-}
-function toggleQExpand(id){const c=document.querySelector(`.q-card[data-qid="${id}"]`);if(c)c.classList.toggle('expanded');}
-function toggleQStatus(id){const q=db.questions.find(x=>x.id===id);if(!q)return;q.status=q.status==='open'?'answered':'open';if(q.status==='answered'&&q.answer){db.entries.push({id:genId('e'),content:`Answered: ${q.question} — ${q.answer}`,tags:[...(q.tags||[]),'answered'],date:todayStr(),ts:Date.now(),isNote:false,noteTitle:'',contextId:null});}save();renderQuestions();renderActiveView();renderAllSections();}
-function updateQ(id,field,val){const q=db.questions.find(x=>x.id===id);if(!q)return;if(field==='askedBy')q.askedBy=val.split(',').map(s=>s.trim()).filter(Boolean);else q[field]=val;save();renderQuestions();}
-function delQuestion(id){db.questions=db.questions.filter(q=>q.id!==id);save();renderQuestions();}
+// Questions and Contexts systems removed — dead code from early prototyping.
+// Data is still loaded from IndexedDB for backward compat (db.questions, db.contexts)
+// but no UI references them.
 
 /* Seed default sections once for brand-new users to encourage use. */
 function ensureHelpSection(){
@@ -6748,6 +6822,7 @@ function openSearch(){
   renderTabBar();renderActiveView();
   // Focus the search input
   setTimeout(()=>{const inp=document.getElementById('search-tab-input');if(inp)inp.focus();},50);
+  completeOnboardingStep('gs_search');
 }
 
 /* ═══════════ FLOATING NOTE WINDOW ═══════════ */
@@ -7208,10 +7283,10 @@ function sbScrollDrop(e){
 function switchToNav(view){
   if(view==='today'){switchTab('today');}
   else if(view==='tasks'){
-    // Tasks tab — stub for Phase 4. For now just show a placeholder.
     if(!openTabs.includes('tasks'))openTabs.push('tasks');
     activeTab='tasks';
     renderTabBar();renderActiveView();
+    completeOnboardingStep('gs_kanban');
   }
   updateSidebarNav();
 }
@@ -7515,8 +7590,8 @@ function renderHome(area){
       <h1 class="home-hero-title">Think. Track. Ship.</h1>
       <p class="home-hero-tag">The work journal where notes and tasks live together. Capture what happened, track what's next, and find anything instantly &mdash; all in a single file that never leaves your machine.</p>
       <div class="home-hero-actions">
-        <button onclick="switchTab('today')" class="home-btn primary">Start writing &rarr;</button>
-        <button onclick="closeTab('home')" class="home-btn secondary">Close welcome</button>
+        <button onclick="switchTab('today');db.onboardingDone=[];db.onboardingDismissed=false;save('settings');renderGettingStarted()" class="home-btn primary">Start the tour &rarr;</button>
+        <button onclick="switchTab('today')" class="home-btn secondary">Skip to Today</button>
       </div>
       <div class="home-hero-badges">
         <span class="home-badge">${iconLock} Single HTML file</span>
@@ -8263,6 +8338,11 @@ function renderSettingsTab(area){
             <span class="version-pill">v${APP_VERSION}</span>
             <span class="version-hint">Click for changelog &rarr;</span>
           </div>
+        </div>
+        <div class="settings-section" style="margin-top:16px">
+          <h2>Onboarding</h2>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Reset the Getting Started checklist to see it again.</p>
+          <button class="modal-btn" onclick="db.onboardingDone=[];db.onboardingDismissed=false;save('settings');renderGettingStarted();if(typeof showToast==='function')showToast('Onboarding reset','info')">Reset Getting Started</button>
         </div>
         <div class="settings-section" style="border:2px solid var(--danger);border-radius:var(--radius-md);padding:16px">
           <h2 style="color:var(--danger)">Danger Zone</h2>
@@ -9125,7 +9205,10 @@ function openTaskDetail(taskId){
     const active=t.priority===p?' active':'';
     return`<span class="tap-pill ${cls}${active}" onclick="updateTask('${t.id}',{priority:'${p}'});openTaskDetail('${t.id}');renderActiveView();renderSidebar()">${label}</span>`;
   }).join('');
-  const colOpts=cols.map(c=>`<option value="${c.id}"${t.column_id===c.id?' selected':''}>${escH(c.name)}</option>`).join('');
+  const colPills=cols.map(c=>{
+    const active=t.column_id===c.id?' active':'';
+    return`<span class="tm-col-pill${active}" style="${active?'background:'+( c.color||'var(--accent)')+';color:#fff;border-color:'+(c.color||'var(--accent)'):'border-color:'+(c.color||'var(--border)')}" onclick="updateTask('${t.id}',{column_id:'${c.id}'});const dc=getDoneColumn();if(dc&&'${c.id}'===dc.id&&!db.tasks.find(x=>x.id==='${t.id}').completed){completeTask('${t.id}',true);}else if(dc&&'${c.id}'!==dc.id&&db.tasks.find(x=>x.id==='${t.id}').completed){completeTask('${t.id}',false);}openTaskDetail('${t.id}');renderActiveView();renderSidebar()">${escH(c.name)}</span>`;
+  }).join('');
   const createdDate=new Date(t.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   const completedDate=t.completed_at?new Date(t.completed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
 
@@ -9151,7 +9234,7 @@ function openTaskDetail(taskId){
       </div>
       <div class="tm-field">
         <label>Column</label>
-        <select onchange="updateTask('${t.id}',{column_id:this.value});const dc=getDoneColumn();if(dc&&this.value===dc.id&&!db.tasks.find(x=>x.id==='${t.id}').completed){completeTask('${t.id}',true);}else if(dc&&this.value!==dc.id&&db.tasks.find(x=>x.id==='${t.id}').completed){completeTask('${t.id}',false);}renderActiveView();renderSidebar()">${colOpts}</select>
+        <div class="tm-col-pills">${colPills}</div>
       </div>
     </div>
     ${t.note_id?`<div class="tm-note-link" onclick="closeTaskModal();openAsNote('${t.note_id}')"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="13" y2="10"/></svg> Open linked note</div>`:''}
@@ -9296,6 +9379,7 @@ function createTask(opts){
   if(!db.tasks)db.tasks=[];
   db.tasks.push(task);
   save('tasks');
+  completeOnboardingStep('gs_task');
   return task;
 }
 function updateTask(id,changes){
@@ -9349,6 +9433,78 @@ function getTasksOverdue(beforeDate){
 function getColumnName(colId){
   const c=(db.columns||[]).find(x=>x.id===colId);
   return c?c.name:'';
+}
+
+/* ═══════════ GETTING STARTED ONBOARDING ═══════════ */
+const GS_STEPS=[
+  {id:'gs_open',title:'Open DailyDispatch',desc:'You\'re here!',auto:true},
+  {id:'gs_entry',title:'Add a quick entry',desc:'Type in the capture box, press <kbd>Cmd</kbd>+<kbd>Enter</kbd>'},
+  {id:'gs_note',title:'Create a note',desc:'Click <strong>+</strong> in the tab bar or press <kbd>Cmd</kbd>+<kbd>;</kbd>'},
+  {id:'gs_task',title:'Create a task in a note',desc:'In a note, type <code>/task</code> and give it a title'},
+  {id:'gs_kanban',title:'See it on the board',desc:'Click <strong>Tasks</strong> in the sidebar — your task is there'},
+  {id:'gs_tag',title:'Tag something',desc:'Add <code>#meeting</code> or <code>#idea</code> to any entry'},
+  {id:'gs_search',title:'Search for it',desc:'Press <kbd>Cmd</kbd>+<kbd>K</kbd> and type a query'},
+  {id:'gs_md',title:'Try markdown formatting',desc:'In a note: <code>**bold**</code>, <code>*italic*</code>, <code># heading</code>, <code>- bullet</code>, <code>/table</code>'},
+];
+function renderGettingStarted(){
+  if(db.onboardingDismissed)return;
+  const done=db.onboardingDone||[];
+  // Auto-check "open" step
+  if(!done.includes('gs_open')){done.push('gs_open');db.onboardingDone=done;save('settings');}
+  // All done? Remove panel
+  if(done.length>=GS_STEPS.length){
+    const existing=document.getElementById('gs-panel');
+    if(existing)existing.remove();
+    return;
+  }
+  let panel=document.getElementById('gs-panel');
+  if(!panel){
+    panel=document.createElement('div');
+    panel.id='gs-panel';
+    panel.className='gs-panel';
+    document.body.appendChild(panel);
+  }
+  const pct=Math.round((done.length/GS_STEPS.length)*100);
+  const minimized=panel.classList.contains('minimized');
+  panel.innerHTML=`
+    <div class="gs-header" onclick="document.getElementById('gs-panel').classList.toggle('minimized')">
+      <div class="gs-header-top">
+        <span class="gs-header-title">Getting Started</span>
+        <button class="gs-header-toggle">${minimized?'+':'−'}</button>
+      </div>
+      <div class="gs-header-sub">${done.length} of ${GS_STEPS.length} complete</div>
+      <div class="gs-progress"><div class="gs-progress-bar" style="width:${pct}%"></div></div>
+    </div>
+    <div class="gs-body">
+      ${GS_STEPS.map(s=>{
+        const isDone=done.includes(s.id);
+        return`<div class="gs-item${isDone?' done':''}">
+          <div class="gs-check${isDone?' checked':''}"></div>
+          <div class="gs-item-text">
+            <div class="gs-item-title">${s.title}</div>
+            <div class="gs-item-desc">${s.desc}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="gs-footer">
+      <button class="gs-footer-link" onclick="dismissOnboarding()">Dismiss forever</button>
+    </div>
+  `;
+}
+function completeOnboardingStep(stepId){
+  if(db.onboardingDismissed)return;
+  if(!db.onboardingDone)db.onboardingDone=[];
+  if(db.onboardingDone.includes(stepId))return;
+  db.onboardingDone.push(stepId);
+  save('settings');
+  renderGettingStarted();
+}
+function dismissOnboarding(){
+  db.onboardingDismissed=true;
+  save('settings');
+  const panel=document.getElementById('gs-panel');
+  if(panel)panel.remove();
 }
 
 function ensureHelpNotes(){
@@ -9602,6 +9758,7 @@ async function init(){
     save('settings');
   }
   updateDateBar();renderTabBar();renderActiveView();renderSidebar();
+  renderGettingStarted();
   // Reload entries AND images from IDB. Floating-window image pastes are
   // persisted directly to the images store, but the main window's in-memory
   // db.images Map is stale until we re-read it — otherwise pasted images

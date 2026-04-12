@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DailyDispatch Review — The Verge (Mock)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #fff; color: #1a1a1a; line-height: 1.7; }
+
+  /* Header bar */
+  .site-bar { background: #1a1a1a; padding: 12px 0; text-align: center; }
+  .site-bar span { color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* Article container */
+  .article { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  /* Meta */
+  .category { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #e04040; margin-bottom: 16px; }
+  h1 { font-size: 36px; font-weight: 800; line-height: 1.15; margin-bottom: 14px; letter-spacing: -0.5px; }
+  .deck { font-size: 18px; color: #555; line-height: 1.5; margin-bottom: 20px; }
+  .byline { font-size: 13px; color: #888; margin-bottom: 32px; }
+  .byline strong { color: #1a1a1a; }
+
+  /* Hero image placeholder */
+  .hero-img {
+    width: 100%; aspect-ratio: 16/9; background: linear-gradient(135deg, #f5f2ed 0%, #e8e0d4 50%, #cb912f 100%);
+    border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 800; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .hero-caption { font-size: 11px; color: #999; margin-bottom: 32px; font-style: italic; }
+
+  /* Body */
+  .article p { margin-bottom: 20px; font-size: 16px; }
+  .article h2 { font-size: 22px; font-weight: 700; margin: 36px 0 14px; }
+  .article h3 { font-size: 17px; font-weight: 700; margin: 28px 0 10px; }
+  .article blockquote {
+    border-left: 3px solid #e04040; margin: 24px 0; padding: 2px 0 2px 20px;
+    font-size: 18px; font-weight: 500; color: #333; font-style: italic; line-height: 1.5;
+  }
+  .article ul { margin: 0 0 20px 20px; }
+  .article li { margin-bottom: 6px; font-size: 15px; }
+  .article strong { font-weight: 600; }
+  .article em { font-style: italic; }
+
+  /* Pull quote */
+  .pull-quote {
+    margin: 36px -40px; padding: 28px 40px; background: #f5f5f5; border-radius: 8px;
+    font-size: 20px; font-weight: 600; line-height: 1.4; color: #222; text-align: center;
+  }
+
+  /* Score card */
+  .scorecard {
+    margin: 40px 0; padding: 24px; border: 2px solid #e8e8e8; border-radius: 8px;
+  }
+  .scorecard h3 { margin: 0 0 16px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #e04040; }
+  .score-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+  .score-row:last-child { border-bottom: none; }
+  .score-label { color: #555; }
+  .score-value { font-weight: 700; }
+  .score-value.good { color: #16a34a; }
+  .score-value.ok { color: #d97706; }
+  .score-value.needs-work { color: #e04040; }
+
+  /* Action items section */
+  .actions { margin: 40px 0; padding: 28px; background: #1a1a1a; border-radius: 8px; color: #e0e0e0; }
+  .actions h2 { color: #fff; font-size: 18px; margin: 0 0 18px; }
+  .actions h3 { color: #e04040; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 8px; }
+  .actions h3:first-of-type { margin-top: 0; }
+  .actions ul { margin: 0 0 0 18px; }
+  .actions li { margin-bottom: 6px; font-size: 13px; color: #ccc; line-height: 1.5; }
+  .actions li strong { color: #fff; }
+
+  /* Verdict */
+  .verdict { margin: 40px 0; padding: 28px; background: #fef9f0; border: 1px solid #f0e0c0; border-radius: 8px; }
+  .verdict h2 { font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #cb912f; margin: 0 0 12px; }
+  .verdict p { margin-bottom: 12px; }
+  .verdict p:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<div class="site-bar"><span>The Verge</span></div>
+
+<article class="article">
+
+  <div class="category">Productivity / Reviews</div>
+  <h1>DailyDispatch wants to be the work journal you didn't know you needed</h1>
+  <p class="deck">A single HTML file that combines note-taking, task management, and a daily feed. It's ambitious, opinionated, and surprisingly deep — but it's got some rough edges to sand down.</p>
+  <p class="byline">By <strong>Mock Reviewer</strong> / Apr 12, 2026, 10:00 AM EDT</p>
+
+  <div class="hero-img">DailyDispatch</div>
+  <p class="hero-caption">DailyDispatch running in Chrome with the Warm Notion theme. The sidebar, feed timeline, and task widgets are all rendered from a single HTML file.</p>
+
+  <p>There's a category of productivity tool that's hard to explain to normal people. It's not a to-do list. It's not a note app. It's not a journal. It's... all of them, mashed together, for the kind of person who thinks in markdown and gets annoyed when software phones home. <strong>DailyDispatch</strong> is one of those tools, and it's one of the more interesting entries I've seen in a while.</p>
+
+  <p>The pitch: a local-first work journal where notes and tasks live together, stored entirely in your browser's IndexedDB, delivered as a single HTML file. No account. No cloud. No install. Just open it in Chrome and start typing.</p>
+
+  <p>I've been using it for about a week, and I have thoughts.</p>
+
+  <h2>What it gets right</h2>
+
+  <h3>The daily feed is genuinely great</h3>
+
+  <p>The centerpiece of DailyDispatch is a chronological feed of everything you type during the day. Quick entries, meeting notes, ideas, deployment logs — it all lands in a timeline grouped by day and hour, with little amber dots marking notes versus quick entries. It feels like a work-specific Twitter feed, except private and searchable.</p>
+
+  <p>The "command card" at the top of the Today view is a smart design. The capture input and your due tasks sit in one bordered card, so you always know what to do and where to type. The cursor auto-focuses when you switch to Today. Small detail, good instinct.</p>
+
+  <blockquote>The feed makes you feel like your day is being recorded, not managed. That's a surprisingly different feeling from a to-do list.</blockquote>
+
+  <h3>Tasks inside notes is the killer feature</h3>
+
+  <p>Most note apps treat tasks as decoration. You type a checkbox, and that's it — there's no board, no priority, no due date. It's just text that looks like a checkbox. DailyDispatch actually connects them. Type <code>/task</code> in a note and you get a linked task that shows up on a Kanban board, has a priority level, a due date, a description field, and a comment log. Complete it on the board and it updates in the note. That bidirectional link is the kind of thing that sounds obvious but almost nobody does well.</p>
+
+  <p>The Smart List feature extends this further — type <code>/smartlist</code> in any note and you get a live search widget embedded inline, showing matching entries. Want a "Project X" note that always shows everything tagged #projectx? Done. It turns notes into dashboards.</p>
+
+  <h3>Search is a first-class citizen</h3>
+
+  <p>The search syntax is surprisingly powerful: tags, mentions, boolean OR, phrase matching, negation, and a <code>line:</code> scope operator. Each search opens as a persistent tab you can keep alongside your notes. The sidebar sections are essentially pinned searches that update live. For a single-file app, this is impressive.</p>
+
+  <h3>The privacy story is real</h3>
+
+  <p>I inspected the network tab. Zero requests. Not even a favicon fetch from a CDN. Everything — the CodeMirror editor, the Kanban board, 15 themes, the entire help system — is bundled into one HTML file. Your data never leaves IndexedDB. For anyone who's paranoid about cloud note services reading their meeting notes, this is exactly what they want to hear.</p>
+
+  <div class="pull-quote">It's the most feature-dense single HTML file I've ever opened. That's both impressive and slightly terrifying.</div>
+
+  <h2>Where it gets confusing</h2>
+
+  <h3>The learning curve is steeper than it needs to be</h3>
+
+  <p>DailyDispatch has a lot of surface area. Slash commands, Smart Lists, sections, tags, mentions, cross-links, Kanban columns, task widgets, status badges, templates, a floating note window — it's all there. But discoverability is weak. You have to know to type <code>/</code> to get the command menu. You have to know that clicking a tag in the sidebar filters the feed. The help section is thorough, but it's buried in a sidebar section that most users will collapse and forget about.</p>
+
+  <p>The onboarding homepage is polished but doesn't actually <em>teach</em> you anything interactively. There's no guided tour, no "try this now" prompts. You read the marketing copy, click "Go to Today," and you're on your own.</p>
+
+  <h3>The sidebar is getting crowded</h3>
+
+  <p>Calendar, Tags, Sections header, section panels — there's a lot of stuff stacked vertically in a 240px column. When you have a few sections expanded, the tags get pushed up under the calendar and the sections scroll independently. It works, but it feels like four different UI concepts fighting for the same narrow strip. I'd love to see a collapsible sidebar or a way to toggle between "navigation mode" and "dashboard mode."</p>
+
+  <h3>The Kanban board is functional but basic</h3>
+
+  <p>Drag-and-drop works. Column management works. The amber drop indicators are a nice touch. But compared to dedicated tools like Linear or Trello, it feels thin. There's no swimlanes, no card labels beyond priority, no subtasks, no due date calendar view. For light task tracking alongside notes, it's fine. For anyone doing serious project management, they'll outgrow it quickly.</p>
+
+  <h3>Some UI elements feel unfinished</h3>
+
+  <p>The column selector in the task modal is still a native <code>&lt;select&gt;</code> dropdown, which looks out of place next to the priority pills. Some modals (like the generic confirm/prompt dialogs) are clean, but others (the section edit card) feel like they belong to an earlier design era. The header band at the top is just a colored strip with no content — it works as a separator from browser tabs, but it feels like wasted space.</p>
+
+  <h2>What I'd want to see next</h2>
+
+  <h3>Mobile. Something, anything.</h3>
+
+  <p>This is desktop-first by design, and the CLAUDE.md file explicitly says mobile is a non-goal. But in 2026, a tool that can't capture a quick thought from your phone is leaving value on the table. Even a basic responsive view that lets you add entries and check off tasks would be a huge win.</p>
+
+  <h3>Better onboarding</h3>
+
+  <p>An interactive walkthrough that says "type something here and press Cmd+Enter" and then "now type /task and see what happens" would go a long way. The help content is excellent — 14 detailed pages — but nobody reads help proactively.</p>
+
+  <h3>Collaboration, even just a little</h3>
+
+  <p>I get that this is a personal journal. But the @mentions feature suggests awareness of other people. Being able to share a single note (read-only export, maybe as a markdown file or HTML snippet) would make this more useful in team contexts without compromising the local-first story.</p>
+
+  <h3>File system sync</h3>
+
+  <p>The File System Access API exists. Let users pick a folder and auto-save their data as JSON. That would unlock Dropbox/iCloud/Git sync without building any cloud infrastructure. Right now, the only backup option is manual JSON export, which most people will forget to do.</p>
+
+  <div class="scorecard">
+    <h3>Scorecard</h3>
+    <div class="score-row"><span class="score-label">Daily feed & capture</span><span class="score-value good">Excellent</span></div>
+    <div class="score-row"><span class="score-label">Note editor (markdown, slash commands)</span><span class="score-value good">Excellent</span></div>
+    <div class="score-row"><span class="score-label">Task-note integration</span><span class="score-value good">Very good</span></div>
+    <div class="score-row"><span class="score-label">Smart Lists / Sections</span><span class="score-value good">Very good</span></div>
+    <div class="score-row"><span class="score-label">Search</span><span class="score-value good">Excellent</span></div>
+    <div class="score-row"><span class="score-label">Privacy / local-first</span><span class="score-value good">Excellent</span></div>
+    <div class="score-row"><span class="score-label">Themes & customization</span><span class="score-value good">Very good</span></div>
+    <div class="score-row"><span class="score-label">Kanban / task management depth</span><span class="score-value ok">Adequate</span></div>
+    <div class="score-row"><span class="score-label">Onboarding & discoverability</span><span class="score-value needs-work">Needs work</span></div>
+    <div class="score-row"><span class="score-label">Mobile support</span><span class="score-value needs-work">Missing</span></div>
+    <div class="score-row"><span class="score-label">Data portability & backup</span><span class="score-value ok">Adequate</span></div>
+    <div class="score-row"><span class="score-label">UI consistency & polish</span><span class="score-value ok">Adequate</span></div>
+  </div>
+
+  <div class="verdict">
+    <h2>The Verdict</h2>
+    <p>DailyDispatch is an opinionated, privacy-first work journal that gets the core loop right: capture a thought, tag it, find it later. The task integration is genuinely novel — most note apps don't even try — and the Smart List feature turns notes into living dashboards. For engineers, PMs, and anyone who lives in a browser and thinks in markdown, it's worth trying.</p>
+    <p>But it's not for everyone. The learning curve is real, the sidebar is getting dense, and the lack of mobile or sync means it's a single-browser, single-device tool. If you're okay with that trade-off — and you value privacy enough to accept it — there's nothing else quite like it.</p>
+    <p><strong>7.5 / 10</strong> — An ambitious, deeply personal tool that nails the intersection of notes and tasks. Needs polish, onboarding, and a mobile story to break out of the power-user niche.</p>
+  </div>
+
+  <div class="actions">
+    <h2>Product Action Items (for the DailyDispatch team)</h2>
+
+    <h3>Fix now (polish & consistency)</h3>
+    <ul>
+      <li><strong>Column selector in task modal</strong> — replace the native &lt;select&gt; dropdown with styled pills or a custom dropdown matching the priority pills</li>
+      <li><strong>Section edit cards</strong> — restyle the setup/edit UI to match the modal design language (rounded corners, consistent spacing, accent colors)</li>
+      <li><strong>Header band</strong> — either put something useful in it (breadcrumb, current note title) or reduce it to a thin 4px accent line</li>
+      <li><strong>Feed entry previews</strong> — the token humanization is a good start, but "[table]" and "[list: #query]" still feel technical. Consider small inline icons instead</li>
+      <li><strong>Empty states</strong> — the Kanban board with empty columns just shows blank space. Add helpful prompts ("Drag tasks here" or "Click + to add")</li>
+    </ul>
+
+    <h3>Build next (high-impact features)</h3>
+    <ul>
+      <li><strong>Interactive onboarding</strong> — a 5-step guided tour that walks new users through capture, /task, tagging, and search. Show, don't tell</li>
+      <li><strong>File System Access API sync</strong> — let users pick a folder for auto-save. Unlocks iCloud/Dropbox/Git sync with zero infrastructure</li>
+      <li><strong>Markdown export per note</strong> — export a single note as .md file for sharing. Enables lightweight collaboration without cloud</li>
+      <li><strong>Task subtasks</strong> — a task with child tasks would make the Kanban board actually useful for project breakdown</li>
+      <li><strong>Quick-open command palette</strong> — Cmd+Shift+O should be a fuzzy-search palette (like VS Code's Cmd+P) that searches notes, tasks, tags, and commands</li>
+      <li><strong>Recurring tasks</strong> — "every Monday: review PRs" is a common pattern that currently requires manual recreation</li>
+    </ul>
+
+    <h3>Consider for roadmap</h3>
+    <ul>
+      <li><strong>Responsive/mobile view</strong> — even a basic capture + today view that works on a phone would expand the audience significantly</li>
+      <li><strong>Sidebar modes</strong> — toggle between compact (just nav) and expanded (nav + calendar + tags + sections) to reduce visual density</li>
+      <li><strong>Card labels/colors on Kanban</strong> — tags should show on cards, and custom color labels would help visual scanning</li>
+      <li><strong>Note templates with variables</strong> — {{date}}, {{time}} already work, but add {{cursor}} to place the cursor after insertion</li>
+      <li><strong>Calendar integration</strong> — show tasks with due dates on the calendar grid, not just entry dots</li>
+      <li><strong>Undo for destructive actions</strong> — "Note deleted. Undo?" toast instead of permanent deletion</li>
+    </ul>
+
+    <h3>Consider cutting or simplifying</h3>
+    <ul>
+      <li><strong>Events & Activity Log</strong> — most users don't care that they renamed a section. The search event "reopen" feature is useful; the rest is noise in the feed</li>
+      <li><strong>Floating note window</strong> — great concept, but popup windows are unreliable across browsers and OS configurations. Consider an in-app side panel instead</li>
+      <li><strong>Questions system</strong> — still referenced in the data model but not exposed in the UI. Either ship it or remove the dead code</li>
+      <li><strong>Contexts</strong> — same as Questions. Referenced in the schema, never surfaced. Clean it up</li>
+      <li><strong>Section resize handles</strong> — dragging to resize section panels is a power feature that adds complexity. Consider fixed sizes (compact/expanded toggle) instead</li>
+    </ul>
+  </div>
+
+</article>
+
+</body>
+</html>
