@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Feed Indentation — Layout Options</title>
+<style>
+:root {
+  --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+  --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+  --text:#37352f; --text2:#787774; --text3:#9b9a97;
+  --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+  --danger:#e16259; --amber:#d97706; --green:#4daa57; --blue:#5b9bd5;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --radius-sm:4px; --radius-md:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);font-size:14px;color:var(--text);background:#e8e0d4;padding:30px;}
+h1{font-size:18px;font-weight:700;margin-bottom:6px;}
+.subtitle{font-size:12px;color:var(--text2);margin-bottom:30px;}
+
+.option{
+  background:var(--bg);max-width:700px;margin:0 auto 50px;
+  border-radius:var(--radius-md);overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,0.08);padding:20px 24px 24px;
+}
+.option-label{
+  background:var(--accent);color:#fff;padding:8px 16px;margin:-20px -24px 0;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+}
+.option-desc{
+  padding:12px 0;font-size:11px;color:var(--text2);line-height:1.5;
+  border-bottom:1px solid var(--border-light);margin-bottom:16px;
+}
+
+/* Shared entry styles */
+.feed-tag{font-size:8px;padding:1px 5px;border-radius:3px;background:rgba(203,145,47,0.08);color:var(--accent);margin-left:4px;vertical-align:1px;}
+.feed-tag.tpl{background:rgba(76,175,80,0.08);color:var(--green);}
+.edit-badge{font-size:8px;font-weight:500;color:var(--accent);background:var(--accent-light);padding:1px 5px;border-radius:3px;font-style:italic;margin-right:4px;}
+
+/* ══════════════════════════════════════════ */
+/* OPTION A: Date at main level, entries indented */
+/* ══════════════════════════════════════════ */
+.a-day{
+  margin-bottom:20px;
+}
+.a-day-hdr{
+  display:flex;align-items:center;gap:10px;
+  padding:0 0 6px;
+}
+.a-day-label{
+  font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;
+}
+.a-day-date{
+  font-size:11px;font-weight:400;color:var(--text3);
+}
+.a-day-line{
+  flex:1;height:1px;background:var(--border);
+}
+.a-entries{
+  margin-left:20px;
+  border-left:2px solid var(--border-light);
+  padding-left:16px;
+}
+.a-hour{
+  font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;
+  letter-spacing:0.4px;padding:8px 0 3px;
+}
+.a-entry{
+  display:flex;gap:10px;padding:7px 0;
+  cursor:pointer;transition:background 0.1s;border-radius:var(--radius-sm);
+}
+.a-entry:hover{background:rgba(203,145,47,0.04);}
+.a-time{
+  font-family:var(--mono);font-size:10px;color:var(--text3);
+  width:36px;text-align:right;flex-shrink:0;padding-top:1px;
+}
+.a-content{flex:1;font-size:12px;line-height:1.5;}
+.a-content strong{font-weight:600;}
+.a-content .preview{color:var(--text2);}
+.a-entry-note{
+  position:relative;
+}
+.a-entry-note::before{
+  content:'';position:absolute;left:-18px;top:10px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);
+}
+
+/* ══════════════════════════════════════════ */
+/* OPTION B: Entries at main level, date floats left */
+/* ══════════════════════════════════════════ */
+.b-day{
+  margin-bottom:24px;position:relative;
+}
+.b-day-hdr{
+  position:relative;margin-bottom:8px;
+}
+.b-day-label-wrap{
+  display:flex;align-items:baseline;gap:6px;
+  margin-left:-8px;padding:2px 8px;
+  background:var(--sidebar-bg);border-radius:3px;
+  width:fit-content;
+}
+.b-day-label{
+  font-size:11px;font-weight:700;color:var(--text2);
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+.b-day-date{
+  font-size:10px;font-weight:400;color:var(--text3);
+}
+.b-hour{
+  font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;
+  letter-spacing:0.4px;padding:10px 0 3px;
+}
+.b-entry{
+  display:flex;gap:10px;padding:7px 10px;
+  cursor:pointer;transition:all 0.1s;border-radius:var(--radius-sm);
+}
+.b-entry:hover{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,0.03);}
+.b-time{
+  font-family:var(--mono);font-size:10px;color:var(--text3);
+  width:36px;text-align:right;flex-shrink:0;padding-top:1px;
+}
+.b-content{flex:1;font-size:12px;line-height:1.5;}
+.b-content strong{font-weight:600;}
+.b-content .preview{color:var(--text2);}
+.b-entry-note{
+  border-left:2px solid var(--accent);
+  padding-left:8px;margin-left:2px;
+}
+.b-sep{
+  height:1px;background:var(--border-light);margin:4px 0;
+}
+</style>
+</head>
+<body>
+
+<h1>Feed Indentation — Two Options</h1>
+<p class="subtitle">Exploring how date headers and entries relate visually. Same content, different hierarchy.</p>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- OPTION A: Dates at main level, entries indented -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option A — Dates at Main Level, Entries Indented</div>
+  <div class="option-desc">Day headers sit at the left edge as primary anchors. All entries are indented under them with a subtle vertical line connecting them to their day. Notes get a dot accent on the line. Creates a clear timeline feel.</div>
+
+  <div class="a-day">
+    <div class="a-day-hdr">
+      <span class="a-day-label">Today</span>
+      <span class="a-day-date">&mdash; April 11, 2026</span>
+      <span class="a-day-line"></span>
+    </div>
+    <div class="a-entries">
+      <div class="a-hour">6 PM</div>
+      <div class="a-entry a-entry-note">
+        <span class="a-time">6:59</span>
+        <span class="a-content"><span class="edit-badge">edited</span><strong>Meeting notes</strong> <span class="preview">&mdash; Discussed roadmap priorities and Q2 targets...</span><span class="feed-tag">#meeting</span></span>
+      </div>
+      <div class="a-hour">3 PM</div>
+      <div class="a-entry">
+        <span class="a-time">3:12</span>
+        <span class="a-content">Deployed v1.7.1 hotfix to production. All checks green.</span>
+      </div>
+      <div class="a-entry">
+        <span class="a-time">3:05</span>
+        <span class="a-content">PR #247 merged after final review<span class="feed-tag">#dev</span></span>
+      </div>
+      <div class="a-hour">10 AM</div>
+      <div class="a-entry a-entry-note">
+        <span class="a-time">10:30</span>
+        <span class="a-content"><strong>Daily journal</strong> <span class="preview">&mdash; Morning focus: ship task system before end of week...</span><span class="feed-tag tpl">#journal</span></span>
+      </div>
+      <div class="a-entry">
+        <span class="a-time">10:15</span>
+        <span class="a-content">Standup: blocked on design review for settings page</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="a-day">
+    <div class="a-day-hdr">
+      <span class="a-day-label">Yesterday</span>
+      <span class="a-day-date">&mdash; April 10, 2026</span>
+      <span class="a-day-line"></span>
+    </div>
+    <div class="a-entries">
+      <div class="a-hour">4 PM</div>
+      <div class="a-entry a-entry-note">
+        <span class="a-time">4:20</span>
+        <span class="a-content"><strong>API Design Review</strong> <span class="preview">&mdash; Finalized endpoint naming for v2 migration...</span><span class="feed-tag">#api</span></span>
+      </div>
+      <div class="a-entry">
+        <span class="a-time">4:05</span>
+        <span class="a-content">Updated error handling in auth middleware</span>
+      </div>
+      <div class="a-hour">9 AM</div>
+      <div class="a-entry">
+        <span class="a-time">9:30</span>
+        <span class="a-content">Reviewed 3 PRs before standup<span class="feed-tag">#dev</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="a-day">
+    <div class="a-day-hdr">
+      <span class="a-day-label">Wednesday</span>
+      <span class="a-day-date">&mdash; April 9, 2026</span>
+      <span class="a-day-line"></span>
+    </div>
+    <div class="a-entries">
+      <div class="a-hour">2 PM</div>
+      <div class="a-entry a-entry-note">
+        <span class="a-time">2:15</span>
+        <span class="a-content"><strong>1:1 with Sarah</strong> <span class="preview">&mdash; Discussed promotion timeline and project handoff...</span></span>
+      </div>
+      <div class="a-entry">
+        <span class="a-time">2:00</span>
+        <span class="a-content">Pushed kanban drag-drop fix to staging</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- OPTION B: Entries at main level, date floats left as label -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option B — Entries at Main Level, Date Label Floats Left</div>
+  <div class="option-desc">Entries sit at the primary reading position, unindented. Day headers are compact labels that "float" slightly left with a subtle background — they mark transitions without pushing content rightward. Notes get an accent left-border. Cleaner reading flow.</div>
+
+  <div class="b-day">
+    <div class="b-day-hdr">
+      <div class="b-day-label-wrap">
+        <span class="b-day-label">Today</span>
+        <span class="b-day-date">April 11, 2026</span>
+      </div>
+    </div>
+    <div class="b-hour">6 PM</div>
+    <div class="b-entry b-entry-note">
+      <span class="b-time">6:59</span>
+      <span class="b-content"><span class="edit-badge">edited</span><strong>Meeting notes</strong> <span class="preview">&mdash; Discussed roadmap priorities and Q2 targets...</span><span class="feed-tag">#meeting</span></span>
+    </div>
+    <div class="b-hour">3 PM</div>
+    <div class="b-entry">
+      <span class="b-time">3:12</span>
+      <span class="b-content">Deployed v1.7.1 hotfix to production. All checks green.</span>
+    </div>
+    <div class="b-entry">
+      <span class="b-time">3:05</span>
+      <span class="b-content">PR #247 merged after final review<span class="feed-tag">#dev</span></span>
+    </div>
+    <div class="b-hour">10 AM</div>
+    <div class="b-entry b-entry-note">
+      <span class="b-time">10:30</span>
+      <span class="b-content"><strong>Daily journal</strong> <span class="preview">&mdash; Morning focus: ship task system before end of week...</span><span class="feed-tag tpl">#journal</span></span>
+    </div>
+    <div class="b-entry">
+      <span class="b-time">10:15</span>
+      <span class="b-content">Standup: blocked on design review for settings page</span>
+    </div>
+  </div>
+
+  <div class="b-day">
+    <div class="b-day-hdr">
+      <div class="b-day-label-wrap">
+        <span class="b-day-label">Yesterday</span>
+        <span class="b-day-date">April 10, 2026</span>
+      </div>
+    </div>
+    <div class="b-hour">4 PM</div>
+    <div class="b-entry b-entry-note">
+      <span class="b-time">4:20</span>
+      <span class="b-content"><strong>API Design Review</strong> <span class="preview">&mdash; Finalized endpoint naming for v2 migration...</span><span class="feed-tag">#api</span></span>
+    </div>
+    <div class="b-entry">
+      <span class="b-time">4:05</span>
+      <span class="b-content">Updated error handling in auth middleware</span>
+    </div>
+    <div class="b-hour">9 AM</div>
+    <div class="b-entry">
+      <span class="b-time">9:30</span>
+      <span class="b-content">Reviewed 3 PRs before standup<span class="feed-tag">#dev</span></span>
+    </div>
+  </div>
+
+  <div class="b-day">
+    <div class="b-day-hdr">
+      <div class="b-day-label-wrap">
+        <span class="b-day-label">Wednesday</span>
+        <span class="b-day-date">April 9, 2026</span>
+      </div>
+    </div>
+    <div class="b-hour">2 PM</div>
+    <div class="b-entry b-entry-note">
+      <span class="b-time">2:15</span>
+      <span class="b-content"><strong>1:1 with Sarah</strong> <span class="preview">&mdash; Discussed promotion timeline and project handoff...</span></span>
+    </div>
+    <div class="b-entry">
+      <span class="b-time">2:00</span>
+      <span class="b-content">Pushed kanban drag-drop fix to staging</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Task Card Spacing — Test Harness</title>
+<style>
+  :root {
+    --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+    --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+    --text:#37352f; --text2:#787774; --text3:#9b9a97;
+    --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+    --danger:#e16259; --green:#16a34a; --amber:#d97706;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --radius-md:6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--sans); font-size: 14px; color: var(--text); background: var(--bg); padding: 40px; }
+  h2 { margin: 30px 0 10px; font-size: 14px; color: var(--text2); }
+  h2:first-child { margin-top: 0; }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* Simulate CM6's .cm-editor / .cm-scroller / .cm-line       */
+  /* These replicate the exact styles from the production app   */
+  /* ══════════════════════════════════════════════════════════ */
+  .cm-editor { border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+  .cm-scroller {
+    padding: 12px 14px;
+    font-family: var(--sans) !important;
+    font-size: 14px !important;
+    line-height: 1.7 !important;  /* THIS IS THE PROBLEM — inherited by .cm-line */
+    overflow: auto;
+  }
+  .cm-content { }
+  .cm-line { color: var(--text); }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* PRODUCTION TASK CARD CSS (copied exactly from index.html)  */
+  /* ══════════════════════════════════════════════════════════ */
+  .cm-task-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 12px;
+    margin-top: -12px; margin-bottom: -12px;
+    background: var(--surface); border-bottom: 1px solid var(--border-light);
+    cursor: pointer; transition: background 0.1s;
+    position: relative; z-index: 1;
+  }
+  .cm-task-card:hover { background: var(--bg); }
+  .cm-tc-chk {
+    width: 18px; height: 18px; border: 2px solid var(--border-strong); border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: transparent;
+  }
+  .cm-tc-title { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+  .cm-tc-pri { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* TEST RESULTS                                               */
+  /* ══════════════════════════════════════════════════════════ */
+  #results {
+    margin: 20px 0; padding: 14px 16px;
+    border-radius: var(--radius-md); font-size: 12px;
+    font-family: var(--mono); line-height: 1.6;
+  }
+  #results.pass { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+  #results.fail { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+</style>
+</head>
+<body>
+
+<h2>Test: Task card spacing in CM6-like container</h2>
+<p style="font-size:12px;color:var(--text3);margin-bottom:14px">
+  Simulates CM6's .cm-scroller (line-height: 1.7 !important) wrapping .cm-line divs
+  that contain .cm-task-card widgets. The gap between cards must be ≤ 5px.
+</p>
+
+<!-- Simulated CM6 editor -->
+<div class="cm-editor" style="max-width:600px">
+  <div class="cm-scroller">
+    <div class="cm-content" role="textbox">
+      <div class="cm-line" id="line1">
+        <div class="cm-task-card" id="card1">
+          <span class="cm-tc-chk"></span>
+          <span class="cm-tc-title">have AI write a full regression test plan</span>
+          <span class="cm-tc-pri" style="background:var(--danger)"></span>
+        </div>
+      </div>
+      <div class="cm-line" id="line2">
+        <div class="cm-task-card" id="card2">
+          <span class="cm-tc-chk"></span>
+          <span class="cm-tc-title">ensure help files are updated every time</span>
+          <span class="cm-tc-pri" style="background:var(--amber)"></span>
+        </div>
+      </div>
+      <div class="cm-line" id="line3">
+        <div class="cm-task-card" id="card3">
+          <span class="cm-tc-chk"></span>
+          <span class="cm-tc-title">ensure changelog is up to date</span>
+          <span class="cm-tc-pri" style="background:var(--border-strong)"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="results"></div>
+
+<h2>Fix applied below (for comparison)</h2>
+<div class="cm-editor" style="max-width:600px">
+  <div class="cm-scroller">
+    <div class="cm-content" role="textbox">
+      <div class="cm-line fixed-line" id="fline1">
+        <div class="cm-task-card" id="fcard1">
+          <span class="cm-tc-chk"></span>
+          <span class="cm-tc-title">have AI write a full regression test plan</span>
+          <span class="cm-tc-pri" style="background:var(--danger)"></span>
+        </div>
+      </div>
+      <div class="cm-line fixed-line" id="fline2">
+        <div class="cm-task-card" id="fcard2">
+          <span class="cm-tc-chk"></span>
+          <span class="cm-tc-title">ensure help files are updated every time</span>
+          <span class="cm-tc-pri" style="background:var(--amber)"></span>
+        </div>
+      </div>
+      <div class="cm-line fixed-line" id="fline3">
+        <div class="cm-task-card" id="fcard3">
+          <span class="cm-tc-chk"></span>
+          <span class="cm-tc-title">ensure changelog is up to date</span>
+          <span class="cm-tc-pri" style="background:var(--border-strong)"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* THE FIX: tested here before applying to production */
+  .fixed-line {
+    line-height: 0 !important;
+    font-size: 0 !important;
+  }
+  .fixed-line .cm-task-card {
+    font-size: 14px; /* restore on the card itself */
+    margin: 0;
+  }
+</style>
+
+<div id="results2"></div>
+
+<script>
+function measureGap(id1, id2) {
+  const r1 = document.getElementById(id1).getBoundingClientRect();
+  const r2 = document.getElementById(id2).getBoundingClientRect();
+  return r2.top - r1.bottom;
+}
+
+function runTests() {
+  // Test 1: BEFORE fix — measure gaps in the broken version
+  const gap1 = measureGap('card1', 'card2');
+  const gap2 = measureGap('card2', 'card3');
+  const el = document.getElementById('results');
+  const maxGap = Math.max(gap1, gap2);
+  const pass = maxGap <= 5;
+  el.className = pass ? 'pass' : 'fail';
+  el.innerHTML = `<strong>BEFORE FIX</strong><br>
+    Gap between card 1→2: ${gap1.toFixed(1)}px<br>
+    Gap between card 2→3: ${gap2.toFixed(1)}px<br>
+    Max gap: ${maxGap.toFixed(1)}px<br>
+    Threshold: ≤ 5px<br>
+    Result: <strong>${pass ? 'PASS ✓' : 'FAIL ✗'}</strong>`;
+
+  // Test 2: AFTER fix
+  const fgap1 = measureGap('fcard1', 'fcard2');
+  const fgap2 = measureGap('fcard2', 'fcard3');
+  const el2 = document.getElementById('results2');
+  const fmaxGap = Math.max(fgap1, fgap2);
+  const fpass = fmaxGap <= 5;
+  el2.className = fpass ? 'pass' : 'fail';
+  el2.innerHTML = `<strong>AFTER FIX</strong><br>
+    Gap between card 1→2: ${fgap1.toFixed(1)}px<br>
+    Gap between card 2→3: ${fgap2.toFixed(1)}px<br>
+    Max gap: ${fmaxGap.toFixed(1)}px<br>
+    Threshold: ≤ 5px<br>
+    Result: <strong>${fpass ? 'PASS ✓' : 'FAIL ✗'}</strong>`;
+}
+
+// Run after layout
+requestAnimationFrame(() => requestAnimationFrame(runTests));
+</script>
+</body>
+</html>

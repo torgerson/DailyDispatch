@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Task Card Editing — Integration Test</title>
+<style>
+  :root {
+    --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+    --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+    --text:#37352f; --text2:#787774; --text3:#9b9a97;
+    --accent:#cb912f; --danger:#e16259; --green:#16a34a; --amber:#d97706;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --radius-md:6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--sans); font-size: 14px; color: var(--text); background: var(--bg); padding: 40px; }
+  h2 { margin: 30px 0 10px; font-size: 14px; color: var(--text2); }
+  h2:first-child { margin-top: 0; }
+
+  /* ═══════════════════════════════ */
+  /* THE CSS FIX BEING TESTED       */
+  /* ═══════════════════════════════ */
+  .cm-line:has(> .cm-task-card) {
+    line-height: 0 !important;
+    font-size: 0 !important;
+  }
+
+  /* Task card styles (from production) */
+  .cm-task-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 12px; margin: 0;
+    background: var(--surface); border-bottom: 1px solid var(--border-light);
+    cursor: pointer; transition: background 0.1s;
+    font-size: 14px;
+  }
+  .cm-task-card:hover { background: var(--bg); }
+  .cm-tc-chk {
+    width: 18px; height: 18px; border: 2px solid var(--border-strong); border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: transparent;
+  }
+  .cm-tc-title { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+  .cm-tc-pri { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* CM6 overrides (matching production) */
+  .cm-editor { border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+  .cm-editor .cm-scroller {
+    padding: 12px 14px;
+    font-family: var(--sans) !important;
+    font-size: 14px !important;
+    line-height: 1.7 !important;
+    overflow: auto;
+  }
+  .cm-editor .cm-content { min-height: 200px; }
+  .cm-editor .cm-line { color: var(--text); }
+
+  /* Test results */
+  #results {
+    margin: 20px 0; padding: 14px 16px;
+    border-radius: var(--radius-md); font-size: 12px;
+    font-family: var(--mono); line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  #results.pass { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+  #results.fail { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+  #results.mixed { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+</style>
+</head>
+<body>
+
+<h2>Task Card Editing — Integration Test with Real CM6</h2>
+<p style="font-size:12px;color:var(--text3);margin-bottom:14px">
+  Tests: spacing between task cards, cursor movement around widgets,
+  typing before/after tasks, Enter key, Backspace, and content integrity.
+</p>
+
+<div id="editor-wrap" style="max-width:700px"></div>
+<div id="results">Loading CM6...</div>
+
+<!-- Load CM6 from CDN -->
+<script type="module">
+import {EditorView, keymap, Decoration, ViewPlugin, WidgetType} from "https://esm.sh/@codemirror/view@6.36.5";
+import {EditorState, Prec} from "https://esm.sh/@codemirror/state@6.5.2";
+import {defaultKeymap, history, historyKeymap} from "https://esm.sh/@codemirror/commands@6.8.1";
+
+// ─── Task Card Widget (matches production) ───
+class TaskWidget extends WidgetType {
+  constructor(id, title, priority) {
+    super();
+    this.id = id;
+    this.title = title;
+    this.priority = priority;
+  }
+  eq(other) { return other.id === this.id && other.title === this.title; }
+  ignoreEvent() { return true; }
+  toDOM() {
+    const card = document.createElement('div');
+    card.className = 'cm-task-card';
+    const chk = document.createElement('span');
+    chk.className = 'cm-tc-chk';
+    card.appendChild(chk);
+    const titleEl = document.createElement('span');
+    titleEl.className = 'cm-tc-title';
+    titleEl.textContent = this.title;
+    card.appendChild(titleEl);
+    const pri = document.createElement('span');
+    pri.className = 'cm-tc-pri';
+    pri.style.background = this.priority === 'H' ? 'var(--danger)' : this.priority === 'M' ? 'var(--amber)' : 'var(--border-strong)';
+    card.appendChild(pri);
+    return card;
+  }
+}
+
+// ─── Task data ───
+const TASKS = {
+  'task_001': { title: 'Write regression tests', priority: 'H' },
+  'task_002': { title: 'Update help files', priority: 'M' },
+  'task_003': { title: 'Update changelog', priority: 'L' },
+};
+
+// ─── Decoration plugin (matches production cmLivePreviewPlugin) ───
+function taskDecoPlugin() {
+  return ViewPlugin.fromClass(class {
+    constructor(view) { this.decorations = buildDecos(view); }
+    update(update) {
+      if (update.docChanged || update.selectionSet || update.viewportChanged)
+        this.decorations = buildDecos(update.view);
+    }
+  }, { decorations: v => v.decorations });
+}
+
+function buildDecos(view) {
+  const builder = [];
+  const doc = view.state.doc;
+  const cursorLine = doc.lineAt(view.state.selection.main.head).number;
+
+  for (let i = 1; i <= doc.lines; i++) {
+    if (i === cursorLine) continue; // Don't decorate cursor line
+    const line = doc.line(i);
+    const text = line.text;
+    const tm = text.match(/^\{\{task:([a-z0-9_]+)\}\}$/i);
+    if (tm) {
+      const task = TASKS[tm[1]];
+      if (task) {
+        builder.push(
+          Decoration.replace({
+            widget: new TaskWidget(tm[1], task.title, task.priority)
+          }).range(line.from, line.to)
+        );
+      }
+    }
+  }
+  return Decoration.set(builder.sort((a, b) => a.from - b.from));
+}
+
+// ─── Create editor ───
+const initialDoc = `# Test Note
+Some text before tasks.
+{{task:task_001}}
+{{task:task_002}}
+{{task:task_003}}
+Some text after tasks.
+Final line of the note.`;
+
+const state = EditorState.create({
+  doc: initialDoc,
+  extensions: [
+    history(),
+    keymap.of(defaultKeymap),
+    keymap.of(historyKeymap),
+    taskDecoPlugin(),
+    EditorView.lineWrapping,
+  ]
+});
+
+const view = new EditorView({ state, parent: document.getElementById('editor-wrap') });
+window._testView = view;
+
+// ─── Run tests after layout ───
+async function runTests() {
+  const results = [];
+  let pass = 0, fail = 0;
+
+  function test(name, fn) {
+    try {
+      const result = fn();
+      if (result === true) {
+        results.push(`✓ ${name}`);
+        pass++;
+      } else {
+        results.push(`✗ ${name}: ${result}`);
+        fail++;
+      }
+    } catch(e) {
+      results.push(`✗ ${name}: ERROR ${e.message}`);
+      fail++;
+    }
+  }
+
+  // Wait for initial render
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  // ─── TEST 1: Card spacing ───
+  test('Cards have ≤ 5px gap between them', () => {
+    const cards = document.querySelectorAll('.cm-task-card');
+    if (cards.length < 2) return `Only ${cards.length} cards visible`;
+    let maxGap = 0;
+    for (let i = 0; i < cards.length - 1; i++) {
+      const gap = cards[i+1].getBoundingClientRect().top - cards[i].getBoundingClientRect().bottom;
+      maxGap = Math.max(maxGap, gap);
+    }
+    if (maxGap > 5) return `Max gap: ${maxGap.toFixed(1)}px (need ≤ 5)`;
+    return true;
+  });
+
+  // ─── TEST 2: Line height matches card ───
+  test('Task .cm-line height ≈ card height (no extra padding)', () => {
+    const card = document.querySelector('.cm-task-card');
+    if (!card) return 'No card found';
+    const line = card.parentElement;
+    const lineH = line.getBoundingClientRect().height;
+    const cardH = card.getBoundingClientRect().height;
+    const diff = Math.abs(lineH - cardH);
+    if (diff > 2) return `Line: ${lineH.toFixed(1)}px, Card: ${cardH.toFixed(1)}px, diff: ${diff.toFixed(1)}px`;
+    return true;
+  });
+
+  // ─── TEST 3: Text lines have normal line-height ───
+  test('Text lines maintain normal line-height (23-24px)', () => {
+    const lines = document.querySelectorAll('.cm-line');
+    for (const l of lines) {
+      if (l.querySelector('.cm-task-card')) continue; // skip task lines
+      if (l.textContent.trim().length === 0) continue; // skip empty lines
+      const cs = getComputedStyle(l);
+      const lh = parseFloat(cs.lineHeight);
+      if (lh < 20 || lh > 30) return `Text line "${l.textContent.substring(0,20)}" has line-height: ${lh}px`;
+    }
+    return true;
+  });
+
+  // ─── TEST 4: Cursor movement — place cursor before first task, press Down ───
+  test('Cursor can be placed on text line before tasks', () => {
+    // Move cursor to line 2 ("Some text before tasks.")
+    const line2 = view.state.doc.line(2);
+    view.dispatch({ selection: { anchor: line2.to } });
+    const pos = view.state.selection.main.head;
+    const expected = line2.to;
+    if (pos !== expected) return `Cursor at ${pos}, expected ${expected}`;
+    return true;
+  });
+
+  // ─── TEST 5: Cursor can be placed on text line after tasks ───
+  test('Cursor can be placed on text line after tasks', () => {
+    const line6 = view.state.doc.line(6); // "Some text after tasks."
+    view.dispatch({ selection: { anchor: line6.from + 5 } });
+    const pos = view.state.selection.main.head;
+    if (pos !== line6.from + 5) return `Cursor at ${pos}, expected ${line6.from + 5}`;
+    return true;
+  });
+
+  // ─── TEST 6: Type text on line before tasks ───
+  test('Can type text on line before tasks', () => {
+    const line2 = view.state.doc.line(2);
+    view.dispatch({ selection: { anchor: line2.to } });
+    view.dispatch({
+      changes: { from: line2.to, insert: ' ADDED' }
+    });
+    const updated = view.state.doc.line(2).text;
+    if (!updated.endsWith('ADDED')) return `Line 2: "${updated}"`;
+    // Undo
+    view.dispatch({
+      changes: { from: view.state.doc.line(2).to - 6, to: view.state.doc.line(2).to }
+    });
+    return true;
+  });
+
+  // ─── TEST 7: Type text on line after tasks ───
+  test('Can type text on line after tasks', () => {
+    const line6 = view.state.doc.line(6);
+    view.dispatch({ selection: { anchor: line6.to } });
+    view.dispatch({
+      changes: { from: line6.to, insert: ' APPENDED' }
+    });
+    const updated = view.state.doc.line(6).text;
+    if (!updated.endsWith('APPENDED')) return `Line 6: "${updated}"`;
+    // Undo
+    view.dispatch({
+      changes: { from: view.state.doc.line(6).to - 9, to: view.state.doc.line(6).to }
+    });
+    return true;
+  });
+
+  // ─── TEST 8: Press Enter after text before tasks ───
+  test('Enter key creates new line before tasks', () => {
+    const origLines = view.state.doc.lines;
+    const line2 = view.state.doc.line(2);
+    view.dispatch({ selection: { anchor: line2.to } });
+    view.dispatch({
+      changes: { from: line2.to, insert: '\nNew line here' }
+    });
+    const newLines = view.state.doc.lines;
+    if (newLines !== origLines + 1) return `Lines: ${newLines}, expected ${origLines + 1}`;
+    const newLine = view.state.doc.line(3).text;
+    if (newLine !== 'New line here') return `Line 3: "${newLine}"`;
+    // Undo
+    view.dispatch({
+      changes: { from: view.state.doc.line(2).to, to: view.state.doc.line(3).to }
+    });
+    return true;
+  });
+
+  // ─── TEST 9: Press Enter after text after tasks ───
+  test('Enter key creates new line after tasks', () => {
+    const origLines = view.state.doc.lines;
+    const line6 = view.state.doc.line(6);
+    view.dispatch({ selection: { anchor: line6.to } });
+    view.dispatch({
+      changes: { from: line6.to, insert: '\nInserted line' }
+    });
+    const newLines = view.state.doc.lines;
+    if (newLines !== origLines + 1) return `Lines: ${newLines}, expected ${origLines + 1}`;
+    // Undo
+    view.dispatch({
+      changes: { from: view.state.doc.line(6).to, to: view.state.doc.line(7).to }
+    });
+    return true;
+  });
+
+  // ─── TEST 10: Task tokens preserved after editing ───
+  test('Task tokens remain intact after edits', () => {
+    const doc = view.state.doc;
+    let taskCount = 0;
+    for (let i = 1; i <= doc.lines; i++) {
+      if (/^\{\{task:task_\d{3}\}\}$/.test(doc.line(i).text)) taskCount++;
+    }
+    if (taskCount !== 3) return `Found ${taskCount} task tokens, expected 3`;
+    return true;
+  });
+
+  // ─── TEST 11: Backspace at start of line after tasks doesn't break ───
+  test('Backspace at start of text line after tasks merges correctly', () => {
+    // Add a temp line after tasks, then backspace to merge
+    const line6 = view.state.doc.line(6);
+    view.dispatch({
+      changes: { from: line6.from, insert: 'TempLine\n' }
+    });
+    // Now backspace at start of old line 6 (now line 7)
+    const newLine7 = view.state.doc.line(7);
+    view.dispatch({
+      changes: { from: newLine7.from - 1, to: newLine7.from }
+    });
+    const merged = view.state.doc.line(6).text;
+    if (!merged.startsWith('TempLine')) return `Merged line: "${merged}"`;
+    // Undo - remove TempLine
+    view.dispatch({
+      changes: { from: view.state.doc.line(6).from, to: view.state.doc.line(6).from + 8 }
+    });
+    return true;
+  });
+
+  // ─── TEST 12: coordsAtPos doesn't throw for positions around tasks ───
+  test('coordsAtPos works for positions around task widgets', () => {
+    const doc = view.state.doc;
+    const errors = [];
+    for (let i = 1; i <= doc.lines; i++) {
+      const line = doc.line(i);
+      try {
+        view.coordsAtPos(line.from);
+        view.coordsAtPos(line.to);
+      } catch(e) {
+        errors.push(`Line ${i} (${line.text.substring(0,20)}): ${e.message}`);
+      }
+    }
+    if (errors.length) return errors.join('; ');
+    return true;
+  });
+
+  // ─── TEST 13: Re-check spacing after edits ───
+  test('Cards still tight after editing nearby text', () => {
+    // Edit text before tasks
+    const line2 = view.state.doc.line(2);
+    view.dispatch({
+      changes: { from: line2.to, insert: '!!!' }
+    });
+    // Wait for redecorate
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const cards = document.querySelectorAll('.cm-task-card');
+    let maxGap = 0;
+    for (let i = 0; i < cards.length - 1; i++) {
+      const gap = cards[i+1].getBoundingClientRect().top - cards[i].getBoundingClientRect().bottom;
+      maxGap = Math.max(maxGap, gap);
+    }
+    // Undo
+    view.dispatch({
+      changes: { from: view.state.doc.line(2).to - 3, to: view.state.doc.line(2).to }
+    });
+    if (maxGap > 5) return `Max gap after edit: ${maxGap.toFixed(1)}px`;
+    return true;
+  });
+
+  // ─── Output ───
+  const el = document.getElementById('results');
+  const summary = `\n─────────────\n${pass} passed, ${fail} failed`;
+  el.textContent = results.join('\n') + summary;
+  el.className = fail === 0 ? 'pass' : pass === 0 ? 'fail' : 'mixed';
+}
+
+// Run after layout settles
+setTimeout(runTests, 500);
+</script>
+</body>
+</html>

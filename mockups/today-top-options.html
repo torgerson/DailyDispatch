@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Today Top Section — Layout Options</title>
+<style>
+:root {
+  --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+  --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+  --text:#37352f; --text2:#787774; --text3:#9b9a97;
+  --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+  --danger:#e16259; --amber:#d97706; --green:#4daa57;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --radius-sm:4px; --radius-md:6px; --radius-lg:10px;
+  --capture-bg:#fdf9f3;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);font-size:14px;color:var(--text);background:#e8e0d4;padding:30px;}
+h1{font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.subtitle{font-size:12px;color:var(--text2);margin-bottom:30px;}
+
+.option{
+  background:var(--bg);max-width:740px;margin:0 auto 50px;
+  border-radius:var(--radius-lg);overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+.option-label{
+  background:var(--accent);color:#fff;padding:8px 16px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+}
+.option-desc{
+  padding:10px 16px;font-size:11px;color:var(--text2);
+  background:var(--surface);border-bottom:1px solid var(--border);line-height:1.5;
+}
+
+/* ══════════════════════════════ */
+/* Shared component styles        */
+/* ══════════════════════════════ */
+.capture-area{
+  background:var(--capture-bg);padding:10px 14px;
+}
+.capture-area:focus-within{border-color:var(--accent);}
+.capture-input{
+  width:100%;border:none;outline:none;font-family:var(--sans);font-size:13px;
+  line-height:1.45;resize:none;min-height:20px;color:var(--text);background:transparent;
+}
+.capture-input::placeholder{color:var(--text3);}
+.capture-bar{display:flex;align-items:center;gap:5px;margin-top:6px;}
+.capture-bar .spacer{flex:1;}
+.cap-hint{font-size:9px;color:var(--text3);}
+.add-btn{
+  padding:3px 12px;border-radius:3px;border:none;
+  background:var(--accent);color:#fff;font-size:11px;font-weight:600;cursor:pointer;
+}
+
+.tasks-hdr{
+  font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.6px;color:var(--text2);padding:8px 0 4px;
+  display:flex;align-items:center;gap:6px;
+}
+.tasks-hdr-line{flex:1;height:1px;background:var(--border);}
+.task-row{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 10px;background:var(--surface);border-radius:var(--radius-md);
+  border:1px solid var(--border-light);cursor:pointer;margin-bottom:3px;
+  transition:all 0.1s;
+}
+.task-row:hover{border-color:var(--border);box-shadow:0 1px 4px rgba(0,0,0,0.03);}
+.task-row.starred{border-left:3px solid var(--amber);}
+.tt-chk{
+  width:14px;height:14px;border:1.5px solid var(--border-strong);
+  border-radius:50%;flex-shrink:0;
+}
+.tt-title{flex:1;font-size:12px;font-weight:500;}
+.pri-tag{font-size:8px;font-weight:600;padding:1px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:0.3px;flex-shrink:0;}
+.pri-tag.high{background:rgba(220,38,38,0.1);color:var(--danger);}
+.pri-tag.med{background:rgba(217,119,6,0.1);color:var(--amber);}
+.pri-tag.low{background:rgba(107,114,128,0.08);color:var(--text3);}
+.tt-due{font-size:9px;font-weight:600;padding:1px 6px;border-radius:6px;white-space:nowrap;}
+.tt-due.today{background:#fefce8;color:var(--amber);}
+.tt-due.overdue{background:#fef2f2;color:var(--danger);}
+.tt-star{font-size:11px;color:var(--border-strong);opacity:0.3;flex-shrink:0;}
+.tt-star.active{color:var(--amber);opacity:1;}
+.task-add{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  color:var(--text3);cursor:pointer;border-radius:var(--radius-md);font-size:12px;
+}
+.task-add:hover{color:var(--accent);background:var(--accent-light);}
+.task-add-plus{font-size:16px;font-weight:300;}
+
+.day-divider{
+  display:flex;align-items:center;gap:12px;padding:16px 0 8px;
+}
+.day-divider-line{flex:1;height:1px;background:var(--border);}
+.day-divider-label{font-size:12px;font-weight:700;color:var(--text2);}
+.day-divider-sub{font-size:11px;font-weight:400;color:var(--text3);}
+
+.feed-entry{
+  display:flex;gap:10px;padding:8px 10px;
+  border-left:2px solid var(--border-light);margin-left:4px;
+  cursor:pointer;transition:background 0.1s;
+}
+.feed-entry:hover{background:var(--surface);}
+.feed-time{font-family:var(--mono);font-size:10px;color:var(--text3);width:38px;text-align:right;flex-shrink:0;}
+.feed-content{flex:1;font-size:12px;line-height:1.5;}
+.feed-content strong{font-weight:600;}
+.feed-tag{font-size:8px;padding:1px 5px;border-radius:3px;background:rgba(203,145,47,0.08);color:var(--accent);margin-left:4px;}
+.feed-note{border-left-color:var(--accent);}
+
+.section-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;padding:4px 0;}
+
+/* ══════════════════════════════ */
+/* Two-column layout for options  */
+/* ══════════════════════════════ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.two-col .col-left{border-right:1px solid var(--border-light);}
+.two-col .col-left,.two-col .col-right{padding:10px 14px;}
+
+.three-part{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.three-part .col-left{border-right:1px solid var(--border-light);padding:10px 14px;}
+.three-part .col-right{padding:10px 14px;}
+
+/* Compact capture */
+.capture-compact{
+  display:flex;align-items:center;gap:8px;
+  background:var(--capture-bg);padding:8px 14px;
+  border-bottom:1px solid var(--border);
+}
+.capture-compact input{
+  flex:1;border:none;outline:none;font-family:var(--sans);font-size:13px;
+  color:var(--text);background:transparent;
+}
+.capture-compact input::placeholder{color:var(--text3);}
+
+/* Tabbed switcher */
+.tab-switch{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);}
+.tab-switch-btn{
+  padding:8px 16px;font-size:11px;font-weight:600;color:var(--text3);
+  border:none;background:transparent;cursor:pointer;
+  border-bottom:2px solid transparent;
+}
+.tab-switch-btn.active{color:var(--text);border-bottom-color:var(--accent);}
+</style>
+</head>
+<body>
+
+<h1>Today View — Top Section Layout Options</h1>
+<p class="subtitle">Exploring how to arrange the capture input, today's tasks, and the feed. Click through to compare.</p>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- OPTION A: Two-column — Capture left, Tasks right -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option A — Two Column: Capture Left, Tasks Right</div>
+  <div class="option-desc">Capture rail and tasks sit side-by-side above the feed. Quick thoughts go left, tasks go right. Feed flows below full-width. Gives equal weight to both.</div>
+
+  <div class="two-col">
+    <div class="col-left">
+      <div class="section-label">Quick Capture</div>
+      <div class="capture-area" style="border-radius:var(--radius-md);border:1px solid var(--border-light);margin-top:4px;">
+        <textarea class="capture-input" placeholder="What's happening? (#tags)" rows="2"></textarea>
+        <div class="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button class="add-btn">Add</button></div>
+      </div>
+    </div>
+    <div class="col-right">
+      <div class="section-label">Today's Tasks <span style="font-weight:400;color:var(--text3)">&middot; 3 due</span></div>
+      <div class="task-row starred"><div class="tt-chk"></div><span class="tt-title">Review PR #247</span><span class="pri-tag high">High</span><span class="tt-due today">today</span><span class="tt-star active">&#9733;</span></div>
+      <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Write test plan</span><span class="pri-tag med">Med</span><span class="tt-due overdue">overdue</span><span class="tt-star">&#9733;</span></div>
+      <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Update changelog</span><span class="pri-tag low">Low</span><span class="tt-star">&#9733;</span></div>
+      <div class="task-add"><span class="task-add-plus">+</span> Add a task</div>
+    </div>
+  </div>
+
+  <div style="padding:0 14px 14px;">
+    <div class="day-divider"><div class="day-divider-line"></div><span class="day-divider-label">Today <span class="day-divider-sub">&mdash; April 11, 2026</span></span><div class="day-divider-line"></div></div>
+    <div class="feed-entry feed-note"><span class="feed-time">6:59 PM</span><span class="feed-content"><strong>Meeting notes</strong> &mdash; Discussed roadmap priorities...<span class="feed-tag">#meeting</span></span></div>
+    <div class="feed-entry"><span class="feed-time">3:12 PM</span><span class="feed-content">Deployed v1.7.1 hotfix to production</span></div>
+    <div class="feed-entry feed-note"><span class="feed-time">10:30 AM</span><span class="feed-content"><strong>Daily journal</strong> &mdash; Morning focus: ship task system...<span class="feed-tag">#journal</span></span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- OPTION B: Stacked — Compact capture bar, then tasks, then feed -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option B — Stacked: Slim Capture Bar, Tasks Below, Feed Below</div>
+  <div class="option-desc">Capture is a single-line input bar pinned at top. Tasks section sits below it in a card. Feed starts after. Clean vertical flow, capture never competes with tasks.</div>
+
+  <div class="capture-compact">
+    <span style="font-size:14px;color:var(--text3);">&#9998;</span>
+    <input type="text" placeholder="What's happening? (#tags supported)">
+    <span class="cap-hint">&#8984;Enter</span>
+    <button class="add-btn">Add</button>
+  </div>
+
+  <div style="padding:10px 14px 0;">
+    <div class="tasks-hdr">Today's Tasks &middot; 3<span class="tasks-hdr-line"></span></div>
+    <div class="task-row starred"><div class="tt-chk"></div><span class="tt-title">Review PR #247</span><span class="pri-tag high">High</span><span class="tt-due today">today</span><span class="tt-star active">&#9733;</span></div>
+    <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Write test plan</span><span class="pri-tag med">Med</span><span class="tt-due overdue">overdue</span><span class="tt-star">&#9733;</span></div>
+    <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Update changelog</span><span class="pri-tag low">Low</span><span class="tt-star">&#9733;</span></div>
+    <div class="task-add"><span class="task-add-plus">+</span> Add a task</div>
+  </div>
+
+  <div style="padding:0 14px 14px;">
+    <div class="day-divider"><div class="day-divider-line"></div><span class="day-divider-label">Today <span class="day-divider-sub">&mdash; April 11, 2026</span></span><div class="day-divider-line"></div></div>
+    <div class="feed-entry feed-note"><span class="feed-time">6:59 PM</span><span class="feed-content"><strong>Meeting notes</strong> &mdash; Discussed roadmap priorities...<span class="feed-tag">#meeting</span></span></div>
+    <div class="feed-entry"><span class="feed-time">3:12 PM</span><span class="feed-content">Deployed v1.7.1 hotfix to production</span></div>
+    <div class="feed-entry feed-note"><span class="feed-time">10:30 AM</span><span class="feed-content"><strong>Daily journal</strong> &mdash; Morning focus: ship task system...<span class="feed-tag">#journal</span></span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- OPTION C: Two-column — Tasks left (primary), Capture right (secondary) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option C — Two Column: Tasks Left (Primary), Capture Right</div>
+  <div class="option-desc">Tasks are the hero on the left (wider column). Capture is a compact card on the right. Emphasizes "what do I need to do" over "what's happening." Feed below full-width.</div>
+
+  <div style="display:grid;grid-template-columns:3fr 2fr;gap:0;">
+    <div style="border-right:1px solid var(--border-light);padding:10px 14px;">
+      <div class="tasks-hdr">Today's Tasks &middot; 3<span class="tasks-hdr-line"></span></div>
+      <div class="task-row starred"><div class="tt-chk"></div><span class="tt-title">Review PR #247</span><span class="pri-tag high">High</span><span class="tt-due today">today</span><span class="tt-star active">&#9733;</span></div>
+      <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Write test plan</span><span class="pri-tag med">Med</span><span class="tt-due overdue">overdue</span><span class="tt-star">&#9733;</span></div>
+      <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Update changelog</span><span class="pri-tag low">Low</span><span class="tt-star">&#9733;</span></div>
+      <div class="task-add"><span class="task-add-plus">+</span> Add a task</div>
+    </div>
+    <div style="padding:10px 14px;">
+      <div class="section-label">Quick Capture</div>
+      <div class="capture-area" style="border-radius:var(--radius-md);border:1px solid var(--border-light);margin-top:4px;">
+        <textarea class="capture-input" placeholder="What's happening?" rows="3"></textarea>
+        <div class="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button class="add-btn">Add</button></div>
+      </div>
+      <div style="margin-top:10px;">
+        <div class="section-label">Quick Actions</div>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <button style="font-size:10px;padding:4px 10px;border-radius:3px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;">+ New Note</button>
+          <button style="font-size:10px;padding:4px 10px;border-radius:3px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;">Wrap-up</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:0 14px 14px;">
+    <div class="day-divider"><div class="day-divider-line"></div><span class="day-divider-label">Today <span class="day-divider-sub">&mdash; April 11, 2026</span></span><div class="day-divider-line"></div></div>
+    <div class="feed-entry feed-note"><span class="feed-time">6:59 PM</span><span class="feed-content"><strong>Meeting notes</strong> &mdash; Discussed roadmap priorities...<span class="feed-tag">#meeting</span></span></div>
+    <div class="feed-entry"><span class="feed-time">3:12 PM</span><span class="feed-content">Deployed v1.7.1 hotfix to production</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- OPTION D: Unified card — Capture and tasks in one bordered section -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option D — Unified Card: Capture + Tasks in One Section</div>
+  <div class="option-desc">A single "command center" card at the top contains both the capture input and today's tasks. One glanceable block. Internal tab or divider separates them. Feels cohesive.</div>
+
+  <div style="margin:14px;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
+    <div class="capture-area" style="border-bottom:1px solid var(--border-light);">
+      <textarea class="capture-input" placeholder="What's happening? (#tags supported)" rows="1"></textarea>
+      <div class="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button class="add-btn">Add</button></div>
+    </div>
+    <div style="padding:8px 14px 10px;background:var(--surface);">
+      <div class="tasks-hdr" style="padding-top:2px;">Tasks &middot; 3<span class="tasks-hdr-line"></span></div>
+      <div class="task-row starred"><div class="tt-chk"></div><span class="tt-title">Review PR #247</span><span class="pri-tag high">High</span><span class="tt-due today">today</span><span class="tt-star active">&#9733;</span></div>
+      <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Write test plan</span><span class="pri-tag med">Med</span><span class="tt-due overdue">overdue</span><span class="tt-star">&#9733;</span></div>
+      <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Update changelog</span><span class="pri-tag low">Low</span><span class="tt-star">&#9733;</span></div>
+      <div class="task-add"><span class="task-add-plus">+</span> Add a task</div>
+    </div>
+  </div>
+
+  <div style="padding:0 14px 14px;">
+    <div class="day-divider"><div class="day-divider-line"></div><span class="day-divider-label">Today <span class="day-divider-sub">&mdash; April 11, 2026</span></span><div class="day-divider-line"></div></div>
+    <div class="feed-entry feed-note"><span class="feed-time">6:59 PM</span><span class="feed-content"><strong>Meeting notes</strong> &mdash; Discussed roadmap priorities...<span class="feed-tag">#meeting</span></span></div>
+    <div class="feed-entry"><span class="feed-time">3:12 PM</span><span class="feed-content">Deployed v1.7.1 hotfix to production</span></div>
+    <div class="feed-entry feed-note"><span class="feed-time">10:30 AM</span><span class="feed-content"><strong>Daily journal</strong> &mdash; Morning focus: ship task system...<span class="feed-tag">#journal</span></span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- OPTION E: Tabbed top — Switch between Capture and Tasks -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option E — Tabbed Toggle: Capture / Tasks Tabs</div>
+  <div class="option-desc">A tab strip lets you switch between "Capture" and "Tasks" views in the same top slot. Only one shows at a time, keeping the top area compact. The non-active panel is just one click away.</div>
+
+  <div class="tab-switch">
+    <button class="tab-switch-btn">Capture</button>
+    <button class="tab-switch-btn active">Tasks</button>
+  </div>
+
+  <div style="padding:10px 14px 0;">
+    <div class="task-row starred"><div class="tt-chk"></div><span class="tt-title">Review PR #247</span><span class="pri-tag high">High</span><span class="tt-due today">today</span><span class="tt-star active">&#9733;</span></div>
+    <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Write test plan</span><span class="pri-tag med">Med</span><span class="tt-due overdue">overdue</span><span class="tt-star">&#9733;</span></div>
+    <div class="task-row"><div class="tt-chk"></div><span class="tt-title">Update changelog</span><span class="pri-tag low">Low</span><span class="tt-star">&#9733;</span></div>
+    <div class="task-add"><span class="task-add-plus">+</span> Add a task</div>
+  </div>
+
+  <div style="padding:0 14px 14px;">
+    <div class="day-divider"><div class="day-divider-line"></div><span class="day-divider-label">Today <span class="day-divider-sub">&mdash; April 11, 2026</span></span><div class="day-divider-line"></div></div>
+    <div class="feed-entry feed-note"><span class="feed-time">6:59 PM</span><span class="feed-content"><strong>Meeting notes</strong> &mdash; Discussed roadmap priorities...<span class="feed-tag">#meeting</span></span></div>
+    <div class="feed-entry"><span class="feed-time">3:12 PM</span><span class="feed-content">Deployed v1.7.1 hotfix to production</span></div>
+    <div class="feed-entry feed-note"><span class="feed-time">10:30 AM</span><span class="feed-content"><strong>Daily journal</strong> &mdash; Morning focus: ship task system...<span class="feed-tag">#journal</span></span></div>
+  </div>
+</div>
+
+<!-- Interactive tab switching for Option E -->
+<script>
+document.querySelectorAll('.tab-switch').forEach(strip=>{
+  strip.querySelectorAll('.tab-switch-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      strip.querySelectorAll('.tab-switch-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+  });
+});
+</script>
+
+</body>
+</html>

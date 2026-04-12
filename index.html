@@ -13,7 +13,7 @@
     --border: #e8e0d4; --border-light: #f0ece6; --border-strong: #d4cbbf;
     --text: #37352f; --text2: #787774; --text3: #9b9a97;
     --accent: #cb912f; --accent-light: rgba(203,145,47,0.12);
-    --danger: #e16259; --green: #4daa57; --blue: #5b9bd5; --purple: #9065b0;
+    --danger: #e16259; --amber: #d97706; --green: #4daa57; --blue: #5b9bd5; --purple: #9065b0;
     --brown: #8b7355;
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
@@ -29,10 +29,17 @@
     color: var(--text); background: var(--bg);
     height: 100vh; overflow: hidden;
     display: grid;
-    grid-template-rows: 1fr;
+    grid-template-rows: 30px 1fr;
     grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
-    grid-template-areas: "sidebar main";
+    grid-template-areas: "hdr hdr" "sidebar main";
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HEADER BAND ── */
+  #app-header {
+    grid-area: hdr;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border-light);
   }
 
   /* ── SIDEBAR ── */
@@ -254,7 +261,7 @@
   }
   #tab-bar {
     height: var(--tabbar-h); background: var(--surface); border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: stretch; padding: 0 24px; overflow: hidden; flex-shrink: 0;
+    display: flex; align-items: stretch; padding: 0 8px; overflow: hidden; flex-shrink: 0;
   }
   #tab-bar-tabs {
     flex: 1; min-width: 0; display: flex; align-items: stretch;
@@ -266,19 +273,18 @@
   #tab-bar-tabs::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
   #tab-bar-icons {
     flex-shrink: 0; display: flex; align-items: stretch;
-    padding-left: 8px; margin-left: 4px;
-    border-left: 1px solid var(--border-light);
     background: var(--surface);
   }
+  #tab-bar-icons:empty { display: none; }
   .tab {
-    display: flex; align-items: center; gap: 4px; padding: 0 12px;
-    font-size: 12px; font-weight: 500; color: var(--text2); cursor: pointer;
-    border-bottom: 2px solid transparent; white-space: nowrap;
-    border-right: 1px solid var(--border-light); margin: 0;
+    display: flex; align-items: center; gap: 4px; padding: 4px 10px;
+    font-size: 11px; font-weight: 500; color: var(--text2); cursor: pointer;
+    white-space: nowrap; margin: 0;
+    border-radius: var(--radius-sm);
     transition: color 0.1s, background 0.1s;
   }
-  .tab:hover { color: var(--text); background: rgba(203,145,47,0.04); }
-  .tab.active { color: var(--text); border-bottom-color: var(--accent); background: var(--surface); font-weight: 600; }
+  .tab:hover { color: var(--text); background: var(--bg); }
+  .tab.active { color: var(--accent); background: var(--accent-light); font-weight: 600; }
   .tab .tab-close { font-size: 9px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 3px; opacity: 0; margin-left: 2px; }
   .tab:hover .tab-close { opacity: .5; }
   .tab .tab-close:hover { opacity: 1; background: var(--border-light); color: var(--danger); }
@@ -355,9 +361,9 @@
   }
   .entry-card {
     display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
-    padding: 5px 0 5px 6px; margin-bottom: 0; position: relative;
-    border-bottom: 1px solid var(--border-light); border-left: 2px solid transparent;
-    cursor: pointer; background: transparent; border-radius: 0; border-top: none; border-right: none;
+    padding: 5px 0 5px 0; margin-bottom: 0; position: relative;
+    border-bottom: none;
+    cursor: pointer; background: transparent; border-radius: var(--radius-sm);
     transition: background 0.1s;
   }
   .entry-card:hover { background: rgba(203,145,47,0.04); }
@@ -369,6 +375,10 @@
   .entry-time {
     font-family: var(--mono); font-size: 11px; color: var(--text3);
     flex-shrink: 0; width: 42px; text-align: right; font-weight: 400;
+  }
+  .entry-edit-badge {
+    font-size: 9px; font-weight: 500; color: var(--accent); background: var(--accent-light);
+    padding: 1px 5px; border-radius: 3px; flex-shrink: 0; font-style: italic;
   }
   .entry-tags {
     display: flex; flex-wrap: wrap; gap: 3px; align-items: baseline;
@@ -481,20 +491,25 @@
   /* Checkbox */
   /* Task card widget inside notes */
   .cm-task-missing { color: var(--danger); font-size: 11px; font-style: italic; padding: 4px; }
+  /* Collapse line-height on .cm-line containing only a task widget.
+     CM6 inserts cm-widgetBuffer <img> struts that inherit the scroller's
+     line-height:1.7, adding ~24px padding above/below each card.
+     Zeroing font-size+line-height on the .cm-line kills the strut;
+     the card restores its own font-size below. */
+  .cm-line:has(> .cm-task-card) {
+    line-height: 0 !important;
+    font-size: 0 !important;
+  }
   .cm-task-card {
     display: flex; align-items: center; gap: 10px;
-    padding: 6px 12px;
-    margin-top: -12px; margin-bottom: -12px;
+    padding: 6px 12px; margin: 0;
     background: var(--surface); border-bottom: 1px solid var(--border-light);
     cursor: pointer; transition: background 0.1s;
-    position: relative; z-index: 1;
+    font-size: 14px;
   }
   .cm-task-card:hover { background: var(--bg); }
   .cm-task-card.done { opacity: 0.55; }
   .cm-task-card.done .cm-tc-title { text-decoration: line-through; color: var(--text3); }
-  /* Line-height collapse for task cards is done via JS in CmTaskCardWidget.toDOM()
-     because CSS :has() doesn't reliably override CM6's line-height:1.7 !important.
-     The widget sets parent.style.lineHeight='0' on mount via requestAnimationFrame. */
   .cm-tc-chk {
     width: 18px; height: 18px; border: 2px solid var(--border-strong); border-radius: 50%;
     flex-shrink: 0; display: flex; align-items: center; justify-content: center;
@@ -504,9 +519,13 @@
   .cm-tc-chk:hover { border-color: var(--green); }
   .cm-tc-chk.checked { background: var(--green); border-color: var(--green); color: #fff; }
   .cm-tc-title { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
-  .cm-tc-pri {
-    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  .pri-tag {
+    font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: 3px;
+    text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; white-space: nowrap;
   }
+  .pri-tag.high { background: rgba(220,38,38,0.1); color: var(--danger); }
+  .pri-tag.med { background: rgba(217,119,6,0.1); color: var(--amber); }
+  .pri-tag.low { background: rgba(107,114,128,0.08); color: var(--text3); }
   .cm-tc-due {
     font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px;
     white-space: nowrap;
@@ -1043,9 +1062,11 @@
     grid-template-rows: 1fr !important;
     grid-template-areas: "main" !important;
   }
+  body.floating-mode #app-header,
   body.floating-mode #sidebar,
   body.floating-mode #tab-bar,
   body.floating-mode #capture-top { display: none !important; }
+  body.floating-mode { grid-template-rows: 1fr; grid-template-areas: "main"; grid-template-columns: 1fr; }
   body.floating-mode #center { grid-area: main; }
   body.floating-mode #content-area { padding: 10px !important; height: 100vh; overflow-y: auto; }
   /* Fenced code block lines */
@@ -1503,12 +1524,23 @@
   /* Tasks view — fill height so Kanban board doesn't collapse */
   #content-area.tasks-view-active { overflow-y: hidden; }
 
+  /* Today view — unified command card */
+  .today-card {
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    overflow: hidden; margin-bottom: 16px;
+  }
+  .today-card-capture {
+    background: var(--capture-bg, #fdf9f3); padding: 10px 14px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .today-card-capture:focus-within { border-bottom-color: var(--accent); }
+  .today-card-tasks { padding: 0 14px 8px; background: var(--surface); }
+
   /* Today view — tasks due section */
   .today-tasks-hdr {
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.6px; color: var(--text2);
-    padding: 12px 0 6px; margin-bottom: 2px;
-    border-bottom: 1px solid var(--border-light);
+    padding: 10px 0 4px; margin-bottom: 2px;
   }
   .today-task-row {
     display: flex; align-items: center; gap: 8px;
@@ -1546,14 +1578,15 @@
   .tt-star, .kc-star, .tl-star, .tm-star {
     cursor: pointer; font-size: 13px; color: var(--border-strong);
     transition: all 0.12s; flex-shrink: 0; user-select: none;
+    opacity: 0.25;
   }
-  .tt-star:hover, .kc-star:hover, .tl-star:hover, .tm-star:hover { color: var(--amber); }
-  .tt-star.active, .kc-star.active, .tl-star.active, .tm-star.active { color: var(--amber); }
-  .kc-star { font-size: 11px; opacity: 0; margin-left: auto; }
-  .kanban-card:hover .kc-star { opacity: 1; }
-  .kc-star.active { opacity: 1; }
+  .tt-star:hover, .kc-star:hover, .tl-star:hover, .tm-star:hover { color: var(--amber); opacity: 0.8; }
+  .tt-star.active, .kc-star.active, .tl-star.active, .tm-star.active { color: var(--amber); opacity: 1; }
+  .tl-row:hover .tl-star, .today-task-row:hover .tt-star,
+  .kanban-card:hover .kc-star, .cm-task-card:hover .kc-star { opacity: 0.6; }
+  .kc-star { font-size: 11px; margin-left: auto; }
   .tl-star { font-size: 12px; }
-  .tm-star { font-size: 18px; }
+  .tm-star { font-size: 18px; opacity: 1; }
   .today-task-row.starred { border-left: 3px solid var(--amber); }
   /* Expanding task-add card */
   .task-add-trigger {
@@ -1703,12 +1736,12 @@
   .kanban-col-menu:hover { color: var(--text); }
   .kanban-col-body {
     flex: 1; overflow-y: auto; padding: 6px 6px 8px;
-    display: flex; flex-direction: column; gap: 4px;
+    display: flex; flex-direction: column; gap: 6px;
   }
-  .kanban-col-body.drag-over { background: var(--accent-light); }
+  .kanban-col-body.drag-over { background: var(--accent-light); border-radius: var(--radius-sm); }
   .kanban-col-add {
     display: flex; align-items: center; justify-content: center; gap: 4px;
-    padding: 6px; margin: 0 6px 6px; border-radius: var(--radius-sm);
+    padding: 6px; margin: 0; border-radius: var(--radius-sm);
     border: 1px dashed var(--border-strong); color: var(--text3);
     font-size: 10px; cursor: pointer; background: transparent; font-family: var(--sans);
   }
@@ -1743,7 +1776,31 @@
   }
   .kanban-card:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-color: var(--border); }
   .kanban-card:active { cursor: grabbing; }
-  .kanban-card.dragging { opacity: 0.3; }
+  .kanban-card.dragging { opacity: 0.15; pointer-events: none; height: 0; overflow: hidden; padding: 0; margin: 0; border: none; }
+  .kanban-card.drop-above, .kanban-card.drop-below { position: relative; }
+  /* Drop indicator: bold accent line with dot endpoints */
+  .kanban-card.drop-above::before,
+  .kanban-card.drop-below::after {
+    content: ''; position: absolute; left: 4px; right: 4px;
+    height: 2px; background: var(--accent); border-radius: 1px;
+  }
+  .kanban-card.drop-above::before { top: -4px; }
+  .kanban-card.drop-below::after { bottom: -4px; }
+  /* Dot at left end of indicator line */
+  .kanban-card.drop-above::after,
+  .kanban-card.drop-below::before {
+    content: ''; position: absolute; left: 0;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 2px var(--surface);
+  }
+  .kanban-card.drop-above::after { top: -7px; }
+  .kanban-card.drop-below::before { bottom: -7px; }
+  /* Empty column drop zone indicator */
+  .kanban-col-body.drag-over-empty::before {
+    content: 'Drop here'; display: flex; align-items: center; justify-content: center;
+    padding: 16px; border: 2px dashed var(--accent); border-radius: var(--radius-md);
+    color: var(--accent); font-size: 11px; font-weight: 500; background: var(--accent-light);
+  }
   .kanban-card.done { opacity: 0.6; }
   .kanban-card.pri-high { border-left: 3px solid var(--danger); }
   .kanban-card.pri-med { border-left: 3px solid var(--amber); }
@@ -1783,10 +1840,30 @@
   .tl-row {
     display: flex; align-items: center; gap: 10px;
     padding: 6px 8px; border-bottom: 1px solid var(--border-light);
-    cursor: pointer; transition: background 0.1s;
+    cursor: grab; transition: background 0.1s; position: relative;
   }
+  .tl-row:active { cursor: grabbing; }
   .tl-row:hover { background: var(--surface); }
   .tl-row.done { opacity: 0.5; }
+  .tl-row.tl-dragging { opacity: 0.15; height: 0; overflow: hidden; padding: 0; border: none; }
+  .tl-row.tl-drop-above::before {
+    content: ''; position: absolute; left: 8px; right: 8px; top: -1px;
+    height: 2px; background: var(--accent); border-radius: 1px;
+  }
+  .tl-row.tl-drop-above::after {
+    content: ''; position: absolute; left: 4px; top: -4px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 2px var(--bg);
+  }
+  .tl-row.tl-drop-below::after {
+    content: ''; position: absolute; left: 8px; right: 8px; bottom: -1px;
+    height: 2px; background: var(--accent); border-radius: 1px;
+  }
+  .tl-row.tl-drop-below::before {
+    content: ''; position: absolute; left: 4px; bottom: -4px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 2px var(--bg);
+  }
   .tl-chk {
     width: 14px; height: 14px; border: 2px solid var(--border-strong); border-radius: 50%;
     cursor: pointer; flex-shrink: 0;
@@ -1818,7 +1895,7 @@
   /* ═══ Task detail modal ═══ */
   .task-modal-box { max-width: 480px !important; padding: 0 !important; }
   .tm-header {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: flex-start; gap: 10px;
     padding: 18px 20px 14px; border-bottom: 1px solid var(--border-light);
   }
   .tm-chk {
@@ -1832,6 +1909,7 @@
   .tm-title {
     flex: 1; border: none; outline: none; font-size: 16px; font-weight: 700;
     font-family: var(--sans); color: var(--text); background: transparent;
+    resize: none; line-height: 1.4; min-height: 24px; overflow: hidden;
   }
   .tm-title:focus { border-bottom: 1px solid var(--accent); }
   .tm-close {
@@ -1899,17 +1977,30 @@
 
   /* Day divider in feed */
   .day-divider {
-    padding: 4px 0 6px; margin-top: 16px; user-select: none;
-    border-bottom: 1.5px solid var(--accent-light);
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 0 6px; margin-top: 20px; user-select: none;
   }
   .day-divider:first-child { margin-top: 0; }
-  .day-divider-line { display: none; }
+  .day-divider-line { flex: 1; height: 1px; background: var(--border); }
   .day-divider-label {
-    font-size: 14px; font-weight: 600; color: var(--brown);
-    white-space: nowrap; letter-spacing: -0.2px;
+    font-size: 13px; font-weight: 700; color: var(--text);
+    white-space: nowrap;
   }
   .day-divider-sublabel {
-    font-size: 12px; font-weight: 400; color: var(--text2); margin-left: 2px;
+    font-size: 11px; font-weight: 400; color: var(--text3); margin-left: 0;
+  }
+  /* Indented entries container under each day */
+  .day-entries {
+    margin-left: 16px; border-left: 2px solid var(--border-light);
+    padding-left: 16px; margin-bottom: 8px;
+  }
+  .day-entries .entry-card.entry-note {
+    position: relative;
+  }
+  .day-entries .entry-card.entry-note::before {
+    content: ''; position: absolute; left: -21px; top: 9px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
   }
 
   /* Delete modal */
@@ -1939,6 +2030,14 @@
   .modal-btn:hover { background: var(--bg); color: var(--text); }
   .modal-btn.danger { background: var(--danger); color: white; border-color: var(--danger); }
   .modal-btn.danger:hover { background: #dc2626; }
+  .modal-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .modal-btn.primary:hover { opacity: .9; }
+  .dd-dialog-input {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 13px; background: var(--surface); color: var(--text); margin-bottom: 16px;
+    font-family: var(--sans);
+  }
+  .dd-dialog-input:focus { border-color: var(--accent); outline: none; }
 
   /* Date/time editor in note view */
   /* Note meta bar — created / modified footer */
@@ -1994,6 +2093,9 @@
 </head>
 <body>
 
+<!-- HEADER BAND -->
+<div id="app-header"></div>
+
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div class="sb-brand">
@@ -2026,12 +2128,6 @@
         <span class="sb-group-title">Calendar</span>
       </div>
       <div class="sb-group-body" id="body-calendar">
-        <div class="date-nav">
-          <button class="dn-btn" onclick="navDay(-1)">&#9664;</button>
-          <span id="date-label"></span>
-          <button class="dn-btn" onclick="navDay(1)">&#9654;</button>
-          <button id="today-btn" onclick="goToday()">Today</button>
-        </div>
         <div style="padding:0 12px 6px">
           <div class="cal-nav">
             <button class="dn-btn" onclick="navMonth(-1)" style="width:18px;height:18px;font-size:7px">&#9664;</button>
@@ -2118,6 +2214,19 @@
     <div class="modal-actions">
       <button class="modal-btn" onclick="closeDeleteModal()">Cancel</button>
       <button class="modal-btn danger" id="delete-confirm-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generic confirm/prompt modal (replaces native alert/confirm/prompt) -->
+<div class="modal-overlay" id="dd-dialog" onclick="if(event.target===this)_ddDialogCancel()">
+  <div class="modal-box">
+    <div class="modal-title" id="dd-dialog-title"></div>
+    <div class="modal-msg" id="dd-dialog-msg"></div>
+    <input type="text" id="dd-dialog-input" class="dd-dialog-input" style="display:none">
+    <div class="modal-actions">
+      <button class="modal-btn" id="dd-dialog-cancel" onclick="_ddDialogCancel()">Cancel</button>
+      <button class="modal-btn" id="dd-dialog-ok" onclick="_ddDialogOk()">OK</button>
     </div>
   </div>
 </div>
@@ -2568,7 +2677,7 @@ function fmtDateLabel(ds){
   return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
 }
 function hourLabel(ts){const h=new Date(ts).getHours();if(h===0)return'12 AM';if(h<12)return h+' AM';if(h===12)return'12 PM';return(h-12)+' PM';}
-function updateDateBar(){document.getElementById('date-label').textContent=fmtDateLabel(selectedDate);document.getElementById('today-btn').style.display=selectedDate===todayStr()?'none':'inline-block';}
+function updateDateBar(){const el=document.getElementById('date-label');if(el)el.textContent=fmtDateLabel(selectedDate);const tb=document.getElementById('today-btn');if(tb)tb.style.display=selectedDate===todayStr()?'none':'inline-block';}
 function navDay(d){const dt=new Date(selectedDate+'T12:00:00');dt.setDate(dt.getDate()+d);selectedDate=dateStr(dt);feedTopDate=selectedDate>=todayStr()?null:selectedDate;feedDaysLoaded=7;feedDayShowMore={};updateDateBar();renderActiveView();renderCalendar();}
 function goToday(){selectedDate=todayStr();feedTopDate=null;calViewDate=new Date();feedDaysLoaded=7;feedDayShowMore={};updateDateBar();renderActiveView();renderCalendar();}
 
@@ -2596,10 +2705,8 @@ function renderTabBar(){
   // Tabs scroll in their own container; icons sit in a fixed-width strip to the right
   // so they can't be overlapped when there are many tabs open.
   let h=`<div id="tab-bar-tabs">${tabsHtml}</div>`;
-  // Icons in the tab bar — just search; gallery/floating/settings are in sidebar footer
-  h+=`<div id="tab-bar-icons">`;
-  h+=`<button class="tab-icon-btn" onclick="openSearch()" title="Search (Cmd+K)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg></button>`;
-  h+=`</div>`;
+  // Tab bar icons strip (search moved to sidebar nav)
+  h+=`<div id="tab-bar-icons"></div>`;
   document.getElementById('tab-bar').innerHTML=h;
   save('settings');
 }
@@ -2706,7 +2813,7 @@ function renderActiveView(){
   // Toggle overflow mode: Kanban needs the content area to NOT scroll
   // (the board fills the viewport), everything else scrolls normally.
   a.classList.toggle('tasks-view-active',activeTab==='tasks'&&tasksViewMode==='kanban');
-  if(activeTab==='today')renderToday(a);
+  if(activeTab==='today'){renderToday(a);setTimeout(()=>{const ci=document.getElementById('capture-input');if(ci)ci.focus();},0);}
   else if(activeTab==='home')renderHome(a);
   else if(activeTab==='tasks')renderTasksView(a);
   else if(activeTab==='gallery')renderGallery(a);
@@ -2824,8 +2931,8 @@ function renderKanbanBoard(tasks,cols){
       </div>
       <div class="kanban-col-body" data-col="${col.id}" ondragover="kanbanCardDragOver(event)" ondrop="kanbanCardDrop(event,'${col.id}')">`;
     colTasks.forEach(t=>{h+=renderKanbanCard(t,today);});
-    h+=`</div>
-      <button class="kanban-col-add" onclick="quickAddToColumn('${col.id}')">+ Add task</button>
+    h+=`<button class="kanban-col-add" onclick="quickAddToColumn('${col.id}')">+ Add task</button>
+      </div>
     </div>`;
   });
 
@@ -2866,7 +2973,7 @@ function renderKanbanCard(t,today){
       <span class="kc-title${isDone?' strikethrough':''}">${escH(t.title)}</span>
       <span class="kc-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Add to Today'}">&#9733;</span>
     </div>
-    ${t.due_date||t.note_id?`<div class="kc-meta">${dueLabel?`<span class="kc-due ${dueClass}">${dueLabel}</span>`:''}${t.note_id?`<span class="kc-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:''}</div>`:''}
+    <div class="kc-meta"><span class="pri-tag ${pri}">${t.priority==='H'?'High':t.priority==='M'?'Med':'Low'}</span>${dueLabel?`<span class="kc-due ${dueClass}">${dueLabel}</span>`:''}${t.note_id?`<span class="kc-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:''}</div>
   </div>`;
 }
 
@@ -2881,24 +2988,55 @@ function kanbanCardDragStart(e,taskId){
 }
 function kanbanCardDragEnd(e){
   _kanbanDragTaskId=null;
+  _clearDropIndicators();
+}
+function _clearDropIndicators(){
   document.querySelectorAll('.kanban-card.dragging').forEach(c=>c.classList.remove('dragging'));
   document.querySelectorAll('.kanban-col-body.drag-over').forEach(c=>c.classList.remove('drag-over'));
+  document.querySelectorAll('.kanban-col-body.drag-over-empty').forEach(c=>c.classList.remove('drag-over-empty'));
+  document.querySelectorAll('.kanban-card.drop-above,.kanban-card.drop-below').forEach(c=>{c.classList.remove('drop-above');c.classList.remove('drop-below');});
 }
 function kanbanCardDragOver(e){
   if(!_kanbanDragTaskId)return;
   e.preventDefault();
   e.dataTransfer.dropEffect='move';
+  _clearDropIndicators();
+  // Re-add dragging class to source card
+  const src=document.querySelector(`.kanban-card[data-task="${_kanbanDragTaskId}"]`);
+  if(src)src.classList.add('dragging');
   const body=e.currentTarget;
-  document.querySelectorAll('.kanban-col-body.drag-over').forEach(c=>c.classList.remove('drag-over'));
   body.classList.add('drag-over');
+  // Find which card the mouse is nearest to
+  const cards=[...body.querySelectorAll('.kanban-card:not(.dragging)')];
+  if(!cards.length){
+    // Empty column — show "drop here" indicator
+    body.classList.add('drag-over-empty');
+    return;
+  }
+  // Find closest card and whether we're above or below its midpoint
+  let closest=null, closestDist=Infinity, above=true;
+  for(const card of cards){
+    const r=card.getBoundingClientRect();
+    const mid=r.top+r.height/2;
+    const dist=Math.abs(e.clientY-mid);
+    if(dist<closestDist){closestDist=dist;closest=card;above=e.clientY<mid;}
+  }
+  if(closest){
+    closest.classList.add(above?'drop-above':'drop-below');
+  }
 }
 function kanbanCardDrop(e,colId){
   e.preventDefault();
   if(!_kanbanDragTaskId)return;
+  // Capture drop position before clearing indicators
+  const body=e.currentTarget;
+  const dropAbove=body.querySelector('.kanban-card.drop-above');
+  const dropBelow=body.querySelector('.kanban-card.drop-below');
+  const targetId=dropAbove?dropAbove.dataset.task:dropBelow?dropBelow.dataset.task:null;
+  _clearDropIndicators();
   const t=(db.tasks||[]).find(x=>x.id===_kanbanDragTaskId);
   if(!t)return;
   const doneCol=getDoneColumn();
-  const wasDone=t.completed;
   t.column_id=colId;
   // Bidirectional sync: dragging to Done = complete; dragging out = uncomplete
   if(doneCol&&colId===doneCol.id&&!t.completed){
@@ -2906,7 +3044,16 @@ function kanbanCardDrop(e,colId){
   } else if(doneCol&&colId!==doneCol.id&&t.completed){
     t.completed=false;t.completed_at=null;
   }
-  t.order=getNextTaskOrder(colId);
+  // Reorder: get all tasks in this column sorted by order, insert dragged task at position
+  const colTasks=(db.tasks||[]).filter(x=>x.column_id===colId&&x.id!==t.id).sort((a,b)=>(a.order||0)-(b.order||0));
+  let insertIdx=colTasks.length; // default: end
+  if(targetId){
+    const tgtIdx=colTasks.findIndex(x=>x.id===targetId);
+    if(tgtIdx>=0) insertIdx=dropAbove?tgtIdx:tgtIdx+1;
+  }
+  colTasks.splice(insertIdx,0,t);
+  // Reassign sequential order values
+  colTasks.forEach((task,i)=>{task.order=i;});
   save('tasks');
   _kanbanDragTaskId=null;
   renderActiveView();
@@ -2944,41 +3091,145 @@ function kanbanColDrop(e,targetColId){
 
 /* ── Column management ── */
 function addKanbanColumn(){
-  const name=prompt('New column name:');
-  if(!name||!name.trim())return;
-  const cols=db.columns||[];
-  const doneCol=cols.find(c=>c.isDone);
-  const maxOrder=Math.max(...cols.filter(c=>!c.isDone).map(c=>c.order||0),0);
-  const newCol={id:genId('col'),name:name.trim(),color:'#6b7280',order:maxOrder+1};
-  // Insert before Done
-  cols.push(newCol);
-  if(doneCol)doneCol.order=maxOrder+2;
-  save('columns');
-  renderActiveView();
+  showPrompt('Column name:',{title:'New Column'}).then(name=>{
+    if(!name||!name.trim())return;
+    const cols=db.columns||[];
+    const doneCol=cols.find(c=>c.isDone);
+    const maxOrder=Math.max(...cols.filter(c=>!c.isDone).map(c=>c.order||0),0);
+    const newCol={id:genId('col'),name:name.trim(),color:'#6b7280',order:maxOrder+1};
+    cols.push(newCol);
+    if(doneCol)doneCol.order=maxOrder+2;
+    save('columns');
+    renderActiveView();
+  });
 }
 function showColMenu(colId,e){
   e.stopPropagation();
   const col=(db.columns||[]).find(c=>c.id===colId);
   if(!col)return;
-  // Simple prompt-based management for now. Phase 6 will add a proper dropdown.
-  const action=prompt(`Column: ${col.name}\n\nType:\n  "rename" to rename\n  "color" to change color\n  "delete" to delete\n  (Cancel to close)`);
-  if(!action)return;
-  const cmd=action.trim().toLowerCase();
-  if(cmd==='rename'){
-    const n=prompt('New name:',col.name);
+  // Show a small dropdown context menu
+  closeColMenu();
+  const rect=e.target.getBoundingClientRect();
+  const menu=document.createElement('div');
+  menu.id='col-ctx-menu';
+  menu.style.cssText=`position:fixed;top:${rect.bottom+4}px;left:${rect.left}px;z-index:600;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);min-width:140px;padding:4px 0;font-size:13px;`;
+  const items=[
+    {label:'Rename',action:()=>colMenuRename(colId)},
+    {label:'Change color',action:()=>colMenuColor(colId)},
+  ];
+  if(!col.isDone)items.push({label:'Delete',danger:true,action:()=>colMenuDelete(colId)});
+  items.forEach(it=>{
+    const btn=document.createElement('div');
+    btn.textContent=it.label;
+    btn.style.cssText=`padding:6px 14px;cursor:pointer;color:${it.danger?'var(--danger)':'var(--text)'};`;
+    btn.onmouseenter=()=>btn.style.background='var(--bg)';
+    btn.onmouseleave=()=>btn.style.background='';
+    btn.onmousedown=ev=>{ev.preventDefault();ev.stopPropagation();closeColMenu();it.action();};
+    menu.appendChild(btn);
+  });
+  document.body.appendChild(menu);
+  setTimeout(()=>document.addEventListener('mousedown',closeColMenu,{once:true}),0);
+}
+function closeColMenu(){const m=document.getElementById('col-ctx-menu');if(m)m.remove();}
+function colMenuRename(colId){
+  const col=(db.columns||[]).find(c=>c.id===colId);if(!col)return;
+  showPrompt('Column name:',{title:'Rename Column',defaultVal:col.name}).then(n=>{
     if(n&&n.trim()){col.name=n.trim();save('columns');renderActiveView();}
-  } else if(cmd==='color'){
-    const c=prompt('Hex color (e.g. #3b82f6):',col.color);
-    if(c&&c.trim()){col.color=c.trim();save('columns');renderActiveView();}
-  } else if(cmd==='delete'){
-    if(col.isDone){alert('Cannot delete the Done column.');return;}
-    if(!confirm(`Delete column "${col.name}"? Tasks will move to Inbox.`))return;
+  });
+}
+function colMenuColor(colId,e){
+  const col=(db.columns||[]).find(c=>c.id===colId);if(!col)return;
+  closeColorPicker();
+  // Find the column header for positioning
+  const colEl=document.querySelector(`.kanban-col[data-col="${colId}"] .kanban-col-hdr`);
+  const rect=colEl?colEl.getBoundingClientRect():{top:200,left:400};
+  const picker=document.createElement('div');
+  picker.id='col-color-picker';
+  picker.style.cssText=`position:fixed;top:${rect.bottom+4}px;left:${rect.left}px;z-index:600;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:10px;`;
+  const label=document.createElement('div');
+  label.style.cssText='font-size:10px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;';
+  label.textContent='Column Color';
+  picker.appendChild(label);
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(6,24px);gap:4px;';
+  TAG_PALETTE.forEach(c=>{
+    const swatch=document.createElement('div');
+    swatch.style.cssText=`width:24px;height:24px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${c===col.color?'var(--text)':'transparent'};transition:all 0.1s;`;
+    swatch.onmouseenter=()=>{swatch.style.transform='scale(1.15)';};
+    swatch.onmouseleave=()=>{swatch.style.transform='';};
+    swatch.onmousedown=ev=>{
+      ev.preventDefault();ev.stopPropagation();
+      col.color=c;save('columns');closeColorPicker();renderActiveView();
+    };
+    grid.appendChild(swatch);
+  });
+  picker.appendChild(grid);
+  document.body.appendChild(picker);
+  setTimeout(()=>document.addEventListener('mousedown',_colorPickerOutside,{once:true}),0);
+}
+function _colorPickerOutside(e){
+  const p=document.getElementById('col-color-picker');
+  if(p&&!p.contains(e.target)){closeColorPicker();}
+  else if(p){setTimeout(()=>document.addEventListener('mousedown',_colorPickerOutside,{once:true}),0);}
+}
+function closeColorPicker(){const p=document.getElementById('col-color-picker');if(p)p.remove();}
+function colMenuDelete(colId){
+  const col=(db.columns||[]).find(c=>c.id===colId);if(!col)return;
+  if(col.isDone){showAlert('Cannot delete the Done column.');return;}
+  showConfirm(`Delete column "${col.name}"? Tasks will move to Inbox.`,{title:'Delete Column',okLabel:'Delete',dangerOk:true}).then(ok=>{
+    if(!ok)return;
     const inbox=(db.columns||[]).find(c=>!c.isDone&&c.order===0);
     (db.tasks||[]).filter(t=>t.column_id===colId).forEach(t=>{t.column_id=inbox?inbox.id:'col_inbox';});
     db.columns=db.columns.filter(c=>c.id!==colId);
     save('columns');save('tasks');renderActiveView();
-  }
+  });
 }
+/* ── List view drag-to-reorder ── */
+let _tlDragTaskId=null;
+function tlDragStart(e,taskId){
+  _tlDragTaskId=taskId;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',taskId);
+  setTimeout(()=>{const el=document.querySelector(`.tl-row[data-task="${taskId}"]`);if(el)el.classList.add('tl-dragging');},0);
+}
+function tlDragEnd(e){
+  _tlDragTaskId=null;
+  document.querySelectorAll('.tl-dragging,.tl-drop-above,.tl-drop-below').forEach(c=>c.classList.remove('tl-dragging','tl-drop-above','tl-drop-below'));
+}
+function tlDragOver(e){
+  if(!_tlDragTaskId)return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.tl-drop-above,.tl-drop-below').forEach(c=>c.classList.remove('tl-drop-above','tl-drop-below'));
+  const row=e.currentTarget;
+  if(row.dataset.task===_tlDragTaskId)return;
+  const rect=row.getBoundingClientRect();
+  const mid=rect.top+rect.height/2;
+  row.classList.add(e.clientY<mid?'tl-drop-above':'tl-drop-below');
+}
+function tlDrop(e,targetTaskId,colId){
+  e.preventDefault();
+  if(!_tlDragTaskId||_tlDragTaskId===targetTaskId)return;
+  const row=e.currentTarget;
+  const above=row.classList.contains('tl-drop-above');
+  const t=(db.tasks||[]).find(x=>x.id===_tlDragTaskId);
+  if(!t)return;
+  // Move to the target column if different
+  const doneCol=getDoneColumn();
+  t.column_id=colId;
+  if(doneCol&&colId===doneCol.id&&!t.completed){t.completed=true;t.completed_at=Date.now();}
+  else if(doneCol&&colId!==doneCol.id&&t.completed){t.completed=false;t.completed_at=null;}
+  // Reorder within column
+  const colTasks=(db.tasks||[]).filter(x=>x.column_id===colId&&x.id!==t.id).sort((a,b)=>(a.order||0)-(b.order||0));
+  const tgtIdx=colTasks.findIndex(x=>x.id===targetTaskId);
+  const insertIdx=tgtIdx>=0?(above?tgtIdx:tgtIdx+1):colTasks.length;
+  colTasks.splice(insertIdx,0,t);
+  colTasks.forEach((task,i)=>{task.order=i;});
+  save('tasks');
+  _tlDragTaskId=null;
+  renderActiveView();renderSidebar();
+}
+
 function quickAddToColumn(colId){
   // Inline input at the bottom of the column
   const body=document.querySelector(`.kanban-col-body[data-col="${colId}"]`);
@@ -3009,8 +3260,7 @@ function renderTaskList(tasks,cols){
   cols.forEach(col=>{
     const colTasks=tasks.filter(t=>t.column_id===col.id).sort((a,b)=>{
       if(a.completed!==b.completed)return a.completed?1:-1;
-      const pOrd={H:0,M:1,L:2};
-      return(pOrd[a.priority]||2)-(pOrd[b.priority]||2);
+      return(a.order||0)-(b.order||0);
     });
     if(!colTasks.length&&!tasksFilter.showDone&&col.isDone)return;
     if(col.isDone&&!tasksFilter.showDone){
@@ -3027,13 +3277,13 @@ function renderTaskList(tasks,cols){
       const isDone=t.completed;
       const dueLabel=!t.due_date?'':t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
       const dueClass=!t.due_date?'none':(t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':'future');
-      h+=`<div class="tl-row${isDone?' done':''}" onclick="openTaskDetail('${t.id}')">
+      h+=`<div class="tl-row${isDone?' done':''}" draggable="true" data-task="${t.id}" data-col="${col.id}" onclick="openTaskDetail('${t.id}')" ondragstart="tlDragStart(event,'${t.id}')" ondragend="tlDragEnd(event)" ondragover="tlDragOver(event)" ondrop="tlDrop(event,'${t.id}','${col.id}')">
         <div class="tl-chk${isDone?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!isDone});renderActiveView();renderSidebar()"></div>
-        <span class="tl-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Star for Today'}">&#9733;</span>
-        <span class="tl-pri-dot ${pri}"></span>
         <span class="tl-title${isDone?' strikethrough':''}">${escH(t.title)}</span>
+        <span class="pri-tag ${pri}">${t.priority==='H'?'High':t.priority==='M'?'Med':'Low'}</span>
         ${dueLabel?`<span class="tl-due ${dueClass}">${dueLabel}</span>`:''}
         ${t.note_id?`<span class="tl-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:''}
+        <span class="tl-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Star for Today'}">&#9733;</span>
         <span class="tl-date">${fmtShortDate(t.created_at)}</span>
       </div>`;
     });
@@ -3061,32 +3311,54 @@ function renderToday(area){
     const d=new Date(selD);d.setDate(d.getDate()-i);
     dates.push(dateStr(d));
   }
-  // Filter entries for visible dates
+  // Filter entries for visible dates — includes entries edited on visible dates
   const dateSet=new Set(dates);
-  const allEntries=db.entries.filter(e=>dateSet.has(e.date)&&!e.isHelp).filter(e=>{
+  const tagFilter=e=>{
     if(e.eventType&&activeTagFilters.length>0)return false;
     if(activeTagFilters.length===0)return true;
     return activeTagFilters.every(f=>{
       if(f.startsWith('@'))return(e.mentions||[]).some(m=>m.toLowerCase()===f.slice(1).toLowerCase());
       return(e.tags||[]).some(t=>t.toLowerCase()===f.toLowerCase());
     });
-  }).sort((a,b)=>b.ts-a.ts);
-
+  };
   const byDate={};
-  allEntries.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e);});
+  db.entries.forEach(e=>{
+    if(e.isHelp||!tagFilter(e))return;
+    // Show on creation day
+    if(dateSet.has(e.date)){(byDate[e.date]=byDate[e.date]||[]).push(e);}
+    // Show on each edit day (notes edited on a different day than creation)
+    if(e.editDates){
+      e.editDates.forEach(ed=>{
+        if(dateSet.has(ed.date)&&ed.date!==e.date){
+          // Create a lightweight reference so we can sort by edit timestamp
+          const ref=Object.create(e);
+          ref._editRef=true;
+          ref._editTs=ed.ts;
+          (byDate[ed.date]=byDate[ed.date]||[]).push(ref);
+        }
+      });
+    }
+  });
+  // Sort each day's entries — edit refs use their edit ts
+  Object.values(byDate).forEach(arr=>arr.sort((a,b)=>(b._editTs||b.ts)-(a._editTs||a.ts)));
 
-  // Input Rail is the only capture style: renders above the feed in #capture-top
-  const captureHTML=`<div id="capture" onclick="if(event.target===this||event.target.id==='capture-bar'||event.target.classList.contains('spacer')){const i=document.getElementById('capture-input');if(i)i.focus();}"><textarea id="capture-input" placeholder="What's happening? (#tags supported)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)"></textarea><div id="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button id="submit-btn" onclick="submitEntry()">Add</button></div></div>`;
+  // Hide the old capture-top rail — capture is now inside the unified card
   const topEl=document.getElementById('capture-top');
-  if(topEl){topEl.classList.add('visible');topEl.innerHTML=captureHTML;}
+  if(topEl){topEl.classList.remove('visible');topEl.innerHTML='';}
   let h='<div class="today-wrap">';
 
-  // ── Tasks for today: starred + due today + overdue ──
+  // ── Unified "command center" card: capture + tasks ──
   const viewingToday=selectedDate===todayStr();
   const today=todayStr();
+  h+=`<div class="today-card">`;
+  // Capture input
+  h+=`<div class="today-card-capture" onclick="if(event.target===this||event.target.classList.contains('spacer')){const i=document.getElementById('capture-input');if(i)i.focus();}">
+    <textarea id="capture-input" placeholder="What's happening? (#tags supported)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)"></textarea>
+    <div id="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button id="submit-btn" onclick="submitEntry()">Add</button></div>
+  </div>`;
+  // Tasks section
   const todayTasks=viewingToday?getTasksForToday():
     (selectedDate>today?getTasksDueOn(selectedDate):[]);
-  // Sort: overdue first, then due today, then starred-only
   todayTasks.sort((a,b)=>{
     const aOD=a.due_date&&a.due_date<today?0:a.due_date===today?1:2;
     const bOD=b.due_date&&b.due_date<today?0:b.due_date===today?1:2;
@@ -3094,13 +3366,14 @@ function renderToday(area){
     const pOrd={H:0,M:1,L:2};
     return(pOrd[a.priority]||2)-(pOrd[b.priority]||2);
   });
+  const overdueCount=todayTasks.filter(t=>t.due_date&&t.due_date<today).length;
+  const starredCount=todayTasks.filter(t=>t.today&&!(t.due_date&&t.due_date<=today)).length;
+  const taskLabel=viewingToday
+    ?`Tasks <span style="font-weight:400;color:var(--text3)">${todayTasks.length||0}${overdueCount?' · '+overdueCount+' overdue':''}${starredCount?' · '+starredCount+' starred':''}</span>`
+    :`Tasks due ${fmtDateLabel(selectedDate)}`;
+  h+=`<div class="today-card-tasks">`;
+  h+=`<div class="today-tasks-hdr">${taskLabel}</div>`;
   if(todayTasks.length){
-    const overdueCount=todayTasks.filter(t=>t.due_date&&t.due_date<today).length;
-    const starredCount=todayTasks.filter(t=>t.today&&!(t.due_date&&t.due_date<=today)).length;
-    const label=viewingToday
-      ?`Tasks <span style="font-weight:400;color:var(--text3)">${todayTasks.length}${overdueCount?' · '+overdueCount+' overdue':''}${starredCount?' · '+starredCount+' starred':''}</span>`
-      :`Tasks due ${fmtDateLabel(selectedDate)}`;
-    h+=`<div class="today-tasks-hdr">${label}</div>`;
     todayTasks.forEach(t=>{
       const isOverdue=t.due_date&&t.due_date<today;
       const dueLabel=!t.due_date?''
@@ -3115,16 +3388,16 @@ function renderToday(area){
       const starBtn=`<span class="tt-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Add to Today'}">&#9733;</span>`;
       h+=`<div class="today-task-row${isStarredOnly?' starred':''}" onclick="openTaskDetail('${t.id}')">
         <div class="tt-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',!${t.completed});renderActiveView();renderSidebar()"></div>
-        <div class="tt-stripe ${pri}"></div>
-        ${starBtn}
         <span class="tt-title${t.completed?' done':''}">${escH(t.title)}</span>
+        <span class="pri-tag ${pri}">${t.priority==='H'?'High':t.priority==='M'?'Med':'Low'}</span>
         ${dueLabel?`<span class="tt-due ${dueClass}">${dueLabel}</span>`:''}
         ${col?`<span class="tt-col">${escH(col)}</span>`:''}
         ${noteLink}
+        ${starBtn}
       </div>`;
     });
   }
-  // Quick add task — clean expanding card
+  // Quick add task
   if(viewingToday||selectedDate>=today){
     h+=`<div class="task-add-trigger" onclick="expandTaskAdd(this)">
       <span class="task-add-plus">+</span>
@@ -3149,6 +3422,8 @@ function renderToday(area){
       </div>
     </div>`;
   }
+  h+=`</div>`; // close .today-card-tasks
+  h+=`</div>`; // close .today-card
 
   // Top sentinel — loads newer days when scrolled to top (only if anchor is in the past)
   if(getFeedTopDate()<todayStr()){
@@ -3163,10 +3438,11 @@ function renderToday(area){
     const dayEntries=byDate[ds]||[];
     h+=renderDayDivider(ds);
     if(dayEntries.length===0){
-      h+=`<div class="empty" style="padding:12px 20px;font-size:12px;color:var(--text3)">No entries</div>`;
+      h+=`<div class="day-entries"><div class="empty" style="padding:8px 0;font-size:12px;color:var(--text3)">No entries</div></div>`;
       continue;
     }
     hasAny=true;
+    h+=`<div class="day-entries">`;
 
     // Cap per-day rendering
     const dayLimit=feedDayShowMore[ds]||FEED_DAY_CAP;
@@ -3174,15 +3450,16 @@ function renderToday(area){
     const dayHasMore=dayEntries.length>dayLimit;
 
     // Group visible entries by hour
-    const groups={};visibleEntries.forEach(e=>{const hl=hourLabel(e.ts);(groups[hl]=groups[hl]||[]).push(e);});
+    const groups={};visibleEntries.forEach(e=>{const hl=hourLabel(e._editTs||e.ts);(groups[hl]=groups[hl]||[]).push(e);});
     for(const[hour,items]of Object.entries(groups)){
       h+=`<div class="hour-group"><div class="hour-label">${escH(hour)}</div>`;
-      items.forEach(e=>{ h+=e.eventType?renderEventEntry(e):renderEntryCard(e); });
+      items.forEach(e=>{ h+=e.eventType?renderEventEntry(e):renderEntryCard(e,e._editRef); });
       h+='</div>';
     }
     if(dayHasMore){
       h+=`<div class="load-more"><button onclick="showMoreDay('${ds}')">Show ${dayEntries.length-dayLimit} more entries from this day</button></div>`;
     }
+    h+=`</div>`; // close .day-entries
   }
   if(!hasAny){h+=`<div class="empty">No entries${activeTagFilters.length?' matching filters':''}. Start typing above.</div>`;}
 
@@ -3209,16 +3486,17 @@ function renderDayDivider(ds){
     else label=d.toLocaleDateString('en-US',{weekday:'long'});
   }
   const fullDate=d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  return`<div class="day-divider"><div class="day-divider-line"></div><span class="day-divider-label">${label}<span class="day-divider-sublabel"> &mdash; ${fullDate}</span></span><div class="day-divider-line"></div></div>`;
+  return`<div class="day-divider"><span class="day-divider-label">${label}</span><span class="day-divider-sublabel">&mdash; ${fullDate}</span><div class="day-divider-line"></div></div>`;
 }
 function getEntryBorderColor(tags){
   if(!tags||!tags.length)return 'var(--border)';
   return getTagColor(tags[0]);
 }
-function renderEntryCard(e){
-  const borderColor=getEntryBorderColor(e.tags);
-  let h=`<div class="entry-card" data-id="${e.id}" data-action="open" style="border-left-color:${borderColor}">`;
-  h+=`<span class="entry-time">${fmtTime(e.ts)}</span>`;
+function renderEntryCard(e,isEditRef){
+  const noteClass=e.isNote?' entry-note':'';
+  let h=`<div class="entry-card${noteClass}" data-id="${e.id}" data-action="open">`;
+  h+=`<span class="entry-time">${fmtTime(e._editTs||e.ts)}</span>`;
+  if(isEditRef){h+=`<span class="entry-edit-badge">edited</span>`;}
   // Extract image IDs and strip tokens from display content
   const imgIds=[...e.content.matchAll(/!\[\]\((img_[a-z0-9_]+)(?:\|w=\d+)?\)/g)].map(m=>m[1]);
   const contentNoImgs=e.content.replace(/\n?!\[\]\(img_[a-z0-9_]+(?:\|w=\d+)?\)\n?/g,' ').trim();
@@ -3393,6 +3671,53 @@ function confirmDelete(id){
   document.getElementById('delete-confirm-btn').onclick=()=>doDelete();
 }
 function closeDeleteModal(){pendingDeleteId=null;document.getElementById('delete-modal').classList.remove('open');}
+
+/* ── Generic Dialog Utilities (replace native alert/confirm/prompt) ── */
+let _ddDialogResolve=null;
+function _ddDialogOpen(title,msg,{input=false,defaultVal='',okLabel='OK',okClass='primary',dangerOk=false}={}){
+  const el=document.getElementById('dd-dialog');
+  document.getElementById('dd-dialog-title').textContent=title;
+  document.getElementById('dd-dialog-msg').textContent=msg;
+  const inp=document.getElementById('dd-dialog-input');
+  inp.style.display=input?'block':'none';
+  if(input){inp.value=defaultVal;setTimeout(()=>{inp.focus();inp.select();},50);}
+  const okBtn=document.getElementById('dd-dialog-ok');
+  okBtn.textContent=okLabel;
+  okBtn.className='modal-btn '+(dangerOk?'danger':'primary');
+  el.classList.add('open');
+  return new Promise(r=>{_ddDialogResolve=r;});
+}
+function _ddDialogCancel(){
+  document.getElementById('dd-dialog').classList.remove('open');
+  if(_ddDialogResolve){_ddDialogResolve(null);_ddDialogResolve=null;}
+}
+function _ddDialogOk(){
+  const inp=document.getElementById('dd-dialog-input');
+  const isPrompt=inp.style.display!=='none';
+  const val=isPrompt?inp.value:true;
+  document.getElementById('dd-dialog').classList.remove('open');
+  if(_ddDialogResolve){_ddDialogResolve(val);_ddDialogResolve=null;}
+}
+// showConfirm('Delete this?',{title:'Confirm',okLabel:'Delete',dangerOk:true}).then(ok=>{if(ok)...})
+function showConfirm(msg,opts={}){return _ddDialogOpen(opts.title||'Confirm',msg,{okLabel:opts.okLabel||'OK',dangerOk:opts.dangerOk||false});}
+// showPrompt('Enter name:',{title:'Rename',defaultVal:'foo'}).then(val=>{if(val!==null)...})
+function showPrompt(msg,opts={}){return _ddDialogOpen(opts.title||msg,opts.body||msg,{input:true,defaultVal:opts.defaultVal||'',okLabel:opts.okLabel||'OK'});}
+// showAlert('Something happened',{title:'Notice'}).then(()=>{})
+function showAlert(msg,opts={}){
+  document.getElementById('dd-dialog-cancel').style.display='none';
+  return _ddDialogOpen(opts.title||'Notice',msg,{okLabel:'OK'}).then(v=>{
+    document.getElementById('dd-dialog-cancel').style.display='';return v;
+  });
+}
+// Enter key submits the dialog
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('dd-dialog').classList.contains('open')){
+    e.preventDefault();_ddDialogOk();
+  }
+  if(e.key==='Escape'&&document.getElementById('dd-dialog').classList.contains('open')){
+    e.preventDefault();_ddDialogCancel();
+  }
+});
 function doDelete(){
   if(!pendingDeleteId)return;
   const id=pendingDeleteId;
@@ -4200,19 +4525,11 @@ class CmTaskWidget extends CM6.WidgetType{
     titleEl.className='cm-tc-title';
     titleEl.textContent=t.title;
     card.appendChild(titleEl);
-    // Star
-    const star=document.createElement('span');
-    star.className='kc-star'+(t.today?' active':'');
-    star.textContent='★';
-    star.addEventListener('mousedown',e=>{
-      e.preventDefault();e.stopPropagation();
-      toggleTaskToday(t.id);renderActiveView();renderSidebar();
-    });
-    card.appendChild(star);
-    // Priority dot
+    // Priority tag
     const pri=document.createElement('span');
-    pri.className='cm-tc-pri';
-    pri.style.background=t.priority==='H'?'var(--danger)':t.priority==='M'?'var(--amber)':'var(--border-strong)';
+    const priCls=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+    pri.className='pri-tag '+priCls;
+    pri.textContent=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
     card.appendChild(pri);
     // Due date
     if(t.due_date){
@@ -4224,6 +4541,15 @@ class CmTaskWidget extends CM6.WidgetType{
       due.textContent=label;
       card.appendChild(due);
     }
+    // Star (last — far right)
+    const star=document.createElement('span');
+    star.className='kc-star'+(t.today?' active':'');
+    star.textContent='★';
+    star.addEventListener('mousedown',e=>{
+      e.preventDefault();e.stopPropagation();
+      toggleTaskToday(t.id);renderActiveView();renderSidebar();
+    });
+    card.appendChild(star);
     // Click card to open modal
     card.addEventListener('mousedown',e=>{
       if(e.target===chk||e.target===star)return;
@@ -4945,23 +5271,22 @@ const SLASH_COMMANDS=[
   {name:'status',label:'Status',desc:'Insert a status badge',run:_slashStatus},
 ];
 function _slashTask(view,slashStart,slashEnd){
-  // Create a task via the expanding card UI, then insert {{task:id}} token
-  const line=view.state.doc.lineAt(slashStart);
-  // Clear the /task text first
-  view.dispatch({changes:{from:line.from,to:slashEnd,insert:''}});
-  // Show a quick title prompt (Phase 6 modal will replace this)
-  const title=prompt('Task title:');
-  if(!title||!title.trim()){view.focus();return;}
-  const task=createTask({title:title.trim(),note_id:cmNoteId});
-  if(!task){view.focus();return;}
-  // If on Today view context, star it
-  if(activeTab==='today'){task.today=true;save('tasks');}
-  // Insert the token on its own line
-  const token='\n{{task:'+task.id+'}}\n';
-  const pos=line.from;
-  view.dispatch({changes:{from:pos,insert:token},selection:{anchor:pos+token.length}});
-  view.focus();
-  renderSidebar();
+  showPrompt('Task title:',{title:'New Task'}).then(title=>{
+    if(!title||!title.trim()){view.focus();return;}
+    const task=createTask({title:title.trim(),note_id:cmNoteId});
+    if(!task){view.focus();return;}
+    if(activeTab==='today'){task.today=true;save('tasks');}
+    // Replace the /task line content with the token in a single dispatch
+    const line=view.state.doc.lineAt(slashStart);
+    const token='{{task:'+task.id+'}}';
+    const atEnd=line.to>=view.state.doc.length;
+    view.dispatch({
+      changes:{from:line.from,to:line.to,insert:atEnd?token+'\n':token},
+      selection:{anchor:line.from+token.length+1}
+    });
+    view.focus();
+    renderSidebar();
+  });
 }
 function _slashStatus(view,slashStart,slashEnd){
   showStatusEditor(null,null,(color,text)=>{
@@ -5221,6 +5546,14 @@ function noteContentChanged(id,val){
   e.tags=extractTags(val);
   e.mentions=extractMentions(val);
   e.updatedTs=Date.now();
+  // Track edit dates — one entry per day, latest ts wins
+  const today=todayStr();
+  if(today!==e.date){ // don't track edits on creation day — already in feed
+    if(!e.editDates)e.editDates=[];
+    const existing=e.editDates.find(d=>d.date===today);
+    if(existing){existing.ts=e.updatedTs;}
+    else{e.editDates.push({date:today,ts:e.updatedTs});}
+  }
   renderNoteMetaBar(id);
   // Derive title from first line (including hashtags)
   const firstLine=(val.split('\n')[0]||'').trim().slice(0,80);
@@ -5256,7 +5589,25 @@ function noteContentChanged(id,val){
   // Save on debounce but do NOT sync checkboxes to tasks here — that causes
   // partial-text tasks ("some ite" from mid-typing). Checkbox-to-task sync
   // only happens at commit points (tab switch/close) or when clicking a checkbox.
-  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderAllSections();},300);
+  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderAllSections();cleanupOrphanedTasks();},300);
+}
+// Delete tasks whose {{task:id}} token no longer appears in ANY note.
+function cleanupOrphanedTasks(){
+  const tasks=db.tasks||[];
+  if(!tasks.length)return;
+  // Build set of all task IDs referenced in any note
+  const referenced=new Set();
+  for(const e of db.entries){
+    const body=e.content||e.body||'';
+    const re=/\{\{task:([a-z0-9_]+)\}\}/gi;
+    let m;
+    while((m=re.exec(body)))referenced.add(m[1]);
+  }
+  // Find tasks created from a note (have note_id) that are no longer referenced anywhere
+  const orphans=tasks.filter(t=>t.note_id&&!referenced.has(t.id));
+  if(!orphans.length)return;
+  db.tasks=tasks.filter(t=>!orphans.some(o=>o.id===t.id));
+  save('tasks');
 }
 // Scan a note's content for checkbox patterns and create/sync linked tasks.
 function noteKey(e,noteId){
@@ -7592,8 +7943,9 @@ function importData(e){
   reader.onload=async ev=>{
     try{
       const data=JSON.parse(ev.target.result);
-      if(!data.entries){alert('Invalid backup file — missing entries.');return;}
-      if(!confirm('Importing will REPLACE all your current data. Export first if you want to keep it. Continue?'))return;
+      if(!data.entries){showAlert('Invalid backup file — missing entries.',{title:'Import Error'});return;}
+      const ok=await showConfirm('Importing will REPLACE all your current data. Export first if you want to keep it. Continue?',{title:'Import Backup',okLabel:'Import',dangerOk:true});
+      if(!ok)return;
       // Data collections
       db.entries=data.entries||[];
       db.questions=data.questions||[];
@@ -7626,7 +7978,7 @@ function importData(e){
       openTabs=['today'];activeTab='today';
       updateDateBar();renderTabBar();renderActiveView();renderSidebar();
       if(typeof showToast==='function')showToast('Backup imported','info');
-    }catch(err){alert('Failed to parse file: '+err.message);}
+    }catch(err){showAlert('Failed to parse file: '+err.message,{title:'Import Error'});}
   };
   reader.readAsText(file);e.target.value='';
 }
@@ -8287,7 +8639,7 @@ function openTaskDetail(taskId){
     <div class="tm-header">
       <div class="tm-chk${t.completed?' checked':''}" onclick="completeTask('${t.id}',${!t.completed});openTaskDetail('${t.id}');renderActiveView();renderSidebar()"></div>
       <span class="tm-star${t.today?' active':''}" onclick="toggleTaskToday('${t.id}');openTaskDetail('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Star for Today'}">&#9733;</span>
-      <input class="tm-title" value="${escH(t.title)}" onchange="updateTask('${t.id}',{title:this.value.trim()});renderActiveView();renderSidebar()">
+      <textarea class="tm-title" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onchange="updateTask('${t.id}',{title:this.value.trim()});renderActiveView();renderSidebar()">${escH(t.title)}</textarea>
       <button class="tm-close" onclick="closeTaskModal()">&times;</button>
     </div>
     <div class="tm-fields">
@@ -8310,10 +8662,12 @@ function openTaskDetail(taskId){
       ${completedDate?`<span>· Completed ${completedDate}</span>`:''}
     </div>
     <div class="tm-actions">
-      <button class="tm-delete" onclick="if(confirm('Delete this task?')){deleteTask('${t.id}');closeTaskModal();renderActiveView();renderSidebar();}">Delete task</button>
+      <button class="tm-delete" onclick="showConfirm('Delete this task? This cannot be undone.',{title:'Delete Task',okLabel:'Delete',dangerOk:true}).then(ok=>{if(ok){deleteTask('${t.id}');closeTaskModal();renderActiveView();renderSidebar();}})">Delete task</button>
     </div>
   `;
   modal.classList.add('open');
+  // Auto-size title textarea to fit content
+  setTimeout(()=>{const ta=modal.querySelector('.tm-title');if(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}},0);
 }
 function closeTaskModal(){
   document.getElementById('task-modal')?.classList.remove('open');

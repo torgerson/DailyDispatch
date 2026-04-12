@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tab Bar — Header Band Options</title>
+<style>
+:root {
+  --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+  --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+  --text:#37352f; --text2:#787774; --text3:#9b9a97;
+  --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+  --danger:#e16259; --amber:#d97706; --green:#4daa57; --brown:#8b7355;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --radius-sm:4px; --radius-md:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);font-size:14px;color:var(--text);background:#d4cbbf;padding:30px;}
+h1{font-size:18px;font-weight:700;margin-bottom:6px;}
+.subtitle{font-size:12px;color:var(--text2);margin-bottom:30px;line-height:1.5;}
+
+.option{
+  max-width:900px;margin:0 auto 50px;
+  border-radius:var(--radius-md);overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.12);
+}
+.option-label{
+  background:var(--accent);color:#fff;padding:8px 16px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+}
+.option-desc{
+  padding:10px 16px;font-size:11px;color:var(--text2);
+  background:var(--surface);border-bottom:1px solid var(--border);line-height:1.5;
+}
+
+/* Shared layout */
+.mock-app{display:grid;grid-template-columns:200px 1fr;grid-template-rows:auto auto 1fr;min-height:360px;}
+.mock-sidebar{grid-row:1/4;background:var(--sidebar-bg);border-right:1px solid var(--border);padding:0;}
+.mock-sb-nav{padding:10px 14px;}
+.mock-nav-item{
+  padding:5px 10px;font-size:11px;font-weight:500;color:var(--text2);
+  border-radius:var(--radius-sm);cursor:pointer;margin-bottom:1px;
+  display:flex;align-items:center;gap:7px;
+}
+.mock-nav-item.active{background:var(--accent-light);color:var(--accent);font-weight:600;}
+.mock-nav-item svg{width:13px;height:13px;}
+.mock-content{padding:20px;background:var(--bg);grid-column:2;}
+.mock-placeholder{color:var(--text3);font-size:12px;font-style:italic;}
+
+/* Tab close */
+.tx{font-size:8px;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;opacity:0;margin-left:2px;color:var(--text3);}
+
+/* Tab new button */
+.tab-new{
+  width:20px;height:20px;border-radius:var(--radius-sm);border:1px dashed var(--border-strong);
+  background:transparent;color:var(--text3);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;margin-left:2px;flex-shrink:0;
+}
+
+/* ═══════════════════════════════════════ */
+/* OPTION 1: Warm accent header band      */
+/* ═══════════════════════════════════════ */
+.hdr-1{
+  grid-column:1/3;grid-row:1;
+  background:linear-gradient(135deg,#8b7355 0%,#cb912f 100%);
+  display:flex;align-items:center;padding:0 16px;height:36px;
+}
+.hdr-1-brand{
+  width:200px;font-size:13px;font-weight:700;color:#fff;
+  letter-spacing:-0.3px;flex-shrink:0;
+  border-right:1px solid rgba(255,255,255,0.15);padding-right:14px;
+}
+.hdr-1-brand span{font-weight:400;opacity:0.8;}
+.hdr-1-spacer{flex:1;}
+
+.bar-1{
+  grid-column:2;grid-row:2;
+  display:flex;align-items:center;gap:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 6px;height:32px;overflow-x:auto;
+}
+.tab-1{
+  display:flex;align-items:center;gap:4px;
+  padding:4px 10px;font-size:11px;font-weight:500;color:var(--text2);
+  cursor:pointer;white-space:nowrap;border-radius:var(--radius-sm);
+  transition:all 0.1s;border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab-1:hover{background:var(--bg);color:var(--text);}
+.tab-1:hover .tx{opacity:.5;}
+.tab-1.active{color:var(--text);font-weight:600;border-bottom-color:var(--accent);}
+.sb-1{padding-top:8px;}
+
+/* ═══════════════════════════════════════ */
+/* OPTION 2: Sidebar-color header band    */
+/* ═══════════════════════════════════════ */
+.hdr-2{
+  grid-column:1/3;grid-row:1;
+  background:var(--sidebar-bg);
+  display:flex;align-items:center;padding:0 16px;height:34px;
+  border-bottom:1px solid var(--border);
+}
+.hdr-2-brand{
+  width:200px;font-size:13px;font-weight:700;color:var(--brown);
+  letter-spacing:-0.3px;flex-shrink:0;
+  padding-right:14px;
+}
+.hdr-2-brand span{color:var(--accent);}
+.hdr-2-tabs{
+  display:flex;align-items:center;gap:4px;flex:1;overflow-x:auto;
+  padding:0 6px;
+}
+.tab-2{
+  display:flex;align-items:center;gap:4px;
+  padding:3px 9px;font-size:11px;font-weight:500;color:var(--text2);
+  cursor:pointer;white-space:nowrap;
+  border-radius:12px;transition:all 0.1s;background:transparent;
+}
+.tab-2:hover{background:rgba(203,145,47,0.08);color:var(--text);}
+.tab-2:hover .tx{opacity:.5;}
+.tab-2.active{
+  background:var(--surface);color:var(--text);font-weight:600;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* ═══════════════════════════════════════ */
+/* OPTION 3: Dark header band             */
+/* ═══════════════════════════════════════ */
+.hdr-3{
+  grid-column:1/3;grid-row:1;
+  background:#37352f;
+  display:flex;align-items:center;padding:0 16px;height:34px;
+}
+.hdr-3-brand{
+  width:200px;font-size:13px;font-weight:700;color:#e8e0d4;
+  letter-spacing:-0.3px;flex-shrink:0;
+  padding-right:14px;
+}
+.hdr-3-brand span{color:var(--accent);}
+.hdr-3-tabs{
+  display:flex;align-items:center;gap:3px;flex:1;overflow-x:auto;padding:0 6px;
+}
+.tab-3{
+  display:flex;align-items:center;gap:4px;
+  padding:4px 10px;font-size:11px;font-weight:500;color:rgba(255,255,255,0.5);
+  cursor:pointer;white-space:nowrap;
+  border-radius:var(--radius-sm);transition:all 0.1s;background:transparent;
+}
+.tab-3:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);}
+.tab-3:hover .tx{opacity:.5;color:rgba(255,255,255,0.4);}
+.tab-3.active{
+  background:rgba(255,255,255,0.12);color:#fff;font-weight:600;
+}
+.tab-3-new{
+  width:20px;height:20px;border-radius:var(--radius-sm);border:1px dashed rgba(255,255,255,0.2);
+  background:transparent;color:rgba(255,255,255,0.3);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;margin-left:2px;flex-shrink:0;
+}
+.tab-3-new:hover{border-color:var(--accent);color:var(--accent);background:rgba(203,145,47,0.15);}
+</style>
+</head>
+<body>
+
+<h1>Header Band + Tabs — Three Variations</h1>
+<p class="subtitle">A colored header strip spans the full width above the tabs, carrying the brand from the sidebar across. Tabs sit below it, clearly inside the app — not the browser.</p>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- OPTION 1: Warm gradient header, tabs below -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option 1 — Warm Gradient Header, Tabs Below</div>
+  <div class="option-desc">A warm brown-to-amber gradient spans the full width with the brand name. Tabs sit below on white — the gradient band creates a hard visual break from the browser chrome above. Tabs use a bottom-border accent for active state.</div>
+  <div class="mock-app">
+    <div class="hdr-1">
+      <div class="hdr-1-brand">Daily <span>Dispatch</span></div>
+      <div class="hdr-1-spacer"></div>
+    </div>
+    <div class="mock-sidebar">
+      <div class="mock-sb-nav sb-1">
+        <div class="mock-nav-item active"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+        <div class="mock-nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>Tasks <span style="margin-left:auto;font-size:9px;background:var(--accent-light);color:var(--accent);padding:1px 5px;border-radius:3px;">13</span></div>
+        <div class="mock-nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg>Search</div>
+      </div>
+    </div>
+    <div class="bar-1">
+      <div class="tab-1"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+      <div class="tab-1 active">Tasks<span class="tx">&times;</span></div>
+      <div class="tab-1">Settings<span class="tx">&times;</span></div>
+      <div class="tab-1">Tables should work in...<span class="tx">&times;</span></div>
+      <div class="tab-1">Some random note<span class="tx">&times;</span></div>
+      <div class="tab-1"># Things to do<span class="tx">&times;</span></div>
+      <button class="tab-new">+</button>
+    </div>
+    <div class="mock-content">
+      <div class="mock-placeholder">Tasks view content here...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- OPTION 2: Sidebar-color header with inline pill tabs -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option 2 — Sidebar-Tone Header with Inline Pill Tabs</div>
+  <div class="option-desc">The sidebar background color extends across the full width as a header band. Brand sits at the left, pill-shaped tabs sit inline on the same row to the right. Active tab is a white raised pill. Single-row, compact, warm. The tinted bar is clearly "app chrome" — not browser.</div>
+  <div class="mock-app" style="grid-template-rows:auto 1fr;">
+    <div class="hdr-2">
+      <div class="hdr-2-brand">Daily <span>Dispatch</span></div>
+      <div class="hdr-2-tabs">
+        <div class="tab-2"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+        <div class="tab-2 active">Tasks<span class="tx">&times;</span></div>
+        <div class="tab-2">Settings<span class="tx">&times;</span></div>
+        <div class="tab-2">Tables should work in...<span class="tx">&times;</span></div>
+        <div class="tab-2">Some random note<span class="tx">&times;</span></div>
+        <div class="tab-2"># Things to do<span class="tx">&times;</span></div>
+        <button class="tab-new">+</button>
+      </div>
+    </div>
+    <div class="mock-sidebar">
+      <div class="mock-sb-nav" style="padding-top:10px;">
+        <div class="mock-nav-item active"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+        <div class="mock-nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>Tasks <span style="margin-left:auto;font-size:9px;background:var(--accent-light);color:var(--accent);padding:1px 5px;border-radius:3px;">13</span></div>
+        <div class="mock-nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg>Search</div>
+      </div>
+    </div>
+    <div class="mock-content" style="grid-column:2;grid-row:2;">
+      <div class="mock-placeholder">Tasks view content here...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- OPTION 3: Dark header band with tabs inline -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">Option 3 — Dark Header Band with Inline Tabs</div>
+  <div class="option-desc">A dark charcoal header spans the full width — unmistakably "app chrome." Brand on left, tabs inline on the same row with translucent text. Active tab has a subtle light highlight. High contrast with both the browser chrome above and the warm content below. Compact, one-row header.</div>
+  <div class="mock-app" style="grid-template-rows:auto 1fr;">
+    <div class="hdr-3">
+      <div class="hdr-3-brand">Daily <span>Dispatch</span></div>
+      <div class="hdr-3-tabs">
+        <div class="tab-3"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+        <div class="tab-3 active">Tasks<span class="tx">&times;</span></div>
+        <div class="tab-3">Settings<span class="tx">&times;</span></div>
+        <div class="tab-3">Tables should work in...<span class="tx">&times;</span></div>
+        <div class="tab-3">Some random note<span class="tx">&times;</span></div>
+        <div class="tab-3"># Things to do<span class="tx">&times;</span></div>
+        <button class="tab-3-new">+</button>
+      </div>
+    </div>
+    <div class="mock-sidebar">
+      <div class="mock-sb-nav" style="padding-top:10px;">
+        <div class="mock-nav-item active"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+        <div class="mock-nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>Tasks <span style="margin-left:auto;font-size:9px;background:var(--accent-light);color:var(--accent);padding:1px 5px;border-radius:3px;">13</span></div>
+        <div class="mock-nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg>Search</div>
+      </div>
+    </div>
+    <div class="mock-content" style="grid-column:2;grid-row:2;">
+      <div class="mock-placeholder">Tasks view content here...</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

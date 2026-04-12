@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Header Band — Corrected Layout</title>
+<style>
+:root {
+  --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+  --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+  --text:#37352f; --text2:#787774; --text3:#9b9a97;
+  --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+  --danger:#e16259; --amber:#d97706; --green:#4daa57; --brown:#8b7355;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  --radius-sm:4px; --radius-md:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);font-size:14px;color:var(--text);background:#d4cbbf;padding:30px;}
+h1{font-size:18px;font-weight:700;margin-bottom:6px;}
+.subtitle{font-size:12px;color:var(--text2);margin-bottom:30px;line-height:1.5;}
+
+.option{
+  max-width:960px;margin:0 auto 50px;
+  border-radius:var(--radius-md);overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.12);
+}
+.option-label{
+  background:var(--accent);color:#fff;padding:8px 16px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+}
+.option-desc{
+  padding:10px 16px;font-size:11px;color:var(--text2);
+  background:var(--surface);border-bottom:1px solid var(--border);line-height:1.5;
+}
+
+/* Tab close */
+.tx{font-size:8px;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;opacity:0;margin-left:2px;color:var(--text3);}
+
+/* ═══════════════════════════════════════ */
+/* Shared sidebar                         */
+/* ═══════════════════════════════════════ */
+.sb{
+  background:var(--sidebar-bg);border-right:1px solid var(--border);
+  padding:10px 14px;
+}
+.sb-brand{font-size:14px;font-weight:700;color:var(--brown);margin-bottom:14px;letter-spacing:-0.3px;}
+.sb-brand span{color:var(--accent);}
+.sb-nav{display:flex;flex-direction:column;gap:1px;}
+.sb-item{
+  padding:5px 10px;font-size:11px;font-weight:500;color:var(--text2);
+  border-radius:var(--radius-sm);cursor:pointer;
+  display:flex;align-items:center;gap:7px;
+}
+.sb-item.active{background:var(--accent-light);color:var(--accent);font-weight:600;}
+.sb-item svg{width:13px;height:13px;}
+.sb-badge{margin-left:auto;font-size:9px;background:var(--accent-light);color:var(--accent);padding:1px 5px;border-radius:3px;}
+.sb-section{margin-top:16px;padding-top:8px;border-top:1px solid var(--border-light);}
+.sb-section-hdr{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);padding:0 10px 4px;}
+.sb-note{padding:4px 10px;font-size:11px;color:var(--text2);cursor:pointer;border-radius:var(--radius-sm);display:flex;justify-content:space-between;}
+.sb-note:hover{background:rgba(203,145,47,0.06);}
+.sb-note-date{font-size:9px;color:var(--text3);}
+
+/* Content area */
+.content{padding:20px;background:var(--bg);}
+.placeholder{color:var(--text3);font-size:12px;font-style:italic;}
+
+/* Tab new button */
+.tab-new{
+  width:20px;height:20px;border-radius:var(--radius-sm);border:1px dashed var(--border-strong);
+  background:transparent;color:var(--text3);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;margin-left:2px;flex-shrink:0;
+}
+.tab-new:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+
+/* ═══════════════════════════════════════ */
+/* OPTION 1a: Full-width header, tabs below in main only */
+/* ═══════════════════════════════════════ */
+.app-1a{
+  display:grid;
+  grid-template-columns:200px 1fr;
+  grid-template-rows:auto auto 1fr;
+  min-height:400px;
+}
+.hdr-1a{
+  grid-column:1/3;grid-row:1;
+  background:linear-gradient(135deg,#8b7355 0%,#cb912f 100%);
+  height:30px;
+}
+.sb-1a{grid-column:1;grid-row:2/4;}
+.bar-1a{
+  grid-column:2;grid-row:2;
+  display:flex;align-items:center;gap:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 8px;height:32px;overflow-x:auto;
+}
+.tab-1a{
+  display:flex;align-items:center;gap:4px;
+  padding:4px 10px;font-size:11px;font-weight:500;color:var(--text2);
+  cursor:pointer;white-space:nowrap;border-radius:var(--radius-sm);
+  transition:all 0.1s;border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab-1a:hover{background:var(--bg);color:var(--text);}
+.tab-1a:hover .tx{opacity:.5;}
+.tab-1a.active{color:var(--text);font-weight:600;border-bottom-color:var(--accent);}
+.content-1a{grid-column:2;grid-row:3;}
+
+/* ═══════════════════════════════════════ */
+/* OPTION 1b: Header spans full width with brand, sidebar below */
+/* ═══════════════════════════════════════ */
+.app-1b{
+  display:grid;
+  grid-template-columns:200px 1fr;
+  grid-template-rows:auto auto 1fr;
+  min-height:400px;
+}
+.hdr-1b{
+  grid-column:1/3;grid-row:1;
+  background:linear-gradient(135deg,#8b7355 0%,#cb912f 100%);
+  display:flex;align-items:center;padding:0 16px;height:32px;
+}
+.hdr-1b-brand{
+  font-size:13px;font-weight:700;color:#fff;letter-spacing:-0.3px;
+  width:200px;flex-shrink:0;
+}
+.hdr-1b-brand span{font-weight:400;opacity:0.8;}
+.sb-1b{grid-column:1;grid-row:2/4;}
+/* No brand in sidebar since it's in the header */
+.sb-1b .sb-brand{display:none;}
+.bar-1b{
+  grid-column:2;grid-row:2;
+  display:flex;align-items:center;gap:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 8px;height:32px;overflow-x:auto;
+}
+.content-1b{grid-column:2;grid-row:3;}
+
+/* ═══════════════════════════════════════ */
+/* OPTION 1c: Thin accent strip, brand stays in sidebar */
+/* ═══════════════════════════════════════ */
+.app-1c{
+  display:grid;
+  grid-template-columns:200px 1fr;
+  grid-template-rows:auto auto 1fr;
+  min-height:400px;
+}
+.hdr-1c{
+  grid-column:1/3;grid-row:1;
+  background:linear-gradient(90deg,var(--brown) 0%,var(--accent) 100%);
+  height:4px;
+}
+.sb-1c{grid-column:1;grid-row:2/4;}
+.bar-1c{
+  grid-column:2;grid-row:2;
+  display:flex;align-items:center;gap:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 8px;height:32px;overflow-x:auto;
+}
+.content-1c{grid-column:2;grid-row:3;}
+</style>
+</head>
+<body>
+
+<h1>Header Band — Corrected Layout (Sidebar Stays Left)</h1>
+<p class="subtitle">Sidebar with Today/Tasks/Search stays in place. The header band spans across the top. Tabs sit below it, only in the main content area.</p>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 1a: Solid gradient strip, no brand text in it -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">1a — Gradient Strip Above Everything, Brand in Sidebar</div>
+  <div class="option-desc">A 30px warm gradient strip spans full width — no text, just color. Brand stays in the sidebar where it is. The strip acts as a visual ceiling that separates browser chrome from app content. Tabs sit below it in the main area only.</div>
+  <div class="app-1a">
+    <div class="hdr-1a"></div>
+    <div class="sb sb-1a">
+      <div class="sb-brand">Daily <span>Dispatch</span></div>
+      <div class="sb-nav">
+        <div class="sb-item active"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+        <div class="sb-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>Tasks<span class="sb-badge">13</span></div>
+        <div class="sb-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg>Search</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-hdr">Notes</div>
+        <div class="sb-note">Test cases<span class="sb-note-date">11 Apr</span></div>
+        <div class="sb-note">Meeting notes<span class="sb-note-date">11 Apr</span></div>
+        <div class="sb-note">Daily journal<span class="sb-note-date">11 Apr</span></div>
+      </div>
+    </div>
+    <div class="bar-1a">
+      <div class="tab-1a"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+      <div class="tab-1a active">Tasks<span class="tx">&times;</span></div>
+      <div class="tab-1a">Settings<span class="tx">&times;</span></div>
+      <div class="tab-1a">Tables should work in...<span class="tx">&times;</span></div>
+      <div class="tab-1a">Some random note<span class="tx">&times;</span></div>
+      <div class="tab-1a"># Things to do<span class="tx">&times;</span></div>
+      <button class="tab-new">+</button>
+    </div>
+    <div class="content content-1a"><div class="placeholder">Tasks view content...</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 1b: Gradient with brand text spanning full width -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">1b — Gradient Header with Brand, Tabs Below in Main</div>
+  <div class="option-desc">The gradient header spans full width and carries the "Daily Dispatch" brand in white. Brand is removed from the sidebar to avoid duplication. Tabs sit below in the main area. The header is clearly "app-level" — distinct from browser tabs above it.</div>
+  <div class="app-1b">
+    <div class="hdr-1b">
+      <div class="hdr-1b-brand">Daily <span>Dispatch</span></div>
+    </div>
+    <div class="sb sb-1b">
+      <div class="sb-brand">Daily <span>Dispatch</span></div>
+      <div class="sb-nav">
+        <div class="sb-item active"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+        <div class="sb-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>Tasks<span class="sb-badge">13</span></div>
+        <div class="sb-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg>Search</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-hdr">Notes</div>
+        <div class="sb-note">Test cases<span class="sb-note-date">11 Apr</span></div>
+        <div class="sb-note">Meeting notes<span class="sb-note-date">11 Apr</span></div>
+        <div class="sb-note">Daily journal<span class="sb-note-date">11 Apr</span></div>
+      </div>
+    </div>
+    <div class="bar-1b">
+      <div class="tab-1a"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+      <div class="tab-1a active">Tasks<span class="tx">&times;</span></div>
+      <div class="tab-1a">Settings<span class="tx">&times;</span></div>
+      <div class="tab-1a">Tables should work in...<span class="tx">&times;</span></div>
+      <div class="tab-1a">Some random note<span class="tx">&times;</span></div>
+      <div class="tab-1a"># Things to do<span class="tx">&times;</span></div>
+      <button class="tab-new">+</button>
+    </div>
+    <div class="content content-1b"><div class="placeholder">Tasks view content...</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 1c: Thin accent line, minimal -->
+<!-- ═══════════════════════════════════════ -->
+<div class="option">
+  <div class="option-label">1c — Thin 4px Accent Line, Brand in Sidebar</div>
+  <div class="option-desc">Just a thin 4px gradient accent line across the top — minimal but effective. Doesn't eat vertical space. Creates a subtle visual ceiling. Brand stays in sidebar. Tabs below in main area. The least intrusive option.</div>
+  <div class="app-1c">
+    <div class="hdr-1c"></div>
+    <div class="sb sb-1c">
+      <div class="sb-brand">Daily <span>Dispatch</span></div>
+      <div class="sb-nav">
+        <div class="sb-item active"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+        <div class="sb-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>Tasks<span class="sb-badge">13</span></div>
+        <div class="sb-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg>Search</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-hdr">Notes</div>
+        <div class="sb-note">Test cases<span class="sb-note-date">11 Apr</span></div>
+        <div class="sb-note">Meeting notes<span class="sb-note-date">11 Apr</span></div>
+        <div class="sb-note">Daily journal<span class="sb-note-date">11 Apr</span></div>
+      </div>
+    </div>
+    <div class="bar-1c">
+      <div class="tab-1a"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>
+      <div class="tab-1a active">Tasks<span class="tx">&times;</span></div>
+      <div class="tab-1a">Settings<span class="tx">&times;</span></div>
+      <div class="tab-1a">Tables should work in...<span class="tx">&times;</span></div>
+      <div class="tab-1a">Some random note<span class="tx">&times;</span></div>
+      <div class="tab-1a"># Things to do<span class="tx">&times;</span></div>
+      <button class="tab-new">+</button>
+    </div>
+    <div class="content content-1c"><div class="placeholder">Tasks view content...</div></div>
+  </div>
+</div>
+
+</body>
+</html>
