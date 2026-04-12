@@ -479,6 +479,36 @@
   /* Bullet widget */
   .cm-dd-bullet { display: inline; color: var(--text3); }
   /* Checkbox */
+  /* Task card widget inside notes */
+  .cm-task-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; margin: 3px 0;
+    background: var(--surface); border: 1px solid var(--border-light);
+    border-radius: var(--radius-md); cursor: pointer;
+    transition: all 0.12s;
+  }
+  .cm-task-card:hover { border-color: var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .cm-task-card.done { opacity: 0.55; }
+  .cm-task-card.done .cm-tc-title { text-decoration: line-through; color: var(--text3); }
+  .cm-tc-chk {
+    width: 18px; height: 18px; border: 2px solid var(--border-strong); border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: transparent; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cm-tc-chk:hover { border-color: var(--green); }
+  .cm-tc-chk.checked { background: var(--green); border-color: var(--green); color: #fff; }
+  .cm-tc-title { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+  .cm-tc-pri {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .cm-tc-due {
+    font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px;
+    white-space: nowrap;
+  }
+  .cm-tc-due.overdue { background: #fef2f2; color: var(--danger); }
+  .cm-tc-due.today { background: #fefce8; color: var(--amber); }
+  .cm-tc-due.future { background: var(--bg); color: var(--text3); }
   .cm-dd-checkbox {
     width: 14px; height: 14px; margin: 0 6px 0 0; vertical-align: middle;
     accent-color: var(--accent); cursor: pointer;
@@ -2651,9 +2681,12 @@ function closeTab(t){
 // This prevents partial @names from leaking into the people list when the
 // user pauses mid-word during typing.
 function _commitMentionsForTab(tabId){
-  if(!tabId||tabId==='today'||tabId==='home'||tabId==='settings'||tabId==='gallery'||tabId.startsWith('search_'))return;
+  if(!tabId||tabId==='today'||tabId==='tasks'||tabId==='home'||tabId==='settings'||tabId==='gallery'||tabId.startsWith('search_'))return;
   const entry=db.entries.find(e=>e.id===tabId);
-  if(entry){registerMentions(extractMentions(entry.content||''));}
+  if(!entry)return;
+  registerMentions(extractMentions(entry.content||''));
+  // Sync checkboxes to tasks at this commit point — the user is done editing
+  if(entry.isNote)syncNoteCheckboxes(tabId,entry.content||'');
 }
 
 /* ═══════════ ACTIVE VIEW ═══════════ */
@@ -3879,13 +3912,30 @@ function cmDecorateLine(builder,line,Decoration){
       builder.push(Decoration.replace({}).range(from,from+2));
   }
   // Checkbox: [ ] or [x] (with optional - or * prefix)
-  else if((hm=text.match(/^(\s*(?:[-*] )?)(\[[ x]\]) /))){
+  // If a linked task exists for this note, render as a full task card.
+  else if((hm=text.match(/^(\s*(?:[-*] )?)(\[[ x]\]) (.+)/))){
+    const fullLen=text.length;
+    const checked=hm[2]==='[x]';
+    const taskTitle=hm[3].trim();
+    const lineNum=line.number;
+    // Look for a linked task
+    const linkedTask=cmNoteId?(db.tasks||[]).find(t=>t.note_id===cmNoteId&&t.title===taskTitle):null;
+    if(linkedTask&&claim(0,fullLen)){
+      // Render as a full task card (replaces entire line)
+      builder.push(Decoration.replace({widget:new CmTaskCardWidget(checked,taskTitle,linkedTask,lineNum)}).range(from,from+fullLen));
+    } else if(claim(0,hm[0].length-hm[3].length)){
+      // No linked task yet — render as a basic checkbox
+      const prefixLen=hm[1].length+hm[2].length+1;
+      builder.push(Decoration.replace({widget:new CmCheckboxWidget(checked,lineNum)}).range(from,from+prefixLen));
+      if(checked) builder.push(Decoration.mark({class:'cm-dd-checked'}).range(from+prefixLen,from+fullLen));
+    }
+  }
+  else if((hm=text.match(/^(\s*(?:[-*] )?)(\[[ x]\]) *$/))){
+    // Empty checkbox (no text after) — just render the checkbox
     const fullPrefix=hm[0].length;
     const checked=hm[2]==='[x]';
-    const lineNum=line.number;
     if(claim(0,fullPrefix)){
-      builder.push(Decoration.replace({widget:new CmCheckboxWidget(checked,lineNum)}).range(from,from+fullPrefix));
-      if(checked) builder.push(Decoration.mark({class:'cm-dd-checked'}).range(from+fullPrefix,from+text.length));
+      builder.push(Decoration.replace({widget:new CmCheckboxWidget(checked,line.number)}).range(from,from+fullPrefix));
     }
   }
   // Bullet
@@ -4125,6 +4175,63 @@ class CmStatusBadgeWidget extends CM6.WidgetType{
       });
     });
     return badge;
+  }
+}
+
+// Rich task card rendered inline in notes for checkboxes with linked tasks
+class CmTaskCardWidget extends CM6.WidgetType{
+  constructor(checked,title,task,lineNum){
+    super();this.checked=checked;this.title=title;this.task=task;this.lineNum=lineNum;
+  }
+  eq(other){return other.checked===this.checked&&other.title===this.title&&other.task?.id===this.task?.id&&other.task?.priority===this.task?.priority&&other.task?.due_date===this.task?.due_date;}
+  ignoreEvent(){return true;}
+  toDOM(){
+    const t=this.task;
+    const card=document.createElement('div');
+    card.className='cm-task-card';
+    if(this.checked)card.classList.add('done');
+    // Checkbox
+    const chk=document.createElement('span');
+    chk.className='cm-tc-chk'+(this.checked?' checked':'');
+    if(this.checked)chk.textContent='✓';
+    chk.addEventListener('mousedown',e=>{
+      e.preventDefault();e.stopPropagation();
+      if(!cmEditorView)return;
+      const line=cmEditorView.state.doc.line(this.lineNum);
+      const newText=this.checked?line.text.replace('[x]','[ ]'):line.text.replace('[ ]','[x]');
+      cmEditorView.dispatch({changes:{from:line.from,to:line.to,insert:newText}});
+      if(cmNoteId)syncCheckboxToTask(cmNoteId,line.text,!this.checked);
+    });
+    card.appendChild(chk);
+    // Title
+    const titleEl=document.createElement('span');
+    titleEl.className='cm-tc-title';
+    titleEl.textContent=this.title;
+    card.appendChild(titleEl);
+    // Priority dot
+    if(t){
+      const pri=document.createElement('span');
+      pri.className='cm-tc-pri';
+      pri.style.background=t.priority==='H'?'var(--danger)':t.priority==='M'?'var(--amber)':'var(--border-strong)';
+      card.appendChild(pri);
+    }
+    // Due date
+    if(t&&t.due_date){
+      const today=todayStr();
+      const isOverdue=t.due_date<today&&!t.completed;
+      const label=isOverdue?'overdue':t.due_date===today?'today':fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
+      const due=document.createElement('span');
+      due.className='cm-tc-due'+(isOverdue?' overdue':t.due_date===today?' today':' future');
+      due.textContent=label;
+      card.appendChild(due);
+    }
+    // Click card to open task modal
+    card.addEventListener('mousedown',e=>{
+      if(e.target===chk)return;
+      e.preventDefault();e.stopPropagation();
+      if(t)openTaskDetail(t.id);
+    });
+    return card;
   }
 }
 
@@ -5223,14 +5330,10 @@ function noteContentChanged(id,val){
   // names (@j, @ja, @jan) when the user pauses mid-word. Mentions are only
   // registered at commit points: tab close, tab switch, entry submit, or
   // autocomplete select.
-  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{
-    save();renderAllSections();
-    // Auto-sync checkboxes to tasks: scan content for [ ] and [x] patterns,
-    // create linked tasks for any that don't exist yet, sync completion state.
-    if(id&&e&&e.isNote){
-      syncNoteCheckboxes(id,val);
-    }
-  },800);
+  // Save on debounce but do NOT sync checkboxes to tasks here — that causes
+  // partial-text tasks ("some ite" from mid-typing). Checkbox-to-task sync
+  // only happens at commit points (tab switch/close) or when clicking a checkbox.
+  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{save();renderAllSections();},300);
 }
 // Scan a note's content for checkbox patterns and create/sync linked tasks.
 function syncNoteCheckboxes(noteId,content){
