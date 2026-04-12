@@ -487,9 +487,16 @@
     border-radius: var(--radius-md); cursor: pointer;
     transition: all 0.12s;
   }
-  /* Tighten consecutive task cards — remove CM6 line gap between them */
-  .cm-line:has(+ .cm-line .cm-task-card) { min-height: 0; }
-  .cm-line .cm-task-card { margin-bottom: -2px; }
+  /* Tighten task cards — collapse CM6's per-line spacing */
+  .cm-line:has(.cm-task-card) {
+    line-height: 0; padding: 0 !important;
+  }
+  .cm-line:has(.cm-task-card) + .cm-line:has(.cm-task-card) .cm-task-card {
+    margin-top: -1px; border-top-left-radius: 0; border-top-right-radius: 0;
+  }
+  .cm-line:has(+ .cm-line .cm-task-card) .cm-task-card {
+    border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+  }
   .cm-task-card:hover { border-color: var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
   .cm-task-card.done { opacity: 0.55; }
   .cm-task-card.done .cm-tc-title { text-decoration: line-through; color: var(--text3); }
