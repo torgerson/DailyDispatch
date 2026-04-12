@@ -489,6 +489,12 @@
   .cm-task-card:hover { background: var(--bg); }
   .cm-task-card.done { opacity: 0.55; }
   .cm-task-card.done .cm-tc-title { text-decoration: line-through; color: var(--text3); }
+  /* ROOT CAUSE FIX: CM6's .cm-scroller has line-height:1.7 !important
+     which gives every .cm-line a 23.8px minimum height. Task card widgets
+     sit inside .cm-line but their own height is controlled by flex padding.
+     The 11.8px gap was the inherited line-height, not card margin/padding.
+     Fix: collapse line-height on lines that contain a task card widget. */
+  .cm-line:has(.cm-task-card) { line-height: 0 !important; }
   .cm-tc-chk {
     width: 18px; height: 18px; border: 2px solid var(--border-strong); border-radius: 50%;
     flex-shrink: 0; display: flex; align-items: center; justify-content: center;
