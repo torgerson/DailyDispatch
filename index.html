@@ -2280,6 +2280,7 @@ async function loadDB(){
   db.floatingNote=s.floatingNote||{position:'right',width:300};
   db.lastBackupTs=s.lastBackupTs||0;
   db.checkboxesMigrated=s.checkboxesMigrated||false;
+  db.checkboxesMigrated2=s.checkboxesMigrated2||false;
   if(s.sbGroupState)sbGroupState=s.sbGroupState;
   // Restore tab session
   if(s.openTabs&&s.openTabs.length){
@@ -2370,7 +2371,7 @@ async function flushSave(){
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
     if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,sbGroupState,openTabs,activeTab,searchTabs}]);
+      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Warm Notion',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,checkboxesMigrated2:db.checkboxesMigrated2||false,sbGroupState,openTabs,activeTab,searchTabs}]);
     } else if(store==='sections'&&db.sections){
       // Strip transient session-only flags and drop unsaved drafts
       const sanitized=db.sections
@@ -8328,6 +8329,55 @@ function ensureDefaultColumns(){
   ];
   save('columns');
 }
+// One-time migration: convert old [ ] / [x] checkboxes in notes to
+// {{task:id}} widget tokens. Also cleans up any orphaned tasks that
+// were linked to notes via note_id but no longer have a token.
+function migrateCheckboxesToTaskWidgets(){
+  if(db.checkboxesMigrated2)return;
+  let changed=false;
+  const notes=db.entries.filter(e=>e.isNote&&!e.isHelp&&!e.eventType&&e.content);
+  notes.forEach(n=>{
+    const lines=n.content.split('\n');
+    const out=[];
+    let noteChanged=false;
+    for(const line of lines){
+      const m=line.match(/^(\s*(?:[-*]\s+)?)?\[([ x])\]\s+(.+)/);
+      if(m){
+        const checked=m[2]==='x';
+        const title=m[3].trim();
+        if(!title){out.push(line);continue;}
+        // Find existing task or create new one
+        let task=(db.tasks||[]).find(t=>t.note_id===n.id&&t.title===title);
+        if(!task){
+          task=createTask({title,note_id:n.id});
+        }
+        if(task&&checked&&!task.completed){
+          task.completed=true;task.completed_at=Date.now();
+          const doneCol=getDoneColumn();
+          if(doneCol)task.column_id=doneCol.id;
+        }
+        // Replace the [ ] line with a {{task:id}} token
+        out.push('{{task:'+task.id+'}}');
+        noteChanged=true;
+        changed=true;
+      } else {
+        out.push(line);
+      }
+    }
+    if(noteChanged){
+      n.content=out.join('\n');
+      n.updatedTs=Date.now();
+    }
+  });
+  // Clean up orphaned tasks: tasks with note_id but no matching {{task:id}} in any note
+  const allContent=db.entries.filter(e=>e.isNote&&e.content).map(e=>e.content).join('\n');
+  (db.tasks||[]).forEach(t=>{
+    if(t.note_id&&!allContent.includes('{{task:'+t.id+'}}'))t.note_id=null;
+  });
+  db.checkboxesMigrated2=true;
+  if(changed)save('entries');
+  save('tasks');save('settings');
+}
 function getDoneColumn(){
   return(db.columns||[]).find(c=>c.isDone)||null;
 }
@@ -8649,6 +8699,7 @@ async function init(){
   if(!db.tagColors)db.tagColors={};
   if(!db.people)db.people=[];
   ensureDefaultColumns();
+  migrateCheckboxesToTaskWidgets();
   ensureHelpNotes();
   if(db.theme&&db.theme!=='Warm Notion')applyTheme(db.theme);
   // First-launch: open the home tab once so new users get the landing page.
