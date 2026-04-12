@@ -646,7 +646,17 @@
     aspect-ratio: 1/1; background: var(--sidebar-bg);
     border: 1px solid var(--border); border-radius: var(--radius-sm);
     overflow: hidden; cursor: pointer; transition: all 0.15s;
+    position: relative;
   }
+  .gallery-tile-del {
+    position: absolute; top: 4px; right: 4px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,0,0,0.6); color: #fff; border: none;
+    font-size: 14px; cursor: pointer; display: none;
+    align-items: center; justify-content: center; line-height: 1;
+  }
+  .gallery-tile:hover .gallery-tile-del { display: flex; }
+  .gallery-tile-del:hover { background: var(--danger); }
   .gallery-tile:hover {
     border-color: var(--accent); transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -697,6 +707,8 @@
     transition: all 0.15s;
   }
   .image-modal-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4); }
+  .image-modal-delete { color: #fca5a5; border-color: rgba(252,165,165,0.3); }
+  .image-modal-delete:hover { background: rgba(225,98,89,0.3); border-color: var(--danger); color: #fff; }
 
   /* Status badge */
   .status-badge-inline {
@@ -1490,6 +1502,22 @@
   .rs-entry:hover { color: var(--accent); }
   .rs-entry .rs-time { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-right: 4px; }
   .rs-entry .rs-tags { }
+  .rs-task {
+    display: flex; align-items: center; gap: 6px;
+    padding: 3px 0; font-size: 11px; line-height: 1.4; cursor: pointer;
+    border-top: 1px solid var(--border-light); overflow: hidden;
+  }
+  .rs-task:first-of-type { border-top: none; }
+  .rs-task:hover { color: var(--accent); }
+  .rs-task-chk {
+    width: 12px; height: 12px; border: 1.5px solid var(--border-strong); border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .rs-task-chk:hover { border-color: var(--green); }
+  .rs-task-chk.checked { background: var(--green); border-color: var(--green); }
+  .rs-task-chk.checked::after { content: '\2713'; color: #fff; font-size: 7px; font-weight: 700; }
+  .rs-task-title { flex: 1; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rs-task .pri-tag { font-size: 7px; padding: 0 4px; }
   .rs-empty { padding: 10px 8px; text-align: center; color: var(--text3); font-size: 10px; font-style: italic; }
   .rs-show-more {
     padding: 4px 8px; text-align: center; color: var(--accent); font-size: 10px;
@@ -2081,7 +2109,14 @@
   }
   .tm-actions {
     padding: 10px 20px 16px; border-top: 1px solid var(--border-light);
+    display: flex; align-items: center; gap: 8px;
   }
+  .tm-save {
+    padding: 6px 16px; border-radius: var(--radius-sm); border: none;
+    background: var(--accent); color: #fff; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: var(--sans);
+  }
+  .tm-save:hover { filter: brightness(0.9); }
   .tm-delete {
     background: none; border: 1px solid var(--border); color: var(--danger);
     padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer;
@@ -2504,6 +2539,7 @@ function getAllTags(){
   if(_tagCache)return _tagCache;
   const c={};const add=tags=>tags.forEach(t=>{c[t]=(c[t]||0)+1});
   db.entries.filter(e=>!e.eventType&&!e.isHelp).forEach(e=>add(e.tags||[]));
+  (db.tasks||[]).filter(t=>!t.completed).forEach(t=>add(t.tags||[]));
   _tagCache=c;return c;
 }
 function invalidateTagCache(){_tagCache=null;}
@@ -3019,7 +3055,7 @@ function renderActiveView(){
   // Toggle overflow mode: Kanban needs the content area to NOT scroll
   // (the board fills the viewport), everything else scrolls normally.
   a.classList.toggle('tasks-view-active',activeTab==='tasks'&&tasksViewMode==='kanban');
-  if(activeTab==='today'){renderToday(a);setTimeout(()=>{const ci=document.getElementById('capture-input');if(ci)ci.focus();},0);}
+  if(activeTab==='today'){renderToday(a);if(selectedDate===todayStr())setTimeout(()=>{const ci=document.getElementById('capture-input');if(ci)ci.focus();},0);}
   else if(activeTab==='home')renderHome(a);
   else if(activeTab==='tasks')renderTasksView(a);
   else if(activeTab==='gallery')renderGallery(a);
@@ -3916,11 +3952,15 @@ function setupFeedScrollObserver(){
 }
 // Track which day is at the top of the feed as user scrolls — update calendar highlight
 let _feedScrollHandler=null;
+let _feedDayTrackPaused=0; // timestamp — suppress tracking briefly after deliberate navigation
 function setupFeedDayTracker(){
   const container=document.getElementById('content-area');
   if(!container)return;
   if(_feedScrollHandler)container.removeEventListener('scroll',_feedScrollHandler);
   _feedScrollHandler=()=>{
+    // Don't override selectedDate right after a calendar click or programmatic scroll
+    if(Date.now()-_feedDayTrackPaused<1000)return;
+    if(activeTab!=='today')return;
     const dividers=container.querySelectorAll('.day-divider[data-date]');
     if(!dividers.length)return;
     const containerTop=container.getBoundingClientRect().top;
@@ -3932,13 +3972,20 @@ function setupFeedDayTracker(){
     }
     if(!topDay)topDay=dividers[0]?.dataset.date;
     if(topDay&&topDay!==selectedDate){
+      const wasToday=selectedDate===todayStr();
+      const nowToday=topDay===todayStr();
       selectedDate=topDay;
-      // Update calendar highlight without re-rendering the feed
+      feedTopDate=topDay>=todayStr()?null:topDay;
       const calMonth=new Date(topDay+'T12:00:00');
       if(calMonth.getMonth()!==calViewDate.getMonth()||calMonth.getFullYear()!==calViewDate.getFullYear()){
         calViewDate=calMonth;
       }
       renderCalendar();
+      // If we scrolled back to today from a past date, re-render to show tasks
+      if(nowToday&&!wasToday){
+        _feedDayTrackPaused=Date.now();
+        renderActiveView();
+      }
     }
   };
   container.addEventListener('scroll',_feedScrollHandler,{passive:true});
@@ -3987,6 +4034,7 @@ function _ddDialogOpen(title,msg,{input=false,defaultVal='',okLabel='OK',okClass
   okBtn.textContent=okLabel;
   okBtn.className='modal-btn '+(dangerOk?'danger':'primary');
   el.classList.add('open');
+  _ddDialogOpenTs=Date.now();
   return new Promise(r=>{_ddDialogResolve=r;});
 }
 function _ddDialogCancel(){
@@ -4011,9 +4059,11 @@ function showAlert(msg,opts={}){
     document.getElementById('dd-dialog-cancel').style.display='';return v;
   });
 }
-// Enter key submits the dialog
+// Enter key submits the dialog — ignore if dialog just opened (same keypress that triggered it)
+let _ddDialogOpenTs=0;
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&document.getElementById('dd-dialog').classList.contains('open')){
+    if(Date.now()-_ddDialogOpenTs<200)return; // ignore Enter that opened the dialog
     e.preventDefault();_ddDialogOk();
   }
   if(e.key==='Escape'&&document.getElementById('dd-dialog').classList.contains('open')){
@@ -4349,8 +4399,50 @@ function cmInsertTable(){
 }
 function cmInsertTask(){
   if(!cmEditorView)return;
-  const pos=cmEditorView.state.selection.main.head;
-  const line=cmEditorView.state.doc.lineAt(pos);
+  const sel=cmEditorView.state.selection.main;
+  const doc=cmEditorView.state.doc;
+  const startLine=doc.lineAt(sel.from);
+  const endLine=doc.lineAt(sel.to);
+  // Multi-line selection: convert each line to a task
+  if(startLine.number!==endLine.number){
+    // Collect lines, strip bullet/number prefixes, filter empties
+    const lines=[];
+    for(let n=startLine.number;n<=endLine.number;n++){
+      let text=doc.line(n).text.trim();
+      // Strip markdown list prefixes: - , * , 1. , 1) , [ ] , [x]
+      text=text.replace(/^[-*]\s+/,'').replace(/^\d+[.)]\s+/,'').replace(/^\[[ x]\]\s*/i,'').trim();
+      if(text)lines.push(text);
+    }
+    if(!lines.length){cmEditorView.focus();return;}
+    // Create tasks and build replacement tokens
+    const changes=[];
+    let offset=0;
+    for(let n=startLine.number;n<=endLine.number;n++){
+      const line=doc.line(n);
+      let text=line.text.trim();
+      text=text.replace(/^[-*]\s+/,'').replace(/^\d+[.)]\s+/,'').replace(/^\[[ x]\]\s*/i,'').trim();
+      if(!text){
+        // Empty line — remove it
+        const delFrom=line.from+offset;
+        const delTo=Math.min(line.to+1+offset,doc.length+offset);
+        changes.push({from:line.from,to:Math.min(line.to+1,doc.length),insert:''});
+        continue;
+      }
+      const task=createTask({title:text,note_id:cmNoteId});
+      if(!task)continue;
+      const token='{{task:'+task.id+'}}';
+      changes.push({from:line.from,to:line.to,insert:token});
+    }
+    if(changes.length){
+      cmEditorView.dispatch({changes});
+      renderActiveView();renderSidebar();
+    }
+    cmEditorView.focus();
+    return;
+  }
+  // Single line / no selection: prompt for title
+  const pos=sel.head;
+  const line=doc.lineAt(pos);
   _slashTask(cmEditorView,line.from,line.to);
 }
 function cmInsertSmartList(){
@@ -5043,9 +5135,32 @@ class CmSmartListWidget extends CM6.WidgetType{
     const body=document.createElement('div');
     body.className='cm-sl-body';
     const allResults=matchEntries(this.query).filter(e=>!e.isHelp);
+    const taskResults=matchTasks(this.query);
     const results=allResults.slice(0,50);
-    count.textContent=allResults.length;
-    if(!results.length){
+    count.textContent=allResults.length+taskResults.length;
+    // Render task results first
+    taskResults.forEach(t=>{
+      const row=document.createElement('div');
+      row.className='cm-sl-entry';
+      row.style.display='flex';row.style.alignItems='center';row.style.gap='6px';
+      row.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();openTaskDetail(t.id);});
+      const chk=document.createElement('div');
+      chk.className='rs-task-chk';
+      chk.style.cssText='width:12px;height:12px;border:1.5px solid var(--border-strong);border-radius:50%;flex-shrink:0;cursor:pointer;';
+      chk.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();completeTask(t.id,!t.completed);renderActiveView();renderSidebar();});
+      row.appendChild(chk);
+      const title=document.createElement('span');
+      title.className='cm-sl-title';
+      title.innerHTML='<strong>'+escH(t.title.slice(0,50))+'</strong>';
+      row.appendChild(title);
+      const pri=document.createElement('span');
+      pri.className='pri-tag '+(t.priority==='H'?'high':t.priority==='M'?'med':'low');
+      pri.textContent=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
+      pri.style.fontSize='8px';
+      row.appendChild(pri);
+      body.appendChild(row);
+    });
+    if(!results.length&&!taskResults.length){
       const empty=document.createElement('div');
       empty.className='cm-sl-empty';
       empty.textContent='No matches';
@@ -6545,7 +6660,7 @@ function renderCalendar(){
   grid.innerHTML=h;
 }
 function navMonth(d){calViewDate.setMonth(calViewDate.getMonth()+d);renderCalendar();}
-function selCalDay(ds){selectedDate=ds;feedTopDate=ds>=todayStr()?null:ds;feedDaysLoaded=7;feedDayShowMore={};activeTab='today';updateDateBar();renderTabBar();renderActiveView();renderCalendar();const c=document.getElementById('content-area');if(c)c.scrollTop=0;}
+function selCalDay(ds){selectedDate=ds;feedTopDate=ds>=todayStr()?null:ds;feedDaysLoaded=7;feedDayShowMore={};activeTab='today';_feedDayTrackPaused=Date.now();updateDateBar();renderTabBar();renderActiveView();renderCalendar();const c=document.getElementById('content-area');if(c)c.scrollTop=0;}
 
 /* ═══════════ RIGHT SIDEBAR: CUSTOM SECTIONS ═══════════ */
 function addSection(){
@@ -6662,11 +6777,22 @@ function renderSectionPanel(sec){
   const visible=matches.slice(0,limit);
   const hasMore=total>limit;
 
+  // Also match tasks
+  const taskMatches=matchTasks(sec.query);
+  const totalAll=total+taskMatches.length;
+
   let bodyHtml='';
-  if(!total){bodyHtml='<div class="rs-empty">No matches</div>';}
+  if(!totalAll){bodyHtml='<div class="rs-empty">No matches</div>';}
   else{
     const isHelp=(sec.query||'').toLowerCase().includes('#dailydispatchhelp');
-    bodyHtml=visible.map(e=>`<div class="rs-entry" style="border-left-color:${e.isNote?'var(--accent)':'transparent'}" onclick="openAsNote('${e.id}')">${isHelp?'':'<span class="rs-time">'+fmtShortDate(e.ts)+'</span>'}${e.isNote?'<strong>'+escH((e.noteTitle||'').replace(/^#+\s+/,'').slice(0,30))+'</strong> ':''}<span>${escH((e.isNote?e.content:e.content).slice(0,60))}</span></div>`).join('');
+    // Task rows first
+    bodyHtml=taskMatches.map(t=>{
+      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+      const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
+      return`<div class="rs-task" onclick="openTaskDetail('${t.id}')"><div class="rs-task-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!t.completed});renderAllSections();renderActiveView();renderSidebar()"></div><span class="rs-task-title">${escH(t.title.slice(0,40))}</span><span class="pri-tag ${pri}">${priLabel}</span></div>`;
+    }).join('');
+    // Entry rows
+    bodyHtml+=visible.map(e=>`<div class="rs-entry" style="border-left-color:${e.isNote?'var(--accent)':'transparent'}" onclick="openAsNote('${e.id}')">${isHelp?'':'<span class="rs-time">'+fmtShortDate(e.ts)+'</span>'}${e.isNote?'<strong>'+escH((e.noteTitle||'').replace(/^#+\s+/,'').slice(0,30))+'</strong> ':''}<span>${escH((e.isNote?e.content:e.content).slice(0,60))}</span></div>`).join('');
     if(hasMore)bodyHtml+=`<div class="rs-show-more" onclick="event.stopPropagation();showMoreSection('${sec.id}')">Show more (${total-limit} remaining)</div>`;
   }
 
@@ -6680,7 +6806,7 @@ function renderSectionPanel(sec){
     <div class="rs-query-display" onclick="editSection('${sec.id}')" title="Click to edit filter">
       <span class="rs-query-icon">&#128269;</span>
       <span class="rs-query-text">${escH(sec.query||'(no filter — click to set)')}</span>
-      <span class="rs-query-count">${total}</span>
+      <span class="rs-query-count">${totalAll}</span>
     </div>
     <div class="rs-body">${bodyHtml}</div>
     <div class="rs-resize" onmousedown="startResize(event,'${sec.id}')"></div>
@@ -6919,6 +7045,39 @@ function matchEntries(query){
     });
   }
   return base.filter(e=>matched.has(e.id)).sort((a,b)=>b.ts-a.ts);
+}
+// Match tasks against the same query syntax as matchEntries
+function matchTasks(query){
+  const tasks=(db.tasks||[]).filter(t=>!t.completed);
+  if(!query||!query.trim())return[];
+  const orGroups=query.split(/\s+OR\s+/i);
+  const matched=new Set();
+  for(const group of orGroups){
+    let stripped=group.trim().toLowerCase();
+    const excludes=[];
+    stripped=stripped.replace(/-"([^"]+)"/g,(_,m)=>{excludes.push(m);return ' ';});
+    const phrases=[];
+    stripped=stripped.replace(/"([^"]+)"/g,(_,m)=>{phrases.push(m);return ' ';});
+    const parts=stripped.split(/\s+/).filter(Boolean);
+    const tags=[],mentions=[],words=[...phrases];
+    parts.forEach(p=>{
+      if(p==='or')return;
+      if(p.startsWith('#'))tags.push(p.slice(1));
+      else if(p.startsWith('@'))mentions.push(p.slice(1));
+      else if(p.startsWith('-')&&p.length>1)excludes.push(p.slice(1));
+      else words.push(p);
+    });
+    tasks.forEach(t=>{
+      if(matched.has(t.id))return;
+      const content=(t.title+' '+(t.description||'')).toLowerCase();
+      if(tags.length&&!tags.every(tg=>(t.tags||[]).some(tt=>tt.toLowerCase()===tg)))return;
+      if(mentions.length&&!mentions.every(m=>(t.mentions||[]).some(tm=>tm.toLowerCase()===m)))return;
+      if(words.length&&!words.every(w=>content.includes(w)))return;
+      if(excludes.length&&excludes.some(w=>content.includes(w)))return;
+      matched.add(t.id);
+    });
+  }
+  return tasks.filter(t=>matched.has(t.id)).sort((a,b)=>(b.created_at||0)-(a.created_at||0));
 }
 
 function updateSection(id,field,val){
@@ -7179,6 +7338,7 @@ function renderSearchTab(area,tabId){
   const st=searchTabs.find(s=>s.id===tabId);
   if(!st)return;
   const results=st.query?matchEntries(st.query):[];
+  const taskResults=st.query?matchTasks(st.query):[];
   const total=results.length;
   const visible=results.slice(0,st.showCount);
   const hasMore=total>st.showCount;
@@ -7190,16 +7350,29 @@ function renderSearchTab(area,tabId){
              value="${escH(st.query)}"
              oninput="updateSearchTab('${tabId}',this.value)"
              onkeydown="if(event.key==='Escape'){closeTab('${tabId}');event.preventDefault();}">
-      <span class="search-tab-count">${st.query?total+' results':''}</span>
+      <span class="search-tab-count">${st.query?(total+taskResults.length)+' results':''}</span>
     </div>
     <div class="search-tab-results">`;
 
   if(!st.query){
     h+=_searchTipsHtml();
-  } else if(!total){
+  } else if(!total&&!taskResults.length){
     h+=`<div class="sr-empty">No results for "${escH(st.query)}"</div>`;
   } else {
-    // Group by date
+    // Task results
+    if(taskResults.length){
+      h+=`<div class="search-date-hdr" style="display:flex;align-items:center;gap:6px">Tasks <span style="font-weight:400;color:var(--text3)">${taskResults.length}</span></div>`;
+      taskResults.forEach(t=>{
+        const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+        const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
+        h+=`<div class="rs-task" style="padding:5px 8px;font-size:12px" onclick="openTaskDetail('${t.id}')">
+          <div class="rs-task-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!t.completed});renderActiveView();renderSidebar()"></div>
+          <span class="rs-task-title">${escH(t.title.slice(0,60))}</span>
+          <span class="pri-tag ${pri}">${priLabel}</span>
+        </div>`;
+      });
+    }
+    // Group entries by date
     const byDate={};
     visible.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e);});
     for(const[date,entries]of Object.entries(byDate)){
@@ -7702,6 +7875,7 @@ function renderGallery(area){
     visible.forEach(img=>{
       h+=`<div class="gallery-tile" onclick="showImageModal('${img.id}')">
         <img src="${img.data}" alt="" loading="lazy">
+        <button class="gallery-tile-del" onclick="event.stopPropagation();deleteImage('${img.id}')" title="Delete image">&times;</button>
       </div>`;
     });
     h+=`</div>`;
@@ -7738,7 +7912,8 @@ function showImageModal(id){
   overlay.innerHTML=`<div class="image-modal-wrap">
     <img class="image-modal-img" src="${img.data}" alt="">
     <div class="image-modal-bar">
-      <button class="image-modal-btn" onclick="copyImageMarkdown('${id}')" title="Copy as markdown"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6 L12 2 L17 7 L13 11"/><path d="M12 12 L8 16 L3 11 L7 7"/></svg> Copy markdown</button>
+      <button class="image-modal-btn" onclick="copyImageMarkdown('${id}')"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6 L12 2 L17 7 L13 11"/><path d="M12 12 L8 16 L3 11 L7 7"/></svg> Copy markdown</button>
+      <button class="image-modal-btn image-modal-delete" onclick="deleteImage('${id}')">Delete</button>
       <button class="image-modal-btn" onclick="closeImageModal()">&times; Close</button>
     </div>
   </div>`;
@@ -7756,6 +7931,27 @@ function copyImageMarkdown(id){
   const md=`![](${id})`;
   navigator.clipboard.writeText(md).then(()=>{
     if(typeof showToast==='function')showToast('Image markdown copied','info');
+  });
+}
+function deleteImage(id){
+  showConfirm('Delete this image from the gallery? Notes referencing it will show a placeholder.',{title:'Delete Image',okLabel:'Delete',dangerOk:true}).then(ok=>{
+    if(!ok)return;
+    // Remove from db.images
+    db.images.delete(id);
+    // Remove from IndexedDB
+    try{idbDelete('images',id);}catch(e){}
+    // Replace all references in entry content with a placeholder
+    const pattern=new RegExp('!\\[\\]\\('+id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(\\|w=\\d+)?\\)','g');
+    db.entries.forEach(e=>{
+      if(e.content&&e.content.includes(id)){
+        e.content=e.content.replace(pattern,'*[image removed]*');
+      }
+    });
+    save();
+    // Close modal if open, re-render
+    closeImageModal();
+    renderActiveView();
+    if(typeof showToast==='function')showToast('Image deleted','info');
   });
 }
 
@@ -7976,8 +8172,89 @@ function closeSettings(){
 }
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
-const APP_VERSION='2.4.0';
+const APP_VERSION='3.3.0';
 const CHANGELOG=[
+  {
+    version:'3.3.0',
+    date:'2026-04-12',
+    title:'Image deletion + slash task fix',
+    changes:[
+      '**Delete images from gallery** — hover a gallery tile to see the × delete button, or click Delete in the image lightbox modal',
+      'Deleting an image replaces all `![](img_xxx)` references in notes with *[image removed]* placeholder',
+      'Both delete paths (inline tile and modal) require **confirmation** before deleting',
+      '**`/task` slash command fixed** — Enter keypress was immediately closing the prompt dialog',
+      '**Task modal "Save & Close" button** — explicit save action + **Cmd+Enter** keyboard shortcut'
+    ]
+  },
+  {
+    version:'3.2.1',
+    date:'2026-04-12',
+    title:'Slash task fix + task modal save',
+    changes:[
+      '**`/task` slash command fixed** — Enter keypress that selected the command was immediately closing the prompt dialog (200ms debounce added to dialog Enter handler)',
+      '**Task modal "Save & Close" button** — explicit save action in the modal footer',
+      '**Cmd+Enter closes task modal** — keyboard shortcut to save and close'
+    ]
+  },
+  {
+    version:'3.2.0',
+    date:'2026-04-12',
+    title:'Tasks in filter views',
+    changes:[
+      '**Tasks appear in sections, search, and Smart Lists** — tasks with `#tags` or `@mentions` in their title now match filter queries alongside entries',
+      'Task rows in filter results show **checkbox**, **title**, and **priority tag** — visually distinct from entry rows',
+      '**Check off tasks** directly from section sidebar, search results, or Smart List widgets',
+      'Click a task in filter results to open the **task detail modal**',
+      'Tasks have `tags` and `mentions` fields — auto-extracted from title and description',
+      '**Tag counts** in the sidebar include task tags',
+      '`matchTasks(query)` — new function matching the same query syntax as entries (tags, mentions, keywords, phrases, exclusions, OR groups)'
+    ]
+  },
+  {
+    version:'3.1.0',
+    date:'2026-04-12',
+    title:'Multi-line task creation + fixes',
+    changes:[
+      '**Multi-line task creation** — select multiple lines in a note, click the Task button, and each line becomes an individual task. Bullet, numbered, and checkbox prefixes are stripped automatically',
+      '**Today task sort fix** — HIGH priority tasks now correctly sort above MED and LOW (fixed JS falsy bugs with `0||2` and `false!==null`)',
+      '**Calendar click fix** — clicking a past date in the calendar now properly shows that date\'s feed without snapping back to today',
+      '**Scroll-back to today** — scrolling back to today re-renders the command card with tasks',
+      '**Floating note "Done" button** — visible in the toolbar during floating mode to close the window'
+    ]
+  },
+  {
+    version:'3.0.0',
+    date:'2026-04-12',
+    title:'Major UX overhaul',
+    changes:[
+      '**Formatting toolbar** in note editor — Bold, Italic, Strikethrough, Code, Headings, Lists, Table, Task, Smart List, Divider, Code Block, Links. Multi-line selection support for list formatting',
+      '**Smart Lists** — type `/smartlist` to embed live search results in any note. Turns notes into project dashboards',
+      '**Task description + comments** — tasks now have a markdown description field and timestamped comment log',
+      '**Floating note rebuild** — localStorage-based architecture eliminates data loss on window close. Added "Done" button',
+      '**15 themes** — 10 light + 5 dark. Renamed and reorganized in settings with Light/Dark group labels',
+      '**Feed timeline redesign** — day headers at main level, entries indented with vertical timeline line, amber dots for notes',
+      '**Unified Today card** — capture input + tasks in one bordered command center',
+      '**Header band** — 12px accent-colored strip at top, follows theme color',
+      '**Tab visual separation** — vertical dividers between tabs, underline active state',
+      '**Sidebar architecture** — Calendar and Tags anchored above scroll area, Sections header always visible',
+      '**Getting Started onboarding** — 8-step checklist with auto-detection, launchable from homepage',
+      '**Homepage rewrite** — new positioning: "Think. Track. Ship." with tasks and Smart Lists featured',
+      '**Help pages rewrite** — all 13 pages updated for current features, added Tasks & Kanban guide',
+      '**Token humanization** in feed — task/table/status/smartlist tokens render as readable text',
+      '**Calendar scroll tracking** — calendar highlight follows the day you\'re scrolling through',
+      '**Today/selected day visual** — today shown as ring, selected day as solid fill',
+      '**Task sort fix** — priority correctly wins over due date (fixed JS falsy bugs with 0 and null)',
+      '**Inline column rename** — double-click column title in Kanban or List view',
+      '**Column color picker** — visual swatch picker using TAG_PALETTE',
+      '**Kanban drag reorder** — within-column reorder with amber line+dot indicators, cards collapse during drag',
+      '**List view drag reorder** — same visual indicators, order syncs with Kanban',
+      '**Section drag fix** — `min-height` override, separated backlinks container, clean splice logic',
+      '**All native dialogs replaced** — `showConfirm()`, `showPrompt()`, `showAlert()` styled modals',
+      '**Dead code removed** — Questions system, Contexts, unused functions',
+      '**Keyboard UX** — slash menu scrolls to highlighted item, table grid picker supports arrow keys + Enter',
+      '**`--amber` CSS variable** added (was missing), brand name enforced as "DailyDispatch"'
+    ]
+  },
   {
     version:'2.4.0',
     date:'2026-04-11',
@@ -9447,6 +9724,8 @@ function openTaskDetail(taskId){
       ${completedDate?`<span>· Completed ${completedDate}</span>`:''}
     </div>
     <div class="tm-actions">
+      <button class="tm-save" onclick="closeTaskModal();renderActiveView();renderSidebar()">Save &amp; Close</button>
+      <div style="flex:1"></div>
       <button class="tm-delete" onclick="showConfirm('Delete this task? This cannot be undone.',{title:'Delete Task',okLabel:'Delete',dangerOk:true}).then(ok=>{if(ok){deleteTask('${t.id}');closeTaskModal();renderActiveView();renderSidebar();}})">Delete task</button>
     </div>
   `;
@@ -9458,7 +9737,17 @@ function openTaskDetail(taskId){
 }
 function closeTaskModal(){
   document.getElementById('task-modal')?.classList.remove('open');
+  renderActiveView();renderSidebar();
 }
+// Cmd+Enter closes task modal (save & close)
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){
+    const modal=document.getElementById('task-modal');
+    if(modal&&modal.classList.contains('open')){
+      e.preventDefault();closeTaskModal();
+    }
+  }
+});
 function renderTaskComments(t){
   const comments=(t.comments||[]).slice().sort((a,b)=>b.ts-a.ts);
   if(!comments.length)return'<div class="tm-comment-empty">No comments yet</div>';
@@ -9565,9 +9854,11 @@ function createTask(opts){
     created_at:Date.now(),
     completed_at:null,
     order:getNextTaskOrder(colId),
-    today:false, // starred for Today — shows on Today view regardless of due date
+    today:false,
     description:'',
-    comments:[]
+    comments:[],
+    tags:extractTags(opts.title||''),
+    mentions:extractMentions(opts.title||'')
   };
   if(!db.tasks)db.tasks=[];
   db.tasks.push(task);
@@ -9579,6 +9870,13 @@ function updateTask(id,changes){
   const t=(db.tasks||[]).find(x=>x.id===id);
   if(!t)return null;
   Object.assign(t,changes);
+  // Re-extract tags/mentions when title or description changes
+  if(changes.title!==undefined||changes.description!==undefined){
+    const text=(t.title||'')+' '+(t.description||'');
+    t.tags=extractTags(text);
+    t.mentions=extractMentions(text);
+    invalidateTagCache();
+  }
   save('tasks');
   return t;
 }
