@@ -1529,7 +1529,12 @@
   .ac-item .ac-cnt { font-size: 9px; color: var(--text3); }
 
   /* Theme picker */
-  .theme-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+  .theme-group-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text3); margin: 12px 0 6px; padding-bottom: 2px;
+  }
+  .theme-group-label:first-child { margin-top: 0; }
+  .theme-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
   .theme-card {
     width: 120px; border: 2px solid var(--border); border-radius: var(--radius-md);
     padding: 8px; cursor: pointer; transition: border-color 0.15s;
@@ -1992,6 +1997,38 @@
     font-size: 11px; font-family: var(--sans);
   }
   .tm-delete:hover { background: #fef2f2; border-color: var(--danger); }
+  /* Task description + comments */
+  .tm-section { padding: 0 20px 12px; }
+  .tm-section-label {
+    font-size: 10px; font-weight: 600; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px;
+  }
+  .tm-desc {
+    width: 100%; border: 1px solid var(--border-light); border-radius: var(--radius-sm);
+    padding: 8px 10px; font-size: 13px; font-family: var(--sans); color: var(--text);
+    background: var(--bg); resize: none; min-height: 60px; line-height: 1.5; outline: none;
+  }
+  .tm-desc:focus { border-color: var(--accent); }
+  .tm-desc::placeholder { color: var(--text3); }
+  .tm-comment-input {
+    width: 100%; padding: 6px 10px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 12px; font-family: var(--sans);
+    color: var(--text); background: var(--surface); outline: none; margin-bottom: 8px;
+  }
+  .tm-comment-input:focus { border-color: var(--accent); }
+  .tm-comment-input::placeholder { color: var(--text3); }
+  .tm-comment-list { max-height: 200px; overflow-y: auto; }
+  .tm-comment {
+    display: flex; gap: 8px; padding: 5px 0;
+    border-bottom: 1px solid var(--border-light); font-size: 12px;
+  }
+  .tm-comment:last-child { border-bottom: none; }
+  .tm-comment-time {
+    font-family: var(--mono); font-size: 10px; color: var(--text3);
+    flex-shrink: 0; white-space: nowrap; padding-top: 1px;
+  }
+  .tm-comment-text { flex: 1; color: var(--text); line-height: 1.4; }
+  .tm-comment-empty { font-size: 11px; color: var(--text3); font-style: italic; padding: 4px 0; }
 
   .summary-banner {
     display: flex; align-items: center; gap: 8px;
@@ -7257,13 +7294,16 @@ function renderHome(area){
   const iconTheme=svg(22,22,'<circle cx="12" cy="12" r="9"/><path d="M12 3 A9 9 0 0 1 12 21"/>');
   const iconLock=svg(22,22,'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10 V7 a4 4 0 0 1 8 0 V10"/>');
 
+  const iconTask=svg(22,22,'<rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 12 11 14 15 10"/>');
+  const iconKanban=svg(22,22,'<rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="5" height="15" rx="1"/>');
+
   area.innerHTML=`<div class="home-tab">
 
     <!-- HERO -->
     <section class="home-hero">
       <div class="home-hero-eyebrow">DailyDispatch</div>
-      <h1 class="home-hero-title">Your thoughts, indexed.<br>Searchable. Private.</h1>
-      <p class="home-hero-tag">A local-first work journal for tech-forward knowledge workers who don't want their thinking on someone else's server.</p>
+      <h1 class="home-hero-title">Think. Track. Ship.</h1>
+      <p class="home-hero-tag">The work journal where notes and tasks live together. Capture what happened, track what's next, and find anything instantly &mdash; all in a single file that never leaves your machine.</p>
       <div class="home-hero-actions">
         <button onclick="switchTab('today')" class="home-btn primary">Start writing &rarr;</button>
         <button onclick="closeTab('home')" class="home-btn secondary">Close welcome</button>
@@ -7276,97 +7316,84 @@ function renderHome(area){
       </div>
     </section>
 
-    <!-- HOW IT WORKS -->
+    <!-- WHY DAILYDISPATCH -->
     <section class="home-section">
       <div class="home-section-head">
-        <span class="home-section-kicker">How it works</span>
-        <h2 class="home-section-title">Capture. Tag. Find.</h2>
-        <p class="home-section-sub">The whole product in three verbs.</p>
+        <span class="home-section-kicker">Why DailyDispatch</span>
+        <h2 class="home-section-title">Notes alone aren't enough.</h2>
+        <p class="home-section-sub">Most tools make you choose: a great note app, or a great task manager. Your real work happens where the two collide &mdash; the meeting note that spawns three action items, the idea that becomes a project. DailyDispatch keeps them in one place.</p>
       </div>
       <div class="home-steps">
         <div class="home-step">
-          <div class="home-step-num">1</div>
-          <h3>Capture</h3>
-          <p>Type in the feed. Press <kbd>&#8984;</kbd><kbd>Enter</kbd>. Done. The capture rail is always one keystroke away.</p>
+          <div class="home-step-num">${iconFeed}</div>
+          <h3>Daily feed</h3>
+          <p>Quick-capture decisions, updates, and ideas as they happen. Your day builds itself into a scrollable timeline &mdash; tagged, searchable, always there.</p>
         </div>
         <div class="home-step">
-          <div class="home-step-num">2</div>
-          <h3>Tag</h3>
-          <p>Use <code>#tags</code> and <code>@people</code> inline. Autocomplete suggests as you type. No folders.</p>
+          <div class="home-step-num">${iconTask}</div>
+          <h3>Tasks inside notes</h3>
+          <p>Create tasks with <code>/task</code> right where you're writing. They show up on your Kanban board and Today view automatically. Notes and tasks stay linked.</p>
         </div>
         <div class="home-step">
-          <div class="home-step-num">3</div>
-          <h3>Find</h3>
-          <p>Sections, search tabs, calendar, or just scroll. Everything is indexed the moment you write it.</p>
+          <div class="home-step-num">${iconSearch}</div>
+          <h3>Find anything</h3>
+          <p>Power search with <code>#tags</code>, <code>@people</code>, boolean operators, and live-updating sidebar sections. No folders, no filing &mdash; just type.</p>
         </div>
       </div>
     </section>
 
-    <!-- KEY FEATURE: SECTIONS -->
+    <!-- KEY FEATURE: TASKS + KANBAN -->
     <section class="home-feature">
       <div class="home-feature-text">
-        <span class="home-feature-kicker">Live dashboards</span>
-        <h2 class="home-feature-title">Sections that think ahead</h2>
-        <p class="home-feature-lead">Pin a saved filter to your sidebar and it becomes a live view. Every new entry that matches the query appears automatically. No manual sorting, no folders, no tagging rituals.</p>
+        <span class="home-feature-kicker">Built-in task management</span>
+        <h2 class="home-feature-title">Tasks that live where you think</h2>
+        <p class="home-feature-lead">Most note apps treat tasks as an afterthought &mdash; a checkbox you can't track. DailyDispatch gives you a full Kanban board, drag-and-drop columns, priority levels, due dates, and a Today view that pulls it all together.</p>
         <ul class="home-feature-bullets">
-          <li><strong>Meetings</strong> &mdash; <code>#meeting</code></li>
-          <li><strong>Open todos</strong> &mdash; <code>"[ ]"</code></li>
-          <li><strong>Decisions</strong> &mdash; <code>#decision -draft</code></li>
-          <li><strong>Jane's work</strong> &mdash; <code>@jane #project</code></li>
+          <li><strong>Kanban board</strong> &mdash; drag cards between columns, reorder within</li>
+          <li><strong>Linked to notes</strong> &mdash; type <code>/task</code> in a note, it appears on the board</li>
+          <li><strong>Today view</strong> &mdash; starred + due + overdue tasks at a glance</li>
+          <li><strong>Description + comments</strong> &mdash; add context and track progress on each task</li>
         </ul>
-        <p class="home-feature-footnote">Resize them, drag them between columns, tweak the query. It's your dashboard, not ours.</p>
+        <p class="home-feature-footnote">Completing a task on the board checks it off in the note. It works both ways.</p>
       </div>
       <div class="home-feature-mock">
-        <div class="home-mock-section">
-          <div class="home-mock-section-hdr">
-            <span class="home-mock-drag">&#x2630;</span>
-            <span class="home-mock-section-title">Meetings</span>
-            <span class="home-mock-edit">&#9998;</span>
-            <span class="home-mock-close">&times;</span>
+        <div class="home-mock-section" style="max-width:340px">
+          <div class="home-mock-section-hdr" style="border-bottom:2px solid var(--danger);padding-bottom:8px">
+            <span class="home-mock-section-title" style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Inbox</span>
+            <span class="home-mock-count">3</span>
           </div>
-          <div class="home-mock-section-query">
-            <span class="home-mock-search-icon">${svg(10,10,'<circle cx="4" cy="4" r="3"/><line x1="6.5" y1="6.5" x2="9" y2="9"/>')}</span>
-            <span>#meeting -draft</span>
-            <span class="home-mock-count">12</span>
-          </div>
-          <div class="home-mock-section-body">
-            <div class="home-mock-entry"><span class="home-mock-time">10:35 PM</span><strong>Q1 review prep</strong> &mdash; slides Friday</div>
-            <div class="home-mock-entry"><span class="home-mock-time">2:14 PM</span>Standup &mdash; rollout timeline</div>
-            <div class="home-mock-entry"><span class="home-mock-time">Mar 3</span>1:1 with @jane on roadmap</div>
-            <div class="home-mock-entry"><span class="home-mock-time">Mar 2</span>Design review #meeting</div>
-            <div class="home-mock-entry"><span class="home-mock-time">Feb 28</span>Kickoff call with #partner</div>
+          <div class="home-mock-section-body" style="padding-top:8px">
+            <div class="home-mock-entry" style="border-left:3px solid var(--danger);padding-left:8px"><strong>Review PR #247</strong><br><span style="font-size:9px;color:var(--danger)">HIGH</span> <span style="font-size:9px;color:var(--amber)">today</span></div>
+            <div class="home-mock-entry" style="border-left:3px solid var(--amber);padding-left:8px"><strong>Write test plan</strong><br><span style="font-size:9px;color:var(--amber)">MED</span></div>
+            <div class="home-mock-entry" style="border-left:3px solid var(--border-strong);padding-left:8px"><strong>Update changelog</strong><br><span style="font-size:9px;color:var(--text3)">LOW</span></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- KEY FEATURE: SEARCH TABS -->
+    <!-- KEY FEATURE: DAILY FEED -->
     <section class="home-feature home-feature-reverse">
       <div class="home-feature-text">
-        <span class="home-feature-kicker">Search as a workspace</span>
-        <h2 class="home-feature-title">Search tabs, not modals</h2>
-        <p class="home-feature-lead">Every search is a tab you can keep open. Run two side-by-side to compare views. Power syntax lets you drill in without leaving the keyboard.</p>
-        <div class="home-code-grid">
-          <code>#meeting @jane</code><span>tag AND mention</span>
-          <code>"[ ]" -"[x]"</code><span>open todos only</span>
-          <code>#idea OR #question</code><span>either tag</span>
-          <code>line: [[project x]] #decision</code><span>same line scope</span>
-        </div>
-        <p class="home-feature-footnote">Your queries auto-save as events in the feed. Click <em>reopen</em> on any past search to spawn a new tab pre-filled with it.</p>
+        <span class="home-feature-kicker">Work journal</span>
+        <h2 class="home-feature-title">A feed of your workday</h2>
+        <p class="home-feature-lead">Type a thought, tag it, hit Enter. It lands in a chronological feed grouped by day and hour. Decisions, meeting takeaways, deployment notes, quick ideas &mdash; everything has a timestamp and a place.</p>
+        <ul class="home-feature-bullets">
+          <li><strong>Quick capture</strong> &mdash; always-ready input at the top of Today</li>
+          <li><strong>Timeline view</strong> &mdash; entries grouped by day with hour labels</li>
+          <li><strong>Edited notes surface</strong> &mdash; edit an old note, it reappears in today's feed</li>
+          <li><strong>Tags + mentions</strong> &mdash; <code>#tags</code> and <code>@people</code> index automatically</li>
+        </ul>
       </div>
       <div class="home-feature-mock">
-        <div class="home-mock-search">
-          <div class="home-mock-search-bar">
-            <span class="home-mock-search-icon">${svg(14,14,'<circle cx="6" cy="6" r="4"/><line x1="9" y1="9" x2="13" y2="13"/>')}</span>
-            <span class="home-mock-search-q">#meeting @jane "action item"</span>
-            <span class="home-mock-search-count">8 results</span>
-          </div>
+        <div class="home-mock-search" style="max-width:340px">
+          <div style="padding:12px 14px;font-weight:700;font-size:13px;color:var(--text)">Today <span style="font-weight:400;color:var(--text3)">&mdash; Apr 11, 2026</span></div>
           <div class="home-mock-search-body">
-            <div class="home-mock-date">Mon, Apr 7</div>
-            <div class="home-mock-entry"><span class="home-mock-time">2:30 PM</span>1:1 &mdash; action items for next week</div>
-            <div class="home-mock-entry"><span class="home-mock-time">11:00 AM</span>Planning &mdash; assigned to @jane</div>
-            <div class="home-mock-date">Fri, Apr 4</div>
-            <div class="home-mock-entry"><span class="home-mock-time">3:15 PM</span>Roadmap review &mdash; follow-ups</div>
+            <div class="home-mock-date">3 PM</div>
+            <div class="home-mock-entry" style="border-left:2px solid var(--accent);padding-left:8px"><span class="home-mock-time">3:12</span>Deployed v1.7 to production</div>
+            <div class="home-mock-entry"><span class="home-mock-time">3:05</span>PR #247 merged after review</div>
+            <div class="home-mock-date">10 AM</div>
+            <div class="home-mock-entry" style="border-left:2px solid var(--accent);padding-left:8px"><span class="home-mock-time">10:30</span><strong>Daily journal</strong> &mdash; focus: ship tasks</div>
+            <div class="home-mock-entry"><span class="home-mock-time">10:15</span>Standup: blocked on design review</div>
           </div>
         </div>
       </div>
@@ -7375,39 +7402,39 @@ function renderHome(area){
     <!-- FEATURE GRID -->
     <section class="home-section">
       <div class="home-section-head">
-        <span class="home-section-kicker">And more</span>
-        <h2 class="home-section-title">Everything you'd expect from a modern note tool.</h2>
+        <span class="home-section-kicker">Power features</span>
+        <h2 class="home-section-title">Built for people who think for a living.</h2>
       </div>
       <div class="home-grid">
         <div class="home-card">
           <div class="home-card-icon">${iconFloat}</div>
-          <h3>Floating meeting window</h3>
-          <p>A narrow popup that tucks to your screen edge. Take notes while a video call fills the middle. Close it and the note auto-opens as a tab.</p>
+          <h3>Floating note window</h3>
+          <p>A popup that tucks to your screen edge. Take meeting notes while on a video call. Close it and the note opens as a tab.</p>
         </div>
         <div class="home-card">
           <div class="home-card-icon">${iconFeed}</div>
-          <h3>Markdown with slash commands</h3>
-          <p>Type <code>/</code> for headings, bullets, tables, code blocks, templates, and timestamps. Live preview like Obsidian.</p>
+          <h3>Markdown + slash commands</h3>
+          <p>Type <code>/</code> for headings, bullets, tables, code blocks, templates, tasks, and timestamps. Live preview as you type.</p>
+        </div>
+        <div class="home-card">
+          <div class="home-card-icon">${iconSection}</div>
+          <h3>Live sidebar sections</h3>
+          <p>Pin a filter query to the sidebar and it becomes a live dashboard. New entries matching the query appear automatically.</p>
         </div>
         <div class="home-card">
           <div class="home-card-icon">${iconTemplate}</div>
-          <h3>Templates as plain notes</h3>
-          <p>Any note tagged <code>#template</code> is available via <code>/template</code>. Three starters included: Meeting notes, Daily journal, 1:1.</p>
-        </div>
-        <div class="home-card">
-          <div class="home-card-icon">${iconCalendar}</div>
-          <h3>Calendar navigation</h3>
-          <p>Click any day to jump to it. Scroll both directions through time. Your journal, chronologically, with no load-more buttons.</p>
+          <h3>Templates</h3>
+          <p>Tag any note <code>#template</code> and use it via <code>/template</code>. Meeting notes, daily journal, and 1:1 templates included.</p>
         </div>
         <div class="home-card">
           <div class="home-card-icon">${iconTable}</div>
           <h3>Editable tables</h3>
-          <p>Inline cells, add/remove rows and columns, drag to resize widths. Right-click for destructive actions &mdash; safer by default.</p>
+          <p>Inline cells, add/remove rows and columns, drag to resize. Right-click for destructive actions &mdash; safer by default.</p>
         </div>
         <div class="home-card">
           <div class="home-card-icon">${iconTheme}</div>
-          <h3>Nine themes</h3>
-          <p>Warm Notion, Nordic, Sepia, Solarized Light, Lavender, Mint Pastel, Midnight Blue, Dark, T-Mobile. Pick one and forget it.</p>
+          <h3>15 themes</h3>
+          <p>10 light and 5 dark themes. Warm Notion, Nordic, Midnight, Forest Night, and more. Switch in settings, takes effect instantly.</p>
         </div>
       </div>
     </section>
@@ -7415,18 +7442,18 @@ function renderHome(area){
     <!-- PRIVACY -->
     <section class="home-privacy">
       <div class="home-privacy-icon">${svg(40,40,'<rect x="7" y="11" width="10" height="9" rx="1.5"/><path d="M9 11 V8 a3 3 0 0 1 6 0 V11"/>')}</div>
-      <h2>Your notes never leave your machine.</h2>
-      <p>Everything lives in your browser's IndexedDB. No account. No cloud sync. No telemetry. Not even a server to check for updates.</p>
-      <p>Want to back up? Export JSON. Want to move? Copy the single HTML file. Want to inspect what's stored? Open DevTools. It's all there.</p>
+      <h2>Your data stays on your machine.</h2>
+      <p>No account. No cloud. No telemetry. Everything lives in your browser's local storage. DailyDispatch is a single HTML file &mdash; you can inspect every line of it.</p>
+      <p>Back up with JSON export. Move by copying one file. Your most private thinking deserves tooling that respects that.</p>
       <button onclick="switchTab('settings')" class="home-btn secondary">Open settings &rarr;</button>
     </section>
 
     <!-- FINAL CTA -->
     <section class="home-cta">
-      <h2>Ready?</h2>
-      <p>Click <strong>Feed</strong> and type your first thing.</p>
+      <h2>Ready to start?</h2>
+      <p>Open <strong>Today</strong> and type your first thought.</p>
       <button onclick="switchTab('today')" class="home-btn primary big">Go to Today &rarr;</button>
-      <p class="home-cta-footnote">You can reopen this welcome any time from the home icon next to the logo.</p>
+      <p class="home-cta-footnote">Reopen this page any time from the home icon next to the logo.</p>
     </section>
 
   </div>`;
@@ -7727,97 +7754,158 @@ function showChangelog(){
 }
 function closeChangelog(){document.getElementById('changelog-modal').classList.remove('open');}
 
-const THEMES={
-  'Warm Notion':{
-    bg:'#faf8f5',surface:'#fff','surface-hover':'#f5f2ed','sidebar-bg':'#f5f2ed',
-    border:'#e8e0d4','border-light':'#f0ece6','border-strong':'#d4cbbf',
-    text:'#37352f',text2:'#787774',text3:'#9b9a97',
-    accent:'#cb912f','accent-light':'rgba(203,145,47,0.12)',
-    danger:'#e16259',green:'#4daa57',blue:'#5b9bd5',purple:'#9065b0',brown:'#8b7355',
-    'capture-bg':'#fdf9f3','note-bg':'#fdf9f3',
-    'shadow-sm':'0 1px 2px rgba(0,0,0,0.04)','shadow-md':'0 4px 12px rgba(0,0,0,0.06)',
-    _preview:['#faf8f5','#cb912f','#8b7355','#e8e0d4']
-  },
-  'T-Mobile':{
-    bg:'#f5f5f5',surface:'#ffffff','surface-hover':'#f0f0f0','sidebar-bg':'#f0f0f0',
-    border:'#e0e0e0','border-light':'#ebebeb','border-strong':'#cccccc',
-    text:'#000000',text2:'#6a6a6a',text3:'#9b9b9b',
-    accent:'#e20074','accent-light':'rgba(226,0,116,0.08)',
-    danger:'#e20074',green:'#00b33c',blue:'#0077c8',purple:'#9065b0',brown:'#444444',
-    'capture-bg':'#fafafa','note-bg':'#fafafa',
-    'shadow-sm':'0 1px 2px rgba(0,0,0,0.06)','shadow-md':'0 4px 12px rgba(0,0,0,0.1)',
-    _preview:['#f5f5f5','#e20074','#000000','#e0e0e0']
-  },
-  'Mint Pastel':{
-    bg:'#f0faf6',surface:'#ffffff','surface-hover':'#e8f5ef','sidebar-bg':'#e8f5ef',
-    border:'#c8e6d8','border-light':'#d8efe4','border-strong':'#a8d4be',
-    text:'#1a3a2a',text2:'#5a7a6a',text3:'#8aaa9a',
-    accent:'#2a9d6a','accent-light':'rgba(42,157,106,0.1)',
-    danger:'#e05555',green:'#2a9d6a',blue:'#4a90c4',purple:'#8a6aaa',brown:'#5a7a6a',
-    'capture-bg':'#f5fcf8','note-bg':'#f5fcf8',
-    'shadow-sm':'0 1px 2px rgba(0,60,30,0.04)','shadow-md':'0 4px 12px rgba(0,60,30,0.06)',
-    _preview:['#f0faf6','#2a9d6a','#1a3a2a','#c8e6d8']
-  },
-  'Dark':{
-    bg:'#1a1a1e',surface:'#242428','surface-hover':'#2e2e34','sidebar-bg':'#1e1e22',
-    border:'#3a3a40','border-light':'#2e2e34','border-strong':'#4a4a52',
-    text:'#e4e4e8',text2:'#9a9aa0',text3:'#6a6a72',
-    accent:'#f0a040','accent-light':'rgba(240,160,64,0.12)',
-    danger:'#f06060',green:'#50c878',blue:'#6ab0e8',purple:'#aa8acc',brown:'#b0a090',
-    'capture-bg':'#2a2a2e','note-bg':'#2a2a2e',
-    'shadow-sm':'0 1px 2px rgba(0,0,0,0.3)','shadow-md':'0 4px 12px rgba(0,0,0,0.4)',
-    _preview:['#1a1a1e','#f0a040','#e4e4e8','#3a3a40']
-  },
-  'Solarized Light':{
-    bg:'#fdf6e3',surface:'#fffbf0','surface-hover':'#f5eed3','sidebar-bg':'#f5eed3',
-    border:'#eee8d5','border-light':'#f4ecd1','border-strong':'#d9d2bb',
-    text:'#586e75',text2:'#839496',text3:'#93a1a1',
-    accent:'#268bd2','accent-light':'rgba(38,139,210,0.1)',
-    danger:'#dc322f',green:'#859900',blue:'#268bd2',purple:'#6c71c4',brown:'#b58900',
-    'capture-bg':'#fffbf0','note-bg':'#fffbf0',
-    'shadow-sm':'0 1px 2px rgba(101,123,131,0.06)','shadow-md':'0 4px 12px rgba(101,123,131,0.1)',
-    _preview:['#fdf6e3','#268bd2','#586e75','#eee8d5']
-  },
-  'Nordic':{
-    bg:'#eceff4',surface:'#ffffff','surface-hover':'#e5e9f0','sidebar-bg':'#e5e9f0',
-    border:'#d8dee9','border-light':'#e1e7f0','border-strong':'#c0c8d4',
-    text:'#2e3440',text2:'#4c566a',text3:'#7b8794',
-    accent:'#5e81ac','accent-light':'rgba(94,129,172,0.1)',
-    danger:'#bf616a',green:'#a3be8c',blue:'#5e81ac',purple:'#b48ead',brown:'#8b6f47',
-    'capture-bg':'#f5f7fa','note-bg':'#f5f7fa',
-    'shadow-sm':'0 1px 2px rgba(46,52,64,0.05)','shadow-md':'0 4px 12px rgba(46,52,64,0.08)',
-    _preview:['#eceff4','#5e81ac','#2e3440','#d8dee9']
-  },
-  'Sepia':{
-    bg:'#f4ecd8',surface:'#fbf6e8','surface-hover':'#eee2c4','sidebar-bg':'#eee2c4',
-    border:'#e2d5b8','border-light':'#ebe0c2','border-strong':'#c9b88f',
-    text:'#3b2f23',text2:'#6b5a45',text3:'#9c8b6f',
-    accent:'#8b5a2b','accent-light':'rgba(139,90,43,0.1)',
-    danger:'#b8453c',green:'#6b8e3a',blue:'#4a7ba6',purple:'#856aa3',brown:'#8b5a2b',
-    'capture-bg':'#fbf6e8','note-bg':'#fbf6e8',
-    'shadow-sm':'0 1px 2px rgba(59,47,35,0.06)','shadow-md':'0 4px 12px rgba(59,47,35,0.1)',
-    _preview:['#f4ecd8','#8b5a2b','#3b2f23','#e2d5b8']
-  },
-  'Lavender':{
-    bg:'#f6f3fb',surface:'#ffffff','surface-hover':'#ece6f5','sidebar-bg':'#ece6f5',
-    border:'#e3dcee','border-light':'#ede6f5','border-strong':'#c9bce0',
-    text:'#2d2540',text2:'#6a5e85',text3:'#9b91b3',
-    accent:'#7c5cc4','accent-light':'rgba(124,92,196,0.1)',
-    danger:'#d65e6e',green:'#5ab089',blue:'#5b8cd5',purple:'#7c5cc4',brown:'#8b7a66',
-    'capture-bg':'#faf8fd','note-bg':'#faf8fd',
-    'shadow-sm':'0 1px 2px rgba(45,37,64,0.05)','shadow-md':'0 4px 12px rgba(45,37,64,0.08)',
-    _preview:['#f6f3fb','#7c5cc4','#2d2540','#e3dcee']
-  },
-  'Midnight Blue':{
-    bg:'#0f1724',surface:'#16202e','surface-hover':'#1d293a','sidebar-bg':'#131c2a',
-    border:'#243044','border-light':'#1d2638','border-strong':'#34425a',
-    text:'#dbe6f0',text2:'#8a9bb0',text3:'#5b6c82',
-    accent:'#5cc8e8','accent-light':'rgba(92,200,232,0.12)',
-    danger:'#f06565',green:'#5cd49a',blue:'#5cc8e8',purple:'#b08acc',brown:'#b09080',
-    'capture-bg':'#1a2435','note-bg':'#1a2435',
-    'shadow-sm':'0 1px 2px rgba(0,0,0,0.3)','shadow-md':'0 4px 12px rgba(0,0,0,0.4)',
-    _preview:['#0f1724','#5cc8e8','#dbe6f0','#243044']
-  }
+const THEMES={};
+// ── Light themes ──
+THEMES['Warm Notion']={
+  bg:'#faf8f5',surface:'#fff','surface-hover':'#f5f2ed','sidebar-bg':'#f5f2ed',
+  border:'#e8e0d4','border-light':'#f0ece6','border-strong':'#d4cbbf',
+  text:'#37352f',text2:'#787774',text3:'#9b9a97',
+  accent:'#cb912f','accent-light':'rgba(203,145,47,0.12)',
+  danger:'#e16259',green:'#4daa57',blue:'#5b9bd5',purple:'#9065b0',brown:'#8b7355',
+  'capture-bg':'#fdf9f3','note-bg':'#fdf9f3',
+  'shadow-sm':'0 1px 2px rgba(0,0,0,0.04)','shadow-md':'0 4px 12px rgba(0,0,0,0.06)',
+  _preview:['#faf8f5','#cb912f','#8b7355','#e8e0d4'],_group:'light'
+};
+THEMES['Hot Pink']={
+  bg:'#f5f5f5',surface:'#ffffff','surface-hover':'#f0f0f0','sidebar-bg':'#f0f0f0',
+  border:'#e0e0e0','border-light':'#ebebeb','border-strong':'#cccccc',
+  text:'#000000',text2:'#6a6a6a',text3:'#9b9b9b',
+  accent:'#e20074','accent-light':'rgba(226,0,116,0.08)',
+  danger:'#e20074',green:'#00b33c',blue:'#0077c8',purple:'#9065b0',brown:'#444444',
+  'capture-bg':'#fafafa','note-bg':'#fafafa',
+  'shadow-sm':'0 1px 2px rgba(0,0,0,0.06)','shadow-md':'0 4px 12px rgba(0,0,0,0.1)',
+  _preview:['#f5f5f5','#e20074','#000000','#e0e0e0'],_group:'light'
+};
+THEMES['Mint']={
+  bg:'#f0faf6',surface:'#ffffff','surface-hover':'#e8f5ef','sidebar-bg':'#e8f5ef',
+  border:'#c8e6d8','border-light':'#d8efe4','border-strong':'#a8d4be',
+  text:'#1a3a2a',text2:'#5a7a6a',text3:'#8aaa9a',
+  accent:'#2a9d6a','accent-light':'rgba(42,157,106,0.1)',
+  danger:'#e05555',green:'#2a9d6a',blue:'#4a90c4',purple:'#8a6aaa',brown:'#5a7a6a',
+  'capture-bg':'#f5fcf8','note-bg':'#f5fcf8',
+  'shadow-sm':'0 1px 2px rgba(0,60,30,0.04)','shadow-md':'0 4px 12px rgba(0,60,30,0.06)',
+  _preview:['#f0faf6','#2a9d6a','#1a3a2a','#c8e6d8'],_group:'light'
+};
+THEMES['Solarized']={
+  bg:'#fdf6e3',surface:'#fffbf0','surface-hover':'#f5eed3','sidebar-bg':'#f5eed3',
+  border:'#eee8d5','border-light':'#f4ecd1','border-strong':'#d9d2bb',
+  text:'#586e75',text2:'#839496',text3:'#93a1a1',
+  accent:'#268bd2','accent-light':'rgba(38,139,210,0.1)',
+  danger:'#dc322f',green:'#859900',blue:'#268bd2',purple:'#6c71c4',brown:'#b58900',
+  'capture-bg':'#fffbf0','note-bg':'#fffbf0',
+  'shadow-sm':'0 1px 2px rgba(101,123,131,0.06)','shadow-md':'0 4px 12px rgba(101,123,131,0.1)',
+  _preview:['#fdf6e3','#268bd2','#586e75','#eee8d5'],_group:'light'
+};
+THEMES['Nordic']={
+  bg:'#eceff4',surface:'#ffffff','surface-hover':'#e5e9f0','sidebar-bg':'#e5e9f0',
+  border:'#d8dee9','border-light':'#e1e7f0','border-strong':'#c0c8d4',
+  text:'#2e3440',text2:'#4c566a',text3:'#7b8794',
+  accent:'#5e81ac','accent-light':'rgba(94,129,172,0.1)',
+  danger:'#bf616a',green:'#a3be8c',blue:'#5e81ac',purple:'#b48ead',brown:'#8b6f47',
+  'capture-bg':'#f5f7fa','note-bg':'#f5f7fa',
+  'shadow-sm':'0 1px 2px rgba(46,52,64,0.05)','shadow-md':'0 4px 12px rgba(46,52,64,0.08)',
+  _preview:['#eceff4','#5e81ac','#2e3440','#d8dee9'],_group:'light'
+};
+THEMES['Sepia']={
+  bg:'#f4ecd8',surface:'#fbf6e8','surface-hover':'#eee2c4','sidebar-bg':'#eee2c4',
+  border:'#e2d5b8','border-light':'#ebe0c2','border-strong':'#c9b88f',
+  text:'#3b2f23',text2:'#6b5a45',text3:'#9c8b6f',
+  accent:'#8b5a2b','accent-light':'rgba(139,90,43,0.1)',
+  danger:'#b8453c',green:'#6b8e3a',blue:'#4a7ba6',purple:'#856aa3',brown:'#8b5a2b',
+  'capture-bg':'#fbf6e8','note-bg':'#fbf6e8',
+  'shadow-sm':'0 1px 2px rgba(59,47,35,0.06)','shadow-md':'0 4px 12px rgba(59,47,35,0.1)',
+  _preview:['#f4ecd8','#8b5a2b','#3b2f23','#e2d5b8'],_group:'light'
+};
+THEMES['Lavender']={
+  bg:'#f6f3fb',surface:'#ffffff','surface-hover':'#ece6f5','sidebar-bg':'#ece6f5',
+  border:'#e3dcee','border-light':'#ede6f5','border-strong':'#c9bce0',
+  text:'#2d2540',text2:'#6a5e85',text3:'#9b91b3',
+  accent:'#7c5cc4','accent-light':'rgba(124,92,196,0.1)',
+  danger:'#d65e6e',green:'#5ab089',blue:'#5b8cd5',purple:'#7c5cc4',brown:'#8b7a66',
+  'capture-bg':'#faf8fd','note-bg':'#faf8fd',
+  'shadow-sm':'0 1px 2px rgba(45,37,64,0.05)','shadow-md':'0 4px 12px rgba(45,37,64,0.08)',
+  _preview:['#f6f3fb','#7c5cc4','#2d2540','#e3dcee'],_group:'light'
+};
+THEMES['Rose']={
+  bg:'#fdf5f5',surface:'#ffffff','surface-hover':'#f9eaea','sidebar-bg':'#f9eaea',
+  border:'#ecd8d8','border-light':'#f4e4e4','border-strong':'#d4b8b8',
+  text:'#3a2828',text2:'#7a5e5e',text3:'#a08888',
+  accent:'#c45a6a','accent-light':'rgba(196,90,106,0.1)',
+  danger:'#d44a4a',green:'#5aaa7a',blue:'#5a8ac0',purple:'#9a6ab0',brown:'#8a6a5a',
+  'capture-bg':'#fef8f8','note-bg':'#fef8f8',
+  'shadow-sm':'0 1px 2px rgba(58,40,40,0.05)','shadow-md':'0 4px 12px rgba(58,40,40,0.08)',
+  _preview:['#fdf5f5','#c45a6a','#3a2828','#ecd8d8'],_group:'light'
+};
+THEMES['Sand']={
+  bg:'#f8f4ee',surface:'#fffdf8','surface-hover':'#f0ebe0','sidebar-bg':'#f0ebe0',
+  border:'#e0d8c8','border-light':'#ece4d4','border-strong':'#c8bca8',
+  text:'#3a3428',text2:'#6e6454',text3:'#9a8e7a',
+  accent:'#b8860b','accent-light':'rgba(184,134,11,0.1)',
+  danger:'#cc5544',green:'#6a9a44',blue:'#5a88b8',purple:'#8a6aaa',brown:'#8a7a5a',
+  'capture-bg':'#fdfaf4','note-bg':'#fdfaf4',
+  'shadow-sm':'0 1px 2px rgba(58,52,40,0.05)','shadow-md':'0 4px 12px rgba(58,52,40,0.08)',
+  _preview:['#f8f4ee','#b8860b','#3a3428','#e0d8c8'],_group:'light'
+};
+THEMES['Clean']={
+  bg:'#f7f7f7',surface:'#ffffff','surface-hover':'#f0f0f0','sidebar-bg':'#f0f0f0',
+  border:'#e2e2e2','border-light':'#ececec','border-strong':'#cccccc',
+  text:'#222222',text2:'#666666',text3:'#999999',
+  accent:'#2563eb','accent-light':'rgba(37,99,235,0.08)',
+  danger:'#dc2626',green:'#16a34a',blue:'#2563eb',purple:'#7c3aed',brown:'#555555',
+  'capture-bg':'#fafafa','note-bg':'#fafafa',
+  'shadow-sm':'0 1px 2px rgba(0,0,0,0.05)','shadow-md':'0 4px 12px rgba(0,0,0,0.08)',
+  _preview:['#f7f7f7','#2563eb','#222222','#e2e2e2'],_group:'light'
+};
+// ── Dark themes ──
+THEMES['Dark']={
+  bg:'#1a1a1e',surface:'#242428','surface-hover':'#2e2e34','sidebar-bg':'#1e1e22',
+  border:'#3a3a40','border-light':'#2e2e34','border-strong':'#4a4a52',
+  text:'#e4e4e8',text2:'#9a9aa0',text3:'#6a6a72',
+  accent:'#f0a040','accent-light':'rgba(240,160,64,0.12)',
+  danger:'#f06060',green:'#50c878',blue:'#6ab0e8',purple:'#aa8acc',brown:'#b0a090',
+  'capture-bg':'#2a2a2e','note-bg':'#2a2a2e',
+  'shadow-sm':'0 1px 2px rgba(0,0,0,0.3)','shadow-md':'0 4px 12px rgba(0,0,0,0.4)',
+  _preview:['#1a1a1e','#f0a040','#e4e4e8','#3a3a40'],_group:'dark'
+};
+THEMES['Midnight']={
+  bg:'#0f1724',surface:'#16202e','surface-hover':'#1d293a','sidebar-bg':'#131c2a',
+  border:'#243044','border-light':'#1d2638','border-strong':'#34425a',
+  text:'#dbe6f0',text2:'#8a9bb0',text3:'#5b6c82',
+  accent:'#5cc8e8','accent-light':'rgba(92,200,232,0.12)',
+  danger:'#f06565',green:'#5cd49a',blue:'#5cc8e8',purple:'#b08acc',brown:'#b09080',
+  'capture-bg':'#1a2435','note-bg':'#1a2435',
+  'shadow-sm':'0 1px 2px rgba(0,0,0,0.3)','shadow-md':'0 4px 12px rgba(0,0,0,0.4)',
+  _preview:['#0f1724','#5cc8e8','#dbe6f0','#243044'],_group:'dark'
+};
+THEMES['Charcoal']={
+  bg:'#202020',surface:'#2a2a2a','surface-hover':'#333333','sidebar-bg':'#252525',
+  border:'#3a3a3a','border-light':'#303030','border-strong':'#4a4a4a',
+  text:'#e0e0e0',text2:'#999999',text3:'#666666',
+  accent:'#e06040','accent-light':'rgba(224,96,64,0.12)',
+  danger:'#e06040',green:'#5cc870',blue:'#60a0e0',purple:'#a080d0',brown:'#a09080',
+  'capture-bg':'#2e2e2e','note-bg':'#2e2e2e',
+  'shadow-sm':'0 1px 2px rgba(0,0,0,0.3)','shadow-md':'0 4px 12px rgba(0,0,0,0.4)',
+  _preview:['#202020','#e06040','#e0e0e0','#3a3a3a'],_group:'dark'
+};
+THEMES['Forest Night']={
+  bg:'#141e1a',surface:'#1c2a24','surface-hover':'#24342c','sidebar-bg':'#18241e',
+  border:'#2a3e32','border-light':'#22342a','border-strong':'#3a5244',
+  text:'#d4e8dc',text2:'#8aaa96',text3:'#5a7a68',
+  accent:'#4ac88a','accent-light':'rgba(74,200,138,0.12)',
+  danger:'#e06060',green:'#4ac88a',blue:'#60a8d0',purple:'#a88acc',brown:'#a0947a',
+  'capture-bg':'#1e2e26','note-bg':'#1e2e26',
+  'shadow-sm':'0 1px 2px rgba(0,0,0,0.3)','shadow-md':'0 4px 12px rgba(0,0,0,0.4)',
+  _preview:['#141e1a','#4ac88a','#d4e8dc','#2a3e32'],_group:'dark'
+};
+THEMES['Amethyst']={
+  bg:'#1a1520',surface:'#241e2c','surface-hover':'#2e2638','sidebar-bg':'#1e1826',
+  border:'#382e44','border-light':'#2c2436','border-strong':'#48405a',
+  text:'#e0d8e8',text2:'#9a8eaa',text3:'#6a5e7a',
+  accent:'#b880e0','accent-light':'rgba(184,128,224,0.12)',
+  danger:'#e06070',green:'#60c880',blue:'#60a0e0',purple:'#b880e0',brown:'#a09088',
+  'capture-bg':'#241e2e','note-bg':'#241e2e',
+  'shadow-sm':'0 1px 2px rgba(0,0,0,0.3)','shadow-md':'0 4px 12px rgba(0,0,0,0.4)',
+  _preview:['#1a1520','#b880e0','#e0d8e8','#382e44'],_group:'dark'
 };
 
 function setFloatingNoteOption(key,val){
@@ -7829,7 +7917,10 @@ function setFloatingNoteOption(key,val){
   save('settings');
 }
 
+// Map renamed themes from old sessions
+const _themeRenames={'T-Mobile':'Hot Pink','Solarized Light':'Solarized','Midnight Blue':'Midnight','Mint Pastel':'Mint'};
 function applyTheme(name){
+  if(_themeRenames[name])name=_themeRenames[name];
   const t=THEMES[name];if(!t)return;
   const root=document.documentElement;
   Object.entries(t).forEach(([k,v])=>{
@@ -7937,7 +8028,21 @@ function renderSettingsTab(area){
     </div>
     <div class="settings-section" style="margin-top:4px">
       <h2>Theme</h2>
-      <div class="theme-grid">${Object.entries(THEMES).map(([name,t])=>{
+      <div class="theme-group-label">Light</div>
+      <div class="theme-grid">${Object.entries(THEMES).filter(([,t])=>t._group==='light').map(([name,t])=>{
+        const active=db.theme===name;
+        return`<div class="theme-card${active?' active':''}" onclick="applyTheme('${escH(name)}');renderActiveView()">
+          <div class="theme-preview">
+            <div class="theme-swatch" style="background:${t._preview[0]}"></div>
+            <div class="theme-swatch" style="background:${t._preview[1]}"></div>
+            <div class="theme-swatch" style="background:${t._preview[2]}"></div>
+            <div class="theme-swatch" style="background:${t._preview[3]}"></div>
+          </div>
+          <div class="theme-name">${escH(name)}</div>
+        </div>`;
+      }).join('')}</div>
+      <div class="theme-group-label">Dark</div>
+      <div class="theme-grid">${Object.entries(THEMES).filter(([,t])=>t._group==='dark').map(([name,t])=>{
         const active=db.theme===name;
         return`<div class="theme-card${active?' active':''}" onclick="applyTheme('${escH(name)}');renderActiveView()">
           <div class="theme-preview">
@@ -8184,80 +8289,130 @@ function fmtBackupStatus(ts){
 const HELP_NOTES=[
 {id:'help_welcome',noteTitle:'Welcome to DailyDispatch',content:`# Welcome to DailyDispatch
 
-DailyDispatch is your personal daily work journal — a fast, local, offline-first tool for capturing what you work on, organizing it with sections, and finding things later.
-
-Everything lives in your browser's IndexedDB. No server, no internet, no account needed.
+DailyDispatch is a work journal where notes and tasks live together. Capture what happened, track what's next, and find anything instantly — all in a single file that never leaves your machine.
 
 ## Quick Start
 
-- Type in the capture box at the top of the Feed and press **Cmd+Enter** to log an entry
-- Use **#tags** to categorize: #meeting, #api, #question — anything you want
-- Use **@mentions** to reference people: @Sarah, @Dave
-- Click any entry to open it as a full note with the markdown editor
-- In notes, type \`/\` to open slash commands (headings, tables, code blocks, dividers, etc.)
-- Create sections to build live dashboards of whatever matters to you
+1. **Capture** — Type in the box at the top of Today and press **Cmd+Enter**
+2. **Take notes** — Click **+** in the tab bar to create a note with full markdown
+3. **Create tasks** — Type \`/task\` in any note to create a linked task
+4. **Tag everything** — Use \`#tags\` and \`@people\` inline for instant organization
+5. **Find anything** — Press **Cmd+K** to search, or click tags in the sidebar to filter
 
 ## Key Shortcuts
 
-- **Cmd+K** — Open a search tab
-- **Cmd+Shift+O** — Quick-open a note by title
-- **Cmd+;** — Create a new note
-- **Cmd+D** — Close the current tab
-- **Cmd+Enter** — Submit a quick entry
+| Shortcut | Action |
+|----------|--------|
+| **Cmd+Enter** | Submit a quick entry |
+| **Cmd+K** | Open search |
+| **Cmd+;** | New note |
+| **Cmd+D** | Close current tab |
 
 ## Help Topics
 
-See these guides for more detail:
-- [[Quick Entries & Feed]]
-- [[Notes & Markdown Editor]]
-- [[Slash Commands]]
-- [[Tags & Filtering]]
-- [[Sections & Custom Views]]
-- [[Search Tabs & Boolean Queries]]
-- [[Floating Note Window]]
-- [[Events & Activity Log]]
-- [[People & Mentions]]
-- [[Import, Export & Backup]]
-- [[Themes & Settings]]
-- [[Keyboard Shortcuts]]
+- [[Today View & Feed]] — Your daily timeline
+- [[Tasks & Kanban]] — Task management, boards, and priorities
+- [[Notes & Markdown Editor]] — Rich markdown editing
+- [[Slash Commands]] — Quick formatting and task creation
+- [[Tags & Filtering]] — Organization and sidebar filters
+- [[Sections & Custom Views]] — Saved filter dashboards
+- [[Search Tabs & Boolean Queries]] — Power search
+- [[Floating Note Window]] — Meeting notes popup
+- [[Events & Activity Log]] — Activity history
+- [[People & Mentions]] — Tracking who's involved
+- [[Import, Export & Backup]] — Data management
+- [[Themes & Settings]] — Customization
+- [[Keyboard Shortcuts]] — Full shortcut reference
 
 ---
 #DailyDispatchHelp`},
 
-{id:'help_entries',noteTitle:'Quick Entries & Feed',content:`# Quick Entries & Feed
+{id:'help_feed',noteTitle:'Today View & Feed',content:`# Today View & Feed
 
-## Adding Entries
+The Today view is your daily command center — a unified card with quick capture and today's tasks at the top, followed by a chronological feed of everything you've written.
 
-The capture box at the top of the Feed tab is your quick-entry point. Type anything and press **Cmd+Enter** or click **Add**.
+## The Command Card
 
-Entries are timestamped with the current time and land on today's date — even if you're viewing an older day in the feed. Clicking anywhere in the capture rail focuses the input.
+The top of Today has two sections in one card:
+- **Capture input** — Type and press **Cmd+Enter** to add a quick entry
+- **Tasks** — Starred, due today, and overdue tasks at a glance
 
-## Markdown in Entries
+## The Feed
 
-Your entries support inline markdown:
-- **Bold** with \`**text**\`
-- *Italic* with \`*text*\`
-- \`inline code\` with backticks
-- Links: \`[text](url)\` or just paste a URL
-- #tags and @mentions are auto-detected
-- Images can be dropped or pasted directly
+Below the command card, your entries appear in a **timeline** grouped by day, with entries indented under each date header. Notes get an amber dot on the timeline to distinguish them from quick entries.
 
-## Opening as Notes
+## Editing Older Notes
 
-Click any entry in the feed to open it as a full note in a new tab. This converts it to a note with the markdown editor where you can expand on it.
+When you edit a note that was created on a previous day, it automatically appears in today's feed with an **"edited"** badge. The note still shows on its original creation day too — and on every other day you edited it.
 
-## Date Navigation
+## Calendar Navigation
 
-- Use the **◀ ▶** arrows in the topbar to navigate days
-- Click the date to open the calendar
-- Clicking any day in the calendar pins that day to the top of the feed
-- Scroll up to walk forward toward today, scroll down for older days — both directions auto-load
+Click any day on the sidebar calendar to view that day's feed. The calendar shows which days have entries.
 
 ## Daily Summary
 
-A "Generate daily summary" banner appears at the top of the feed. Click it to create a markdown note summarizing all entries for that day, grouped by tag.
+Click "Generate daily summary" to create a markdown note summarizing all entries for the selected day.
 
-See also: [[Notes & Markdown Editor]], [[Tags & Filtering]]
+## Quick Entries
+
+Quick entries support inline markdown: **bold**, *italic*, \`code\`, links, #tags, and @mentions. Click any entry in the feed to open it as a full note.
+
+See also: [[Tasks & Kanban]], [[Tags & Filtering]]
+
+---
+#DailyDispatchHelp`},
+
+{id:'help_tasks',noteTitle:'Tasks & Kanban',content:`# Tasks & Kanban
+
+DailyDispatch has built-in task management with a Kanban board, list view, and deep integration with notes.
+
+## Creating Tasks
+
+- Type \`/task\` in any note to create a task linked to that note
+- Click **+ New task** on the Tasks page
+- Click **+ Add task** on the Today view or inside a Kanban column
+
+## Task Properties
+
+Each task has:
+- **Title** — what needs to be done
+- **Priority** — High, Medium, or Low (shown as colored tags)
+- **Due date** — optional, shows in the Today view when due
+- **Column** — which Kanban column it belongs to (Inbox, Backlog, In Work, Done)
+- **Star** — mark for Today view without changing the due date
+- **Description** — markdown details field for context
+- **Comments** — timestamped progress log (Enter to add, newest on top)
+
+## Kanban Board
+
+Navigate to **Tasks** in the sidebar to see the Kanban board. Drag cards between columns to change their status. Drag within a column to reorder. Dragging to Done auto-completes the task.
+
+## List View
+
+Toggle to **List** view for a flat grouped table. Tasks are grouped by column, sorted by your drag order. Drag rows to reorder within or between groups.
+
+## Today View
+
+The Today command card shows tasks that are:
+- **Starred** for today (★)
+- **Due today** or **overdue**
+
+## Task-Note Link
+
+Tasks created with \`/task\` in a note stay linked. Complete a task on the board and it updates in the note. Open the task detail modal and click "Open linked note" to jump to the source.
+
+## Task Detail Modal
+
+Click any task to open a detail modal where you can edit all properties, add a description, and leave comments. Changes save immediately.
+
+## Column Management
+
+- **Rename** — double-click a column title in Kanban or List view
+- **Change color** — right-click column header > Change color (visual swatch picker)
+- **Add column** — click the + button at the end of the Kanban board
+- **Delete column** — right-click header > Delete (tasks move to first column)
+
+See also: [[Today View & Feed]], [[Slash Commands]]
 
 ---
 #DailyDispatchHelp`},
@@ -8266,97 +8421,81 @@ See also: [[Notes & Markdown Editor]], [[Tags & Filtering]]
 
 ## Creating Notes
 
-- Click the **+** button in the tab bar, or press **Cmd+N**
+- Click **+** in the tab bar or press **Cmd+;**
 - Click any feed entry to open it as a note
-- Use the 📝 floating note button for a popup window (see [[Floating Note Window]])
-
-Notes are full entries with a rich markdown editor powered by CodeMirror 6.
+- Use the floating note button for a popup window (see [[Floating Note Window]])
 
 ## Live Preview
 
-The editor shows **rendered markdown on lines you're not editing** and **raw markdown on the line your cursor is on** — just like Obsidian.
+The editor shows **rendered markdown on lines you're not editing** and **raw markdown on the cursor line**. Move your cursor to reveal the source.
 
 ## Supported Markdown
 
 - \`# Heading 1\`, \`## Heading 2\`, \`### Heading 3\`
 - \`**bold**\` and \`*italic*\`
-- \`\\\`inline code\\\`\`
-- \`- bullet\` or \`* bullet\` (auto-continues on Enter, double-Enter to exit)
-- \`1. numbered\` or \`1)\` lists (auto-increments)
-- \`> blockquote\` (auto-continues on Enter)
+- \`\\\`inline code\\\`\` and fenced code blocks with \`\\\`\\\`\\\`\`
+- \`- bullet\` or \`* bullet\` (auto-continues on Enter)
+- \`1.\` numbered lists (auto-increments)
+- \`> blockquote\`
 - \`---\` horizontal divider
-- \`[ ] unchecked\` and \`[x] checked\` checkboxes (clickable!)
-- \`[link text](url)\` or plain \`https://...\` URLs (click to open)
+- \`[link text](url)\` or plain URLs (clickable)
 - \`[[Note Title]]\` cross-links to other notes
-- Fenced code blocks with triple backticks \`\\\`\\\`\\\`\` — rendered with monospace font, light background, and a left border
-- Markdown tables with \`| col | col |\` (source rendered; live table widget coming)
+- Images — drag, paste, or use the image button
 
-## Slash Commands
+## Task Widgets
 
-Type \`/\` on any line to open the slash menu. Insert headings, lists, blockquotes, dividers, code blocks, and tables with one keystroke. See [[Slash Commands]].
+Type \`/task\` to create a task. It renders as an inline card showing the checkbox, title, priority, and due date. Tasks are live — check them off in the note or on the Kanban board.
 
-## Cross-Links
+## Tables
 
-Type \`[[\` to get autocomplete for existing note titles. Click a rendered cross-link to jump to that note.
-
-## Checkboxes
-
-Type \`[ ] \` for an unchecked item or \`[x] \` for checked. In the rendered view, these show as clickable checkboxes. Checked items get strikethrough styling. Press Enter on a checkbox line to continue with a fresh \`[ ]\`; Enter on an empty checkbox clears the line.
-
-## Clickable URLs
-
-Plain \`https://...\` URLs in a note become clickable. Place your cursor on a different line to see the URL styled; click to open in a new tab.
+Use \`/table\` to insert an editable table. Click cells to edit, right-click for row/column actions, drag column edges to resize.
 
 ## Note Title
 
-The first line of your note becomes the tab title automatically.
+The first line automatically becomes the tab title.
 
 ## Toolbar
 
-Use the toolbar above the editor to:
-- Change the **date** and **time**
-- **Copy** the raw markdown (tables are exported as markdown)
-- **Link** — copy a deep link to this note
-- **Delete** the note
+Above the editor: **Copy** markdown, **Link** to this note, **Delete** the note.
 
-See also: [[Slash Commands]], [[Tags & Filtering]], [[Quick Entries & Feed]]
+See also: [[Slash Commands]], [[Tasks & Kanban]], [[Tags & Filtering]]
 
 ---
 #DailyDispatchHelp`},
 
 {id:'help_slash',noteTitle:'Slash Commands',content:`# Slash Commands
 
-Type \`/\` on any line in a note (at the start of a line, or after whitespace) to open the slash menu. Filter by typing the command name, navigate with arrow keys, and press **Enter** or **Tab** to insert.
+Type \`/\` at the start of a line to open the command menu. Filter by typing, navigate with arrow keys, press **Enter** to insert.
 
 ## Available Commands
 
-| Command | Inserts |
+| Command | What it does |
 |---|---|
-| \`/h1\` | \`# \` — large heading |
-| \`/h2\` | \`## \` — medium heading |
-| \`/h3\` | \`### \` — small heading |
-| \`/bullet\` | \`- \` — unordered list item |
-| \`/numbered\` | \`1. \` — ordered list item |
-| \`/blockquote\` | \`> \` — quoted text |
-| \`/divider\` | \`---\` — horizontal rule |
-| \`/code\` | Fenced code block with cursor inside |
-| \`/table\` | Opens an **8×8 grid picker** — click a cell to insert a table of that size |
+| \`/h1\` | Large heading |
+| \`/h2\` | Medium heading |
+| \`/h3\` | Small heading |
+| \`/bullet\` | Unordered list item |
+| \`/numbered\` | Ordered list item |
+| \`/blockquote\` | Block quote |
+| \`/divider\` | Horizontal rule |
+| \`/code\` | Fenced code block |
+| \`/table\` | Opens an 8x8 grid picker to choose table size |
+| \`/task\` | Creates a linked task with a title prompt |
+| \`/template\` | Insert from a template note |
+| \`/date\` | Insert today's date |
+| \`/time\` | Insert current time |
+| \`/datetime\` | Insert date and time |
+| \`/status\` | Insert a colored status badge |
 
-## Table Picker
+## Task Creation
 
-When you select \`/table\`, a small grid appears next to the slash. **Hover** to choose a size (first row becomes the header), **click** to insert. Esc or click-outside cancels.
+\`/task\` prompts for a title, creates a task in your Kanban board, and inserts a live task widget in the note. The task and note stay linked — see [[Tasks & Kanban]].
 
-## Code Block Rendering
+## Templates
 
-Fenced code blocks (triple backticks) render with monospace font, a light gray background, and a left border. Markdown inside a code block is not interpreted — so you can paste code without worrying about \`#\`, \`*\`, or \`[\` being rendered.
+Any note tagged \`#template\` becomes available via \`/template\`. Three starters are included: Meeting notes, Daily journal, and 1:1.
 
-## Tips
-
-- Filtering is prefix-based: \`/h\` shows \`/h1\`, \`/h2\`, \`/h3\`; \`/b\` shows \`/bullet\` and \`/blockquote\`
-- Slash commands replace the \`/cmd\` text when inserted — nothing to clean up
-- Escape closes the menu without inserting
-
-See also: [[Notes & Markdown Editor]]
+See also: [[Notes & Markdown Editor]], [[Tasks & Kanban]]
 
 ---
 #DailyDispatchHelp`},
@@ -8365,29 +8504,25 @@ See also: [[Notes & Markdown Editor]]
 
 ## Using Tags
 
-Type \`#\` followed by a name anywhere in an entry or note. Tags are auto-detected and shown as colored pills.
+Type \`#\` followed by a name anywhere in an entry or note. Tags are auto-detected, shown as colored pills, and indexed instantly.
 
-Examples: #meeting, #api, #question, #todo, #decision
+Examples: \`#meeting\`, \`#api\`, \`#question\`, \`#decision\`
 
 ## Tag Autocomplete
 
-When you type \`#\`, an autocomplete dropdown appears showing existing tags with their usage counts. Select with **Tab** or **Enter**, navigate with arrow keys.
+Type \`#\` to see a dropdown of existing tags with usage counts. Select with **Tab** or **Enter**.
+
+## Sidebar Tags
+
+The **Tags** section in the sidebar shows all your tags. Click any tag to **filter your feed** — the view switches to Today with only matching entries shown. Click again to remove the filter. A **Clear** button appears when filters are active.
 
 ## Tag Colors
 
-Each tag gets an automatic color. You can change colors in **Settings > Tags** by clicking the color swatch.
+Each tag gets an automatic color from a 12-color palette. Change colors in **Settings > Tags**.
 
-## Filtering the Feed
+## Tag Management
 
-Click any tag in the **Tags** section of the left sidebar to filter the feed. Multiple tags = AND logic (entries must have all selected tags). Click again to remove the filter.
-
-## Tag Management (Settings)
-
-In the Settings tab under **Tags**:
-- **Rename** a tag — all entries are updated
-- **Change color** — click the color swatch
-- **Delete** a tag — the # prefix is removed from entries, the word stays
-- **Merge** tags — drag one tag onto another to combine them
+In Settings under **Tags**: rename (updates all entries), change color, delete, or merge (drag one tag onto another).
 
 See also: [[Sections & Custom Views]], [[Search Tabs & Boolean Queries]]
 
@@ -8398,52 +8533,30 @@ See also: [[Sections & Custom Views]], [[Search Tabs & Boolean Queries]]
 
 ## What Are Sections?
 
-Sections are **saved filter views** that appear in the sidebars. They let you create custom dashboards showing entries matching specific criteria — a live, always-up-to-date view.
+Sections are **saved filter queries** in the sidebar. They create live dashboards that update automatically as you add entries matching their filter.
 
 ## Creating a Section
 
-1. Click the **+** button in the right sidebar header
-2. A **Setup card** opens with labeled fields — amber border, "NEW" badge
-3. Fill in the **Section name** (e.g. "Meetings")
-4. Fill in the **Filter** query (e.g. \`#meeting -draft\`)
-5. Click **Create section** or press Enter
+Click **+** in the Sections header. Fill in a name and filter query, then click **Create section**.
 
-The setup card makes it obvious that both fields need attention — no more guessing where to click.
+## Filter Examples
 
-## Editing a Section
-
-The compact saved card shows the name, query, and result count. To edit:
-- Click the ✎ **pencil** icon on the section header
-- Click the query row (the monospace text)
-- Double-click the name
-
-Each of these re-opens the setup card with the existing values. **Cancel** restores them; **Save** commits.
-
-## Filter Query Syntax
-
-Sections use the same query syntax as [[Search Tabs & Boolean Queries]]:
-- \`#meeting\` — entries with the meeting tag
-- \`#api -draft\` — entries with #api but NOT containing "draft"
-- \`@Dave\` — entries mentioning Dave
-- \`#api #review\` — entries with BOTH tags (AND)
-- \`#meeting OR #standup\` — entries with EITHER tag (OR)
-- \`"exact phrase"\` — literal phrase (useful for \`"[ ]"\` to find open todos)
-- \`line: [[project]] #idea\` — all terms must appear on the same line
+- \`#meeting\` — all entries tagged meeting
+- \`#api -draft\` — API entries excluding drafts
+- \`@Dave #project\` — Dave's project entries
+- \`#meeting OR #standup\` — either tag
+- \`"action item"\` — exact phrase match
 
 ## Managing Sections
 
-- **Resize** — drag the bottom edge of a section
-- **Reorder** — drag sections by the ☰ handle to reorder
-- **Move between columns** — drag a section to the left sidebar drop zone
+- **Edit** — click the ✎ pencil icon
+- **Resize** — drag the bottom edge
+- **Reorder** — drag sections by the ☰ handle
 - **Delete** — click the × button
 
-## Section Events
+## Help Section
 
-Creating, renaming, changing the filter, or deleting a section is logged as an event in the feed — see [[Events & Activity Log]].
-
-## Default Help Section
-
-The **Help** section in the left sidebar is a regular section filtered by \`#DailyDispatchHelp\`. You can delete it if you want; it won't come back automatically.
+The pre-installed **Help** section filters by \`#DailyDispatchHelp\`. It's a regular section — you can edit, move, or delete it like any other.
 
 See also: [[Search Tabs & Boolean Queries]], [[Tags & Filtering]]
 
@@ -8454,135 +8567,89 @@ See also: [[Search Tabs & Boolean Queries]], [[Tags & Filtering]]
 
 ## Opening Search
 
-Click the 🔍 icon in the tab bar or press **Cmd+K**. This opens a new search tab. An empty search tab shows a **Search tips panel** with every operator and concrete examples — your live cheat sheet.
+Click **Search** in the sidebar or press **Cmd+K**. Each search opens as a tab you can keep open alongside notes.
 
 ## Search Syntax
 
-### Basic
-- \`keyword\` — full-text search across content and note titles
-- \`word1 word2\` — all words must appear (AND)
-- \`word1 OR word2\` — either word
-- \`"exact phrase"\` — match the literal phrase (whitespace preserved)
-- \`-word\` or \`-"exact phrase"\` — exclude entries containing this
+| Syntax | Meaning |
+|--------|---------|
+| \`keyword\` | Full-text search |
+| \`word1 word2\` | Both words (AND) |
+| \`word1 OR word2\` | Either word |
+| \`"exact phrase"\` | Literal match |
+| \`-word\` | Exclude entries with this word |
+| \`#tag\` | Filter by tag |
+| \`@person\` | Filter by mention |
+| \`line: term1 term2\` | Both terms on the same line |
 
-### Filters
-- \`#tag\` — entries with a specific tag
-- \`@person\` — entries mentioning someone
-- Multiple tags and mentions are combined with AND
+## Examples
 
-### Scope
-- \`line: …\` — all terms must appear on the **same line** of an entry. Example:
-  \`line: [[project x]] #idea\` finds lines containing both \`[[project x]]\` and \`#idea\` literally, not entries where they appear on different lines.
-
-## Finding Open Todos
-
-Searching for \`[ ]\` used to also return \`[x]\` items because of word splitting. Wrap it in quotes:
-- \`"[ ]"\` — all open todos
-- \`"[ ]" -"[x]"\` — open todos, excluding anything with a completed one
+- \`#meeting @jane "action item"\` — Jane's meeting action items
+- \`#api -draft -wip\` — API entries excluding drafts
 - \`"[ ]" #meeting\` — open todos in meeting notes
 
-## Combined Examples
+## Multiple Tabs
 
-- \`#api @Dave OR #frontend @Sarah\` — Dave's API work OR Sarah's frontend work
-- \`#meeting -standup -1on1\` — meetings except standups and 1-on-1s
-- \`line: @jane action\` — lines where you assigned an action item to Jane
+Keep several searches open to compare views. Each search auto-saves as a feed event you can reopen later.
 
-## Multiple Search Tabs
-
-You can have multiple search tabs open simultaneously — useful for comparing different filtered views. Each search tab's query is **auto-saved as a feed event** (see [[Events & Activity Log]]), so you can reopen a previous search later by clicking the "reopen" link on the event.
-
-## Results
-
-Results are grouped by date, showing the entry with its tags. Click any result to open it in a tab.
-
-## Keyboard-Friendly
-
-Focus stays in the search input as you type — even while results refresh — so you can iterate on a query without reaching for the mouse.
-
-See also: [[Sections & Custom Views]], [[Tags & Filtering]], [[Events & Activity Log]]
+See also: [[Sections & Custom Views]], [[Tags & Filtering]]
 
 ---
 #DailyDispatchHelp`},
 
 {id:'help_floating',noteTitle:'Floating Note Window',content:`# Floating Note Window
 
-The floating note button (📝 icon in the tab bar) opens a **small popup window** pinned to the edge of your screen. It's a brand-new note ready to type — perfect for capture that needs to stay visible while you're working on something else.
-
-## The Meeting Notes Use Case
-
-This feature was built for a specific workflow: **taking meeting notes while a video call fills most of your screen.**
-
-Typical setup:
-1. You're in a Zoom/Meet/Teams call in your browser — it fills the main window
-2. Click the 📝 floating note button in DailyDispatch
-3. A narrow note window (default 300px wide) tucks against the right edge of your screen
-4. Your video call stays front-and-center, your notes are visible on the side
-5. Type meeting notes — action items, decisions, questions, whatever
-6. When the call ends, close the floating window
-7. The note **automatically opens as a tab in the main DailyDispatch window**, ready to clean up and tag
-
-No copy-paste. No "where did that note go?" No switching windows mid-call.
+Click the floating note icon in the tab bar to open a **popup window** pinned to the edge of your screen — ideal for meeting notes during video calls.
 
 ## How It Works
 
-- The popup is the same note editor as the main window — full markdown, slash commands, checkboxes, tables
-- Every keystroke saves immediately (no 300ms debounce) so nothing is lost
-- On close (Ctrl-W, the X button, or pagehide), any pending write is flushed synchronously and a signal is sent to the main window
-- The main window reloads the note from IndexedDB and opens it as a tab
+1. Click the floating note button (tab bar, right side)
+2. A narrow editor (default 300px) opens at your screen edge
+3. Type notes while your meeting fills the rest of the screen
+4. Close the popup — the note **auto-opens as a tab** in the main window
+
+The popup has the full editor: markdown, slash commands, tasks, tables. Every keystroke saves immediately.
 
 ## Settings
 
-**Settings → Floating Note Window** has two controls:
-- **Position** — right edge (default) or left edge of your screen
-- **Width** — 220 to 800 pixels (default 300)
-
-Pick the side opposite your video call's controls so nothing overlaps.
+In **Settings > Floating Note Window**:
+- **Position** — left or right edge
+- **Width** — 220 to 800 pixels
 
 ## Tips
 
-- Start every meeting with \`/h1 Meeting title\` then \`/bullet\` for attendees
-- Use \`[ ]\` for action items so you can later find open tasks with \`"[ ]" #meeting\`
-- Tag the note with \`#meeting @jane\` so it shows up in your Meetings section
-- The popup stays in place even when you switch tabs in the main window
+- Start with \`/h1 Meeting title\` then \`/bullet\` for attendees
+- Use \`/task\` for action items — they'll appear on your Kanban board
+- Tag with \`#meeting @attendee\` so it appears in your Meetings section
 
-See also: [[Notes & Markdown Editor]], [[Slash Commands]]
+See also: [[Notes & Markdown Editor]], [[Tasks & Kanban]]
 
 ---
 #DailyDispatchHelp`},
 
 {id:'help_events',noteTitle:'Events & Activity Log',content:`# Events & Activity Log
 
-Events are small activity-log items that appear **inline in your feed**. They record things that happened — section changes and searches — so you have a record of your activity alongside the entries you wrote.
+Events are activity-log items that appear **inline in your feed**. They record section changes and searches as a history of your workflow.
 
 ## Event Types
 
-| Icon | Event | When it fires |
-|---|---|---|
-| ✨ | **New section** | You create a filter section |
-| ✏️ | **Renamed section** | You change a section's name |
-| 🔧 | **Section filter** | You change a section's filter query |
-| 🗑️ | **Removed section** | You delete a section |
-| 🔍 | **Search** | You type a query in a search tab (debounced) |
+| Icon | Event |
+|---|---|
+| ✨ | Section created |
+| ✏️ | Section renamed |
+| 🔧 | Section filter changed |
+| 🗑️ | Section deleted |
+| 🔍 | Search query executed |
 
-## Search Events — Reopen a Past Query
+## Search Events
 
-When you type a query in a search tab, DailyDispatch debounces for 1.5 seconds, then writes a **Search** event to the feed with the query text. If you keep editing the same search tab, it updates the same event rather than creating a new one. Clear the query and the event is removed.
+Each search query is logged as an event with a **"reopen"** link — click it to spawn a new search tab with that query. Great for repeating yesterday's research.
 
-Each search event in the feed has a **"reopen"** link — click it to spawn a new search tab pre-filled with that query. Great for rerunning a research query you did yesterday.
+## Visibility
 
-## Section Events
+Events only appear in the feed. They're excluded from search results and section queries. Tag filters also hide events automatically.
 
-Renaming or changing a section's filter writes an event like:
-- \`Renamed section: "Meetings" → "Weekly Meetings"\`
-- \`Section "Ideas" filter: #idea -draft\`
-
-This means your feed doubles as a history of how your dashboards evolved.
-
-## Filtering Events Out
-
-Events are excluded from search and section queries — they only appear in the feed. If you apply any tag filter, events are hidden automatically so the feed stays focused on matching entries.
-
-See also: [[Search Tabs & Boolean Queries]], [[Sections & Custom Views]]
+See also: [[Search Tabs & Boolean Queries]]
 
 ---
 #DailyDispatchHelp`},
@@ -8591,24 +8658,15 @@ See also: [[Search Tabs & Boolean Queries]], [[Sections & Custom Views]]
 
 ## Mentioning People
 
-Type \`@\` followed by a name in any entry or note. An autocomplete dropdown shows existing people.
-
-Examples: @Sarah, @Dave, @Mike
-
-## Auto-Registration
-
-New names are automatically added to the people list when you submit an entry or save a note. You don't need to create people in advance.
-
-## People Management (Settings)
-
-In the Settings tab under **People**:
-- **Rename** — updates all entries containing that mention
-- **Delete** — removes the @ prefix from entries, the name stays as plain text
-- **Add** — manually add a person
+Type \`@\` followed by a name. An autocomplete dropdown shows existing people. New names are auto-registered when you save.
 
 ## Filtering by Person
 
-Use \`@person\` in search tabs or section filters to find all entries mentioning someone.
+Use \`@person\` in search or section filters to find entries mentioning someone.
+
+## Managing People
+
+In **Settings > People**: rename (updates all entries), add, or remove.
 
 See also: [[Tags & Filtering]], [[Search Tabs & Boolean Queries]]
 
@@ -8619,28 +8677,26 @@ See also: [[Tags & Filtering]], [[Search Tabs & Boolean Queries]]
 
 ## Data Storage
 
-DailyDispatch stores everything in your browser's **IndexedDB** — a local database with 1GB+ capacity. No server, no internet, no account.
+Everything lives in your browser's **IndexedDB**. No server, no account, no internet required.
 
 ## Export
 
-Go to **Settings > Data** and click **Export JSON Backup**. This downloads a \`.json\` file containing all your entries, notes, tags, sections, and settings.
+**Settings > Data > Export JSON Backup** downloads a \`.json\` file with all entries, notes, tasks, sections, tags, and settings.
 
 ## Import
 
-Click **Import JSON Backup** and select a previously exported \`.json\` file. This replaces all current data with the imported data.
-
-> **Warning:** Importing overwrites your current data. Export first if you want to keep it.
+**Import JSON Backup** replaces all current data with the imported file. Export first if you want to keep existing data.
 
 ## Purge
 
-The **Danger Zone** in Settings has a **Purge All Data** button. This permanently deletes everything. You must type PURGE to confirm.
+**Danger Zone > Purge All Data** permanently deletes everything. Type PURGE to confirm.
 
 ## Tips
 
 - Export regularly as a backup
-- The JSON file is human-readable — you can inspect it in any text editor
-- Data persists across browser restarts but NOT across different browsers or devices
-- Safari Private Browsing mode will lose data when the window closes
+- Data persists across browser restarts but not across browsers/devices
+- The JSON file is human-readable
+- Safari Private Browsing loses data when the window closes
 
 See also: [[Themes & Settings]]
 
@@ -8651,34 +8707,25 @@ See also: [[Themes & Settings]]
 
 ## Opening Settings
 
-Click the ⚙ gear icon at the right end of the tab bar. Settings opens as a tab you can work in alongside other notes.
+Click the ⚙ gear icon in the tab bar (far right).
 
 ## Themes
 
-Choose from 9 built-in themes (Settings → Theme):
-- **Warm Notion** — cream/amber warm tones (default)
-- **T-Mobile** — clean white with magenta accents
-- **Mint Pastel** — soft green/mint tones
-- **Solarized Light** — classic warm palette with blue accent
-- **Nordic** — cool, minimal, slight blue cast
-- **Sepia** — paper-like, reading-focused beige
-- **Lavender** — soft purple light theme
-- **Dark** — charcoal with amber accent
-- **Midnight Blue** — deep navy dark theme with cyan accent
+Choose from **15 themes** — 10 light and 5 dark:
 
-Your theme choice is saved and persists across sessions.
+**Light:** Warm Notion (default), Hot Pink, Mint, Solarized, Nordic, Sepia, Lavender, Rose, Sand, Clean
+
+**Dark:** Dark, Midnight, Charcoal, Forest Night, Amethyst
+
+Switch instantly in Settings. Your choice persists across sessions.
 
 ## Floating Note Window
 
-Configure the floating popup's edge position (left/right) and width (220–800px). See [[Floating Note Window]].
+Configure popup position (left/right) and width (220-800px). See [[Floating Note Window]].
 
-## Tag Editor
+## Tag & People Editors
 
-Manage your tags: rename, recolor, delete, or merge. Drag one tag onto another to merge them.
-
-## People Editor
-
-Manage your people list: rename, add, or remove.
+Rename, recolor, delete, or merge tags. Manage your people list.
 
 See also: [[Import, Export & Backup]]
 
@@ -8687,54 +8734,49 @@ See also: [[Import, Export & Backup]]
 
 {id:'help_shortcuts',noteTitle:'Keyboard Shortcuts',content:`# Keyboard Shortcuts
 
-## Global Shortcuts
+## Global
 
 | Shortcut | Action |
 |----------|--------|
-| **Cmd+K** | Open a new search tab |
-| **Cmd+;** | Create a new note |
-| **Cmd+D** | Close the current tab |
-| **Escape** | Close autocomplete / cancel |
+| **Cmd+K** | Open search |
+| **Cmd+;** | New note |
+| **Cmd+D** | Close current tab |
+| **Escape** | Close menu / cancel |
 
-## In the Capture Box
+## Capture Box
 
 | Shortcut | Action |
 |----------|--------|
-| **Cmd+Enter** | Submit the entry |
-| **Tab/Enter** | Accept autocomplete suggestion |
+| **Cmd+Enter** | Submit entry |
+| **Tab/Enter** | Accept autocomplete |
 | **Arrow keys** | Navigate autocomplete |
 
-## In the Note Editor
+## Note Editor
 
 | Shortcut | Action |
 |----------|--------|
-| **Enter** on a bullet line | Continue the bullet |
-| **Enter** on empty bullet | Exit bullet mode |
-| **Enter** on a numbered line | Continue the numbering (supports \`1.\` and \`1)\`) |
-| **Enter** on a \`[ ]\` line | Continue with a fresh \`[ ]\` |
-| **Enter** on an empty \`[ ]\` | Clear the line |
-| **Enter** on a \`> \` line | Continue blockquote |
-| **Cmd+Z** | Undo |
-| **Cmd+Shift+Z** | Redo |
-| **Tab/Enter** | Accept autocomplete / slash command |
+| **Enter** on bullet/number/quote | Continue the list |
+| **Enter** on empty bullet | Exit list mode |
+| **Cmd+Z / Cmd+Shift+Z** | Undo / Redo |
+| **Tab** | Indent list item |
+| **Shift+Tab** | Outdent list item |
 
-## Autocomplete & Command Triggers
+## Autocomplete Triggers
 
-| Trigger | What it does |
-|---------|-------------|
+| Trigger | Opens |
+|---------|-------|
 | \`#\` | Tag autocomplete |
-| \`@\` | Person/mention autocomplete |
+| \`@\` | Person autocomplete |
 | \`[[\` | Note cross-link autocomplete |
-| \`/\` | Slash command menu (headings, list, code, table, etc.) |
+| \`/\` | Slash command menu |
 
-## Section Setup
+## Task Comments
 
 | Shortcut | Action |
 |----------|--------|
-| **Enter** (in setup card) | Save / Create section |
-| **Escape** (in setup card) | Cancel — discards a brand-new section |
+| **Enter** | Add comment (in task detail modal) |
 
-See also: [[Welcome to DailyDispatch]], [[Notes & Markdown Editor]], [[Slash Commands]]
+See also: [[Welcome to DailyDispatch]], [[Notes & Markdown Editor]]
 
 ---
 #DailyDispatchHelp`}
@@ -8832,6 +8874,17 @@ function openTaskDetail(taskId){
       </div>
     </div>
     ${t.note_id?`<div class="tm-note-link" onclick="closeTaskModal();openAsNote('${t.note_id}')"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="13" y2="10"/></svg> Open linked note</div>`:''}
+    <div class="tm-section">
+      <div class="tm-section-label">Description</div>
+      <textarea class="tm-desc" placeholder="Add details..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onchange="updateTask('${t.id}',{description:this.value})">${escH(t.description||'')}</textarea>
+    </div>
+    <div class="tm-section">
+      <div class="tm-section-label">Comments</div>
+      <input class="tm-comment-input" type="text" placeholder="Add a comment..." onkeydown="if(event.key==='Enter'){event.preventDefault();addTaskComment('${t.id}',this);}">
+      <div class="tm-comment-list" id="tm-comments-${t.id}">
+        ${renderTaskComments(t)}
+      </div>
+    </div>
     <div class="tm-meta">
       <span>Created ${createdDate}</span>
       ${completedDate?`<span>· Completed ${completedDate}</span>`:''}
@@ -8841,11 +8894,37 @@ function openTaskDetail(taskId){
     </div>
   `;
   modal.classList.add('open');
-  // Auto-size title textarea to fit content
-  setTimeout(()=>{const ta=modal.querySelector('.tm-title');if(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}},0);
+  // Auto-size textareas to fit content
+  setTimeout(()=>{
+    modal.querySelectorAll('.tm-title,.tm-desc').forEach(ta=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});
+  },0);
 }
 function closeTaskModal(){
   document.getElementById('task-modal')?.classList.remove('open');
+}
+function renderTaskComments(t){
+  const comments=(t.comments||[]).slice().sort((a,b)=>b.ts-a.ts);
+  if(!comments.length)return'<div class="tm-comment-empty">No comments yet</div>';
+  return comments.map(c=>{
+    const d=new Date(c.ts);
+    const date=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const time=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    return`<div class="tm-comment"><span class="tm-comment-time">${date} ${time}</span><span class="tm-comment-text">${escH(c.text)}</span></div>`;
+  }).join('');
+}
+function addTaskComment(taskId,inputEl){
+  const text=inputEl.value.trim();
+  if(!text)return;
+  const t=(db.tasks||[]).find(x=>x.id===taskId);
+  if(!t)return;
+  if(!t.comments)t.comments=[];
+  t.comments.push({id:genId('tc'),text,ts:Date.now()});
+  save('tasks');
+  inputEl.value='';
+  // Re-render comment list without closing modal
+  const listEl=document.getElementById('tm-comments-'+taskId);
+  if(listEl)listEl.innerHTML=renderTaskComments(t);
+  inputEl.focus();
 }
 
 function ensureDefaultColumns(){
@@ -8929,7 +9008,9 @@ function createTask(opts){
     created_at:Date.now(),
     completed_at:null,
     order:getNextTaskOrder(colId),
-    today:false // starred for Today — shows on Today view regardless of due date
+    today:false, // starred for Today — shows on Today view regardless of due date
+    description:'',
+    comments:[]
   };
   if(!db.tasks)db.tasks=[];
   db.tasks.push(task);
