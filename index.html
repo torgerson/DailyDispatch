@@ -4824,6 +4824,12 @@ function cmBulletContinuation(view){
     // Continue with a fresh unchecked checkbox preserving bullet prefix (if any)
     const prefix=cm[1]+'[ ] ';
     view.dispatch({changes:{from:pos,insert:'\n'+prefix},selection:{anchor:pos+1+prefix.length}});
+    // The user just pressed Enter — the line they left is complete.
+    // Sync it to create/update a linked task immediately.
+    if(cmNoteId){
+      const title=extractCheckboxTitle(text);
+      if(title)syncCheckboxToTask(cmNoteId,text,text.includes('[x]'));
+    }
     return true;
   }
   // Bullet: - or *
@@ -5038,8 +5044,14 @@ const SLASH_COMMANDS=[
   {name:'date',label:'Date',desc:'Insert today\u2019s date',run:_slashDate},
   {name:'time',label:'Time',desc:'Insert the current time',run:_slashTime},
   {name:'datetime',label:'Date & time',desc:'Insert today\u2019s date and time',run:_slashDatetime},
+  {name:'task',label:'Task',desc:'Insert a task checkbox',run:_slashTask},
   {name:'status',label:'Status',desc:'Insert a status badge',run:_slashStatus},
 ];
+function _slashTask(view,slashStart,slashEnd){
+  const line=view.state.doc.lineAt(slashStart);
+  view.dispatch({changes:{from:line.from,to:slashEnd,insert:'[ ] '},selection:{anchor:line.from+4}});
+  view.focus();
+}
 function _slashStatus(view,slashStart,slashEnd){
   showStatusEditor(null,null,(color,text)=>{
     const token='{{status:'+color+':'+text+'}}';
