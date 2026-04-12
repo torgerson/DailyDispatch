@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tab Separation + Header Band Options</title>
+<style>
+:root {
+  --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+  --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+  --text:#37352f; --text2:#787774; --text3:#9b9a97;
+  --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+  --brown:#8b7355;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  --radius-sm:4px; --radius-md:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);font-size:14px;color:var(--text);background:#d4cbbf;padding:30px;}
+h1{font-size:18px;font-weight:700;margin-bottom:6px;}
+.subtitle{font-size:12px;color:var(--text2);margin-bottom:30px;line-height:1.5;}
+
+.option{
+  max-width:860px;margin:0 auto 40px;
+  border-radius:var(--radius-md);overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.12);
+}
+.option-label{
+  background:var(--accent);color:#fff;padding:7px 16px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+}
+.option-desc{
+  padding:10px 16px;font-size:11px;color:var(--text2);
+  background:var(--surface);border-bottom:1px solid var(--border);line-height:1.5;
+}
+
+/* Shared frame */
+.frame{display:grid;grid-template-columns:180px 1fr;min-height:120px;background:var(--bg);}
+.sb{background:var(--sidebar-bg);border-right:1px solid var(--border);padding:10px 12px;font-size:10px;color:var(--text2);}
+.sb-brand{font-size:12px;font-weight:700;color:var(--brown);margin-bottom:10px;}
+.sb-brand span{color:var(--accent);}
+.sb-item{padding:4px 8px;margin-bottom:1px;border-radius:3px;display:flex;align-items:center;gap:5px;}
+.sb-item.active{background:var(--accent-light);color:var(--accent);font-weight:600;}
+.main{display:flex;flex-direction:column;}
+.content{flex:1;padding:16px;font-size:11px;color:var(--text3);font-style:italic;}
+
+/* Tab close */
+.tx{font-size:7px;width:12px;height:12px;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;opacity:0;margin-left:2px;color:var(--text3);}
+
+/* ═══════════════════════════ */
+/* Shared tab base              */
+/* ═══════════════════════════ */
+.tab-base{
+  display:flex;align-items:center;gap:3px;padding:4px 10px;
+  font-size:10px;font-weight:500;color:var(--text2);cursor:pointer;
+  white-space:nowrap;transition:all 0.1s;
+}
+.tab-base:hover .tx{opacity:.5;}
+
+/* Icons strip */
+.icons{flex-shrink:0;display:flex;align-items:center;gap:2px;padding-left:6px;margin-left:4px;border-left:1px solid var(--border-light);}
+.icon-btn{background:none;border:none;color:var(--text3);font-size:11px;padding:3px 4px;cursor:pointer;border-radius:3px;}
+.icon-btn:hover{color:var(--accent);background:var(--accent-light);}
+
+/* ═══════════════════════════ */
+/* A: Dot separators            */
+/* ═══════════════════════════ */
+.bar-a{
+  display:flex;align-items:center;gap:0;
+  background:var(--surface);border-bottom:1px solid var(--border-light);
+  padding:0 8px;height:32px;overflow-x:auto;
+}
+.tab-a{border-radius:var(--radius-sm);}
+.tab-a:hover{background:var(--bg);color:var(--text);}
+.tab-a.active{color:var(--accent);background:var(--accent-light);font-weight:600;}
+.tab-sep-dot{width:3px;height:3px;border-radius:50%;background:var(--border-strong);margin:0 2px;flex-shrink:0;}
+
+/* ═══════════════════════════ */
+/* B: Subtle vertical dividers  */
+/* ═══════════════════════════ */
+.bar-b{
+  display:flex;align-items:center;gap:0;
+  background:var(--surface);border-bottom:1px solid var(--border-light);
+  padding:0 8px;height:32px;overflow-x:auto;
+}
+.tab-b{border-radius:var(--radius-sm);border-right:1px solid var(--border-light);padding-right:12px;margin-right:2px;}
+.tab-b:last-of-type{border-right:none;}
+.tab-b:hover{background:var(--bg);color:var(--text);}
+.tab-b.active{color:var(--accent);background:var(--accent-light);font-weight:600;border-right-color:transparent;}
+
+/* ═══════════════════════════ */
+/* C: Pill with gap + tinted bar */
+/* ═══════════════════════════ */
+.bar-c{
+  display:flex;align-items:center;gap:5px;
+  background:var(--sidebar-bg);border-bottom:1px solid var(--border);
+  padding:4px 8px;height:34px;overflow-x:auto;
+}
+.tab-c{
+  border-radius:12px;border:1px solid transparent;padding:3px 10px;
+}
+.tab-c:hover{background:var(--surface);border-color:var(--border-light);color:var(--text);}
+.tab-c.active{
+  background:var(--surface);color:var(--text);font-weight:600;
+  border-color:var(--border);box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* ═══════════════════════════ */
+/* D: Underline active + spaced */
+/* ═══════════════════════════ */
+.bar-d{
+  display:flex;align-items:stretch;gap:0;
+  background:var(--surface);border-bottom:1px solid var(--border-light);
+  padding:0 8px;height:34px;overflow-x:auto;
+}
+.tab-d{
+  border-radius:0;padding:6px 12px 4px;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab-d:hover{color:var(--text);border-bottom-color:var(--border);}
+.tab-d.active{color:var(--accent);font-weight:600;border-bottom-color:var(--accent);}
+
+/* ═══════════════════════════ */
+/* Header variations             */
+/* ═══════════════════════════ */
+.hdr-gradient{background:linear-gradient(135deg,var(--brown),var(--accent));height:30px;}
+.hdr-thin{background:linear-gradient(90deg,var(--brown),var(--accent));height:4px;}
+.hdr-sidebar{background:var(--sidebar-bg);height:30px;border-bottom:1px solid var(--border-light);}
+.hdr-none{height:0;}
+</style>
+</head>
+<body>
+
+<h1>Tab Separation + Header Band — Options</h1>
+<p class="subtitle">Four tab separation styles, each shown with the current header. Pick the tab style you like, then we'll decide on the header.</p>
+
+<!-- ═══════════════════════════ -->
+<!-- A: Dot separators            -->
+<!-- ═══════════════════════════ -->
+<div class="option">
+  <div class="option-label">A — Dot Separators Between Tabs</div>
+  <div class="option-desc">Small dots between each tab create gentle visual breaks without adding heaviness. Tabs stay clean pills. Dots disappear next to the active tab's highlight.</div>
+  <div class="frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+    </div>
+    <div class="main">
+      <div style="background:var(--sidebar-bg);height:30px;border-bottom:1px solid var(--border-light)"></div>
+      <div class="bar-a">
+        <div class="tab-base tab-a">Today</div>
+        <div class="tab-sep-dot"></div>
+        <div class="tab-base tab-a active">Tasks<span class="tx">&times;</span></div>
+        <div class="tab-sep-dot"></div>
+        <div class="tab-base tab-a">Settings<span class="tx">&times;</span></div>
+        <div class="tab-sep-dot"></div>
+        <div class="tab-base tab-a">API migration plan<span class="tx">&times;</span></div>
+        <div class="tab-sep-dot"></div>
+        <div class="tab-base tab-a">Sprint notes<span class="tx">&times;</span></div>
+        <div class="tab-sep-dot"></div>
+        <div class="tab-base tab-a"># Things to do<span class="tx">&times;</span></div>
+        <div class="icons"><button class="icon-btn">&#9776;</button><button class="icon-btn">&#9881;</button></div>
+      </div>
+      <div class="content">Content area...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ -->
+<!-- B: Subtle vertical dividers  -->
+<!-- ═══════════════════════════ -->
+<div class="option">
+  <div class="option-label">B — Subtle Vertical Dividers</div>
+  <div class="option-desc">A light 1px right border on each tab creates clear lanes. The active tab's highlight breaks the line. Familiar from code editors (VS Code style) but softer.</div>
+  <div class="frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+    </div>
+    <div class="main">
+      <div style="background:var(--sidebar-bg);height:30px;border-bottom:1px solid var(--border-light)"></div>
+      <div class="bar-b">
+        <div class="tab-base tab-b">Today</div>
+        <div class="tab-base tab-b active">Tasks<span class="tx">&times;</span></div>
+        <div class="tab-base tab-b">Settings<span class="tx">&times;</span></div>
+        <div class="tab-base tab-b">API migration plan<span class="tx">&times;</span></div>
+        <div class="tab-base tab-b">Sprint notes<span class="tx">&times;</span></div>
+        <div class="tab-base tab-b"># Things to do<span class="tx">&times;</span></div>
+        <div class="icons"><button class="icon-btn">&#9776;</button><button class="icon-btn">&#9881;</button></div>
+      </div>
+      <div class="content">Content area...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ -->
+<!-- C: Pills on tinted bar       -->
+<!-- ═══════════════════════════ -->
+<div class="option">
+  <div class="option-label">C — Pills on Tinted Background</div>
+  <div class="option-desc">Tabs are rounded pills sitting on a sidebar-toned strip. The gap between pills creates natural separation. Active pill is white with border and shadow. Very different from browser tabs — reads as a toolbar.</div>
+  <div class="frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+    </div>
+    <div class="main">
+      <div style="background:var(--sidebar-bg);height:30px;border-bottom:1px solid var(--border-light)"></div>
+      <div class="bar-c">
+        <div class="tab-base tab-c">Today</div>
+        <div class="tab-base tab-c active">Tasks<span class="tx">&times;</span></div>
+        <div class="tab-base tab-c">Settings<span class="tx">&times;</span></div>
+        <div class="tab-base tab-c">API migration plan<span class="tx">&times;</span></div>
+        <div class="tab-base tab-c">Sprint notes<span class="tx">&times;</span></div>
+        <div class="tab-base tab-c"># Things to do<span class="tx">&times;</span></div>
+        <div class="icons" style="border-left-color:var(--border)"><button class="icon-btn">&#9776;</button><button class="icon-btn">&#9881;</button></div>
+      </div>
+      <div class="content">Content area...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ -->
+<!-- D: Underline active           -->
+<!-- ═══════════════════════════ -->
+<div class="option">
+  <div class="option-label">D — Underline Active + Spaced</div>
+  <div class="option-desc">Tabs use a bottom accent underline for the active state (like Chrome DevTools or Material tabs). Wider padding creates natural breathing room between labels. Clean, minimal, no extra decorations.</div>
+  <div class="frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+    </div>
+    <div class="main">
+      <div style="background:var(--sidebar-bg);height:30px;border-bottom:1px solid var(--border-light)"></div>
+      <div class="bar-d">
+        <div class="tab-base tab-d">Today</div>
+        <div class="tab-base tab-d active">Tasks<span class="tx">&times;</span></div>
+        <div class="tab-base tab-d">Settings<span class="tx">&times;</span></div>
+        <div class="tab-base tab-d">API migration plan<span class="tx">&times;</span></div>
+        <div class="tab-base tab-d">Sprint notes<span class="tx">&times;</span></div>
+        <div class="tab-base tab-d"># Things to do<span class="tx">&times;</span></div>
+        <div class="icons"><button class="icon-btn">&#9776;</button><button class="icon-btn">&#9881;</button></div>
+      </div>
+      <div class="content">Content area...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ -->
+<!-- Header band comparison       -->
+<!-- ═══════════════════════════ -->
+<div style="max-width:860px;margin:40px auto 10px;font-size:14px;font-weight:700;color:var(--text);">Header Band — What to do with it?</div>
+<div style="max-width:860px;margin:0 auto 20px;font-size:11px;color:var(--text2);">Using Option C tabs for comparison. The header is the strip above the tabs.</div>
+
+<div class="option">
+  <div class="option-label">Current — 30px Sidebar-Tone Strip (empty)</div>
+  <div class="frame">
+    <div class="sb"><div class="sb-brand">Daily<span>Dispatch</span></div><div class="sb-item active">Today</div></div>
+    <div class="main">
+      <div class="hdr-sidebar"></div>
+      <div class="bar-c"><div class="tab-base tab-c active">Today</div><div class="tab-base tab-c">Tasks</div><div class="tab-base tab-c">Sprint notes</div></div>
+      <div class="content">30px of wasted space above tabs</div>
+    </div>
+  </div>
+</div>
+
+<div class="option">
+  <div class="option-label">Alt 1 — Thin 4px Accent Line</div>
+  <div class="frame">
+    <div class="sb"><div class="sb-brand">Daily<span>Dispatch</span></div><div class="sb-item active">Today</div></div>
+    <div class="main">
+      <div class="hdr-thin"></div>
+      <div class="bar-c"><div class="tab-base tab-c active">Today</div><div class="tab-base tab-c">Tasks</div><div class="tab-base tab-c">Sprint notes</div></div>
+      <div class="content">Minimal — just a colored line as visual ceiling</div>
+    </div>
+  </div>
+</div>
+
+<div class="option">
+  <div class="option-label">Alt 2 — No Header Band</div>
+  <div class="frame">
+    <div class="sb"><div class="sb-brand">Daily<span>Dispatch</span></div><div class="sb-item active">Today</div></div>
+    <div class="main">
+      <div class="hdr-none"></div>
+      <div class="bar-c"><div class="tab-base tab-c active">Today</div><div class="tab-base tab-c">Tasks</div><div class="tab-base tab-c">Sprint notes</div></div>
+      <div class="content">No header at all — tabs start at the top</div>
+    </div>
+  </div>
+</div>
+
+<div class="option">
+  <div class="option-label">Alt 3 — Warm Gradient Strip</div>
+  <div class="frame">
+    <div class="sb"><div class="sb-brand">Daily<span>Dispatch</span></div><div class="sb-item active">Today</div></div>
+    <div class="main">
+      <div class="hdr-gradient"></div>
+      <div class="bar-c"><div class="tab-base tab-c active">Today</div><div class="tab-base tab-c">Tasks</div><div class="tab-base tab-c">Sprint notes</div></div>
+      <div class="content">Branded — strong visual break from browser chrome</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

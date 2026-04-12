@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tab Hybrid — Dots + Underline</title>
+<style>
+:root {
+  --bg:#faf8f5; --surface:#fff; --sidebar-bg:#f5f2ed;
+  --border:#e8e0d4; --border-light:#f0ece6; --border-strong:#d4cbbf;
+  --text:#37352f; --text2:#787774; --text3:#9b9a97;
+  --accent:#cb912f; --accent-light:rgba(203,145,47,0.12);
+  --brown:#8b7355;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  --radius-sm:4px; --radius-md:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);font-size:14px;color:var(--text);background:#d4cbbf;padding:30px;}
+h1{font-size:18px;font-weight:700;margin-bottom:6px;}
+.subtitle{font-size:12px;color:var(--text2);margin-bottom:30px;line-height:1.5;}
+
+.option{
+  max-width:900px;margin:0 auto 40px;
+  border-radius:var(--radius-md);overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.12);
+}
+.option-label{
+  background:var(--accent);color:#fff;padding:7px 16px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+}
+.option-desc{
+  padding:10px 16px;font-size:11px;color:var(--text2);
+  background:var(--surface);border-bottom:1px solid var(--border);line-height:1.5;
+}
+
+/* Shared frame */
+.frame{display:grid;grid-template-columns:200px 1fr;min-height:260px;background:var(--bg);}
+.sb{background:var(--sidebar-bg);border-right:1px solid var(--border);padding:12px 14px;font-size:11px;color:var(--text2);}
+.sb-brand{font-size:13px;font-weight:700;color:var(--brown);margin-bottom:12px;}
+.sb-brand span{color:var(--accent);}
+.sb-item{padding:5px 10px;margin-bottom:1px;border-radius:var(--radius-sm);display:flex;align-items:center;gap:7px;}
+.sb-item.active{background:var(--accent-light);color:var(--accent);font-weight:600;}
+.main{display:flex;flex-direction:column;}
+.content{flex:1;padding:16px;font-size:11px;color:var(--text3);font-style:italic;}
+
+/* Tab close */
+.tx{font-size:7px;width:13px;height:13px;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;opacity:0;margin-left:2px;color:var(--text3);}
+
+/* Icons strip */
+.icons{flex-shrink:0;display:flex;align-items:center;gap:2px;padding-left:8px;margin-left:4px;border-left:1px solid var(--border-light);}
+.icon-btn{background:none;border:none;color:var(--text3);font-size:11px;padding:4px 5px;cursor:pointer;border-radius:3px;}
+.icon-btn:hover{color:var(--accent);background:var(--accent-light);}
+
+/* ═══════════════════════════ */
+/* Hybrid: Dots + Underline     */
+/* ═══════════════════════════ */
+.bar-hybrid{
+  display:flex;align-items:stretch;gap:0;
+  background:var(--surface);border-bottom:1px solid var(--border-light);
+  padding:0 8px;height:34px;overflow-x:auto;
+}
+.tab-hybrid{
+  display:flex;align-items:center;gap:3px;padding:6px 12px 4px;
+  font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;
+  white-space:nowrap;transition:all 0.1s;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab-hybrid:hover{color:var(--text);border-bottom-color:var(--border);}
+.tab-hybrid:hover .tx{opacity:.5;}
+.tab-hybrid.active{color:var(--accent);font-weight:600;border-bottom-color:var(--accent);}
+.dot-sep{
+  display:flex;align-items:center;padding:0 1px;
+}
+.dot-sep::after{
+  content:'';width:3px;height:3px;border-radius:50%;
+  background:var(--border-strong);
+}
+
+/* Mock content */
+.mock-card{border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:12px;max-width:500px;}
+.mock-capture{background:#fdf9f3;padding:8px 12px;font-size:11px;color:var(--text3);}
+.mock-tasks{padding:8px 12px;background:var(--surface);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;font-weight:700;}
+.mock-day{font-size:11px;font-weight:700;color:var(--text);margin:10px 0 4px;display:flex;align-items:center;gap:8px;}
+.mock-day-line{flex:1;height:1px;background:var(--border);}
+.mock-entry{font-size:10px;color:var(--text2);padding:3px 0 3px 14px;border-left:2px solid var(--border-light);margin-left:8px;}
+</style>
+</head>
+<body>
+
+<h1>Hybrid: Dot Separators + Underline Active</h1>
+<p class="subtitle">Combining the dot separators from Option A with the underline active state from Option D. Shown with each header band variation.</p>
+
+<!-- With sidebar-tone header (current) -->
+<div class="option">
+  <div class="option-label">Dots + Underline — With Sidebar Header (current)</div>
+  <div class="option-desc">Dot separators between tabs create gentle visual breaks. Active tab has an amber underline — no background fill, just a bottom border accent. Other tabs show the underline on hover in a subtle gray. The sidebar-tone header sits above.</div>
+  <div class="frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+      <div style="margin-top:12px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Calendar</div>
+      <div style="margin-top:8px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Tags</div>
+      <div style="margin-top:8px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Sections</div>
+    </div>
+    <div class="main">
+      <div style="background:var(--sidebar-bg);height:30px;border-bottom:1px solid var(--border-light)"></div>
+      <div class="bar-hybrid">
+        <div class="tab-hybrid active">Today</div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">Tasks<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">Settings<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">API migration plan<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">Sprint notes<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid"># Things to do<span class="tx">&times;</span></div>
+        <div class="icons"><button class="icon-btn">&#9776;</button><button class="icon-btn">&#128247;</button><button class="icon-btn">&#9881;</button></div>
+      </div>
+      <div class="content">
+        <div class="mock-card">
+          <div class="mock-capture">What's happening? (#tags supported)</div>
+          <div class="mock-tasks">Tasks 2</div>
+        </div>
+        <div class="mock-day">Today <span style="font-weight:400;color:var(--text3)">&mdash; Apr 12, 2026</span><div class="mock-day-line"></div></div>
+        <div class="mock-entry"><strong>Meeting notes</strong> &mdash; sprint planning...</div>
+        <div class="mock-entry">Deployed v2.5 to staging</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- With thin 4px accent line -->
+<div class="option">
+  <div class="option-label">Dots + Underline — With 4px Accent Line</div>
+  <div class="option-desc">Same tab style but the header is just a thin 4px gradient accent line. Saves 26px of vertical space. The accent line still creates a clear visual break from browser chrome.</div>
+  <div class="frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+      <div style="margin-top:12px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Calendar</div>
+      <div style="margin-top:8px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Tags</div>
+      <div style="margin-top:8px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Sections</div>
+    </div>
+    <div class="main">
+      <div style="background:linear-gradient(90deg,var(--brown),var(--accent));height:4px"></div>
+      <div class="bar-hybrid">
+        <div class="tab-hybrid active">Today</div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">Tasks<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">Settings<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">API migration plan<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">Sprint notes<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid"># Things to do<span class="tx">&times;</span></div>
+        <div class="icons"><button class="icon-btn">&#9776;</button><button class="icon-btn">&#128247;</button><button class="icon-btn">&#9881;</button></div>
+      </div>
+      <div class="content">
+        <div class="mock-card">
+          <div class="mock-capture">What's happening? (#tags supported)</div>
+          <div class="mock-tasks">Tasks 2</div>
+        </div>
+        <div class="mock-day">Today <span style="font-weight:400;color:var(--text3)">&mdash; Apr 12, 2026</span><div class="mock-day-line"></div></div>
+        <div class="mock-entry"><strong>Meeting notes</strong> &mdash; sprint planning...</div>
+        <div class="mock-entry">Deployed v2.5 to staging</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- With no header -->
+<div class="option">
+  <div class="option-label">Dots + Underline — No Header</div>
+  <div class="option-desc">No header band at all. Tabs start right at the top. Maximum vertical space for content. The underline + dots are enough visual language on their own.</div>
+  <div class="frame">
+    <div class="sb">
+      <div class="sb-brand">Daily<span>Dispatch</span></div>
+      <div class="sb-item active">Today</div>
+      <div class="sb-item">Tasks</div>
+      <div class="sb-item">Search</div>
+      <div style="margin-top:12px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Calendar</div>
+      <div style="margin-top:8px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Tags</div>
+      <div style="margin-top:8px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Sections</div>
+    </div>
+    <div class="main">
+      <div class="bar-hybrid">
+        <div class="tab-hybrid active">Today</div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">Tasks<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">Settings<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">API migration plan<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid">Sprint notes<span class="tx">&times;</span></div>
+        <div class="dot-sep"></div>
+        <div class="tab-hybrid"># Things to do<span class="tx">&times;</span></div>
+        <div class="icons"><button class="icon-btn">&#9776;</button><button class="icon-btn">&#128247;</button><button class="icon-btn">&#9881;</button></div>
+      </div>
+      <div class="content">
+        <div class="mock-card">
+          <div class="mock-capture">What's happening? (#tags supported)</div>
+          <div class="mock-tasks">Tasks 2</div>
+        </div>
+        <div class="mock-day">Today <span style="font-weight:400;color:var(--text3)">&mdash; Apr 12, 2026</span><div class="mock-day-line"></div></div>
+        <div class="mock-entry"><strong>Meeting notes</strong> &mdash; sprint planning...</div>
+        <div class="mock-entry">Deployed v2.5 to staging</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
