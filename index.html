@@ -8,16 +8,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #faf8f5; --surface: #fff; --surface-hover: #f5f2ed;
-    --sidebar-bg: #f5f2ed;
-    --border: #e8e0d4; --border-light: #f0ece6; --border-strong: #d4cbbf;
-    --text: #37352f; --text2: #787774; --text3: #9b9a97;
-    --accent: #cb912f; --accent-light: rgba(203,145,47,0.12);
-    --danger: #e16259; --amber: #d97706; --green: #4daa57; --blue: #5b9bd5; --purple: #9065b0;
-    --brown: #8b7355;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.08);
+    --bg: #f5f5f5; --surface: #ffffff; --surface-hover: #f0f0f0;
+    --sidebar-bg: #f0f0f0;
+    --border: #e0e0e0; --border-light: #ebebeb; --border-strong: #cccccc;
+    --text: #000000; --text2: #6a6a6a; --text3: #9b9b9b;
+    --accent: #e20074; --accent-light: rgba(226,0,116,0.08);
+    --danger: #e20074; --amber: #d97706; --green: #00b33c; --blue: #0077c8; --purple: #9065b0;
+    --brown: #444444;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
     --radius-sm: 4px; --radius-md: 6px; --radius-lg: 10px;
     --sans: 'Inter', -apple-system, sans-serif;
     --mono: 'JetBrains Mono', monospace;
@@ -398,7 +398,7 @@
     transition: background 0.1s;
   }
   .entry-card:hover { background: rgba(203,145,47,0.04); }
-  .entry-card.highlight { background: #fefce8; }
+  .entry-card.highlight { background: color-mix(in srgb, var(--amber) 10%, transparent); }
 
   .entry-hdr {
     display: flex; align-items: baseline; gap: 6px; flex: 1; min-width: 0;
@@ -507,13 +507,14 @@
   /* Decoration classes */
   .cm-dd-bold { font-weight: 700; }
   .cm-dd-italic { font-style: italic; }
+  .cm-dd-strike { text-decoration: line-through; color: var(--text3); }
   .cm-dd-code { font-family: var(--mono); font-size: 12px; background: var(--sidebar-bg); padding: 0 3px; border-radius: 2px; }
   .cm-dd-link { color: var(--blue); text-decoration: underline; cursor: pointer; }
   .cm-dd-mention { color: var(--blue); font-weight: 500; }
   .cm-dd-crosslink { color: var(--blue); text-decoration: underline dotted; cursor: pointer; }
   .cm-dd-syntax { color: transparent; }
   /* Heading line classes */
-  .cm-dd-h1 { font-size: 24px; font-weight: 800; color: #2c1810; letter-spacing: -0.3px; line-height: 1.3; }
+  .cm-dd-h1 { font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; line-height: 1.3; }
   .cm-dd-h2 { font-size: 19px; font-weight: 700; color: var(--brown); letter-spacing: -0.2px; line-height: 1.35; }
   .cm-dd-h3 { font-size: 16px; font-weight: 600; color: var(--text2); line-height: 1.4; }
   .cm-dd-blockquote { color: var(--text2); border-left: 3px solid var(--accent); padding-left: 10px; }
@@ -599,8 +600,8 @@
     font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px;
     white-space: nowrap;
   }
-  .cm-tc-due.overdue { background: #fef2f2; color: var(--danger); }
-  .cm-tc-due.today { background: #fefce8; color: var(--amber); }
+  .cm-tc-due.overdue { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
+  .cm-tc-due.today { background: color-mix(in srgb, var(--amber) 10%, transparent); color: var(--amber); }
   .cm-tc-due.future { background: var(--bg); color: var(--text3); }
   .cm-dd-checkbox {
     width: 14px; height: 14px; margin: 0 6px 0 0; vertical-align: middle;
@@ -916,7 +917,24 @@
     border: 1px solid var(--border-light);
   }
   .quick-open-badge.tpl { color: var(--accent); border-color: var(--accent); }
+  .quick-open-badge.task { color: var(--green); border-color: var(--green); }
+  .quick-open-badge.nav { color: var(--brown); border-color: var(--brown); }
+  .quick-open-badge.cmd { color: var(--purple, #7c3aed); border-color: var(--purple, #7c3aed); }
   .quick-open-empty { padding: 24px; text-align: center; color: var(--text3); font-size: 12px; }
+  .quick-open-group { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text2); padding: 8px 16px 4px; font-weight: 700; background: var(--sidebar-bg); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); margin-top: 2px; }
+  .quick-open-group:first-child { border-top: none; margin-top: 0; }
+  .quick-open-icon-inline { display: inline-flex; color: var(--text3); margin-right: 6px; flex-shrink: 0; }
+
+  /* ═══════════ CREATOR FOOTER ═══════════ */
+  .tc-footer {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    padding: 48px 16px 24px; margin-top: 40px;
+    opacity: 0.5; transition: opacity 0.2s;
+  }
+  .tc-footer:hover { opacity: 0.75; }
+  .tc-footer-logo { height: 52px; width: auto; object-fit: contain; }
+  .tc-footer-text { font-size: 13px; color: var(--text3); letter-spacing: 0.3px; }
+  .tc-footer-text strong { font-weight: 700; color: var(--text2); }
 
   /* ═══════════ HOME / LANDING ═══════════ */
   .home-tab {
@@ -1333,7 +1351,7 @@
     display: flex; align-items: center; justify-content: center;
   }
   .se-del:hover { color: var(--danger); background: var(--bg); }
-  .se-row.drag-over-merge { background: #fef3c7; border-radius: 4px; }
+  .se-row.drag-over-merge { background: color-mix(in srgb, var(--amber) 15%, transparent); border-radius: 4px; }
   .se-drag { cursor: grab; color: var(--text3); font-size: 10px; flex-shrink: 0; }
   .se-drag:active { cursor: grabbing; }
 
@@ -1648,7 +1666,7 @@
   /* Help viewer (read-only) */
   .help-viewer { padding: 0; overflow-y: auto; flex: 1; }
   .help-content { max-width: 640px; }
-  .help-h1 { font-size: 24px; font-weight: 800; color: #2c1810; margin: 0 0 12px; line-height: 1.3; }
+  .help-h1 { font-size: 24px; font-weight: 800; color: var(--text); margin: 0 0 12px; line-height: 1.3; }
   .help-h2 { font-size: 18px; font-weight: 700; color: var(--brown); margin: 20px 0 8px; line-height: 1.35; }
   .help-h3 { font-size: 15px; font-weight: 600; color: var(--text2); margin: 16px 0 6px; }
   .help-p { font-size: 14px; line-height: 1.7; margin: 0 0 6px; color: var(--text); }
@@ -1717,8 +1735,8 @@
     font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px;
     white-space: nowrap;
   }
-  .tt-due.overdue { background: #fef2f2; color: var(--danger); }
-  .tt-due.today { background: #fefce8; color: var(--amber); }
+  .tt-due.overdue { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
+  .tt-due.today { background: color-mix(in srgb, var(--amber) 10%, transparent); color: var(--amber); }
   .tt-due.future { background: var(--bg); color: var(--text3); }
   .tt-col { font-size: 9px; color: var(--text3); padding: 2px 6px; border-radius: 3px; background: var(--sidebar-bg); }
   .tt-note { font-size: 10px; color: var(--blue); cursor: pointer; }
@@ -1895,6 +1913,11 @@
     font-size: 10px; cursor: pointer; background: transparent; font-family: var(--sans);
   }
   .kanban-col-add:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .kanban-empty {
+    padding: 20px; text-align: center; color: var(--text3); font-size: 11px;
+    font-style: italic; border: 1px dashed var(--border-light);
+    border-radius: var(--radius-md); margin: 4px 6px;
+  }
   .kanban-inline-add input {
     width: 100%; padding: 7px 10px; border: 1px solid var(--accent);
     border-radius: var(--radius-md); font-size: 12px; font-family: var(--sans);
@@ -1969,8 +1992,8 @@
   .kc-due {
     font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 6px; white-space: nowrap;
   }
-  .kc-due.overdue { background: #fef2f2; color: var(--danger); }
-  .kc-due.today { background: #fefce8; color: var(--amber); }
+  .kc-due.overdue { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
+  .kc-due.today { background: color-mix(in srgb, var(--amber) 10%, transparent); color: var(--amber); }
   .kc-due.future { background: var(--bg); color: var(--text3); }
   .kc-note { font-size: 9px; color: var(--blue); cursor: pointer; margin-left: auto; }
   .kc-note:hover { text-decoration: underline; }
@@ -2028,8 +2051,8 @@
   .tl-title { flex: 1; font-size: 12px; font-weight: 500; }
   .tl-title.strikethrough { text-decoration: line-through; color: var(--text3); }
   .tl-due { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 6px; white-space: nowrap; }
-  .tl-due.overdue { background: #fef2f2; color: var(--danger); }
-  .tl-due.today { background: #fefce8; color: var(--amber); }
+  .tl-due.overdue { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
+  .tl-due.today { background: color-mix(in srgb, var(--amber) 10%, transparent); color: var(--amber); }
   .tl-due.future { background: var(--bg); color: var(--text3); }
   .tl-due.none { color: var(--text3); font-style: italic; font-weight: 400; }
   .tl-note { font-size: 9px; color: var(--blue); cursor: pointer; }
@@ -2098,7 +2121,7 @@
     background: none; border: none; color: var(--text3); font-size: 14px; cursor: pointer;
     padding: 2px 6px; border-radius: 3px; flex-shrink: 0;
   }
-  .tm-due-clear:hover { color: var(--danger); background: #fef2f2; }
+  .tm-due-clear:hover { color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); }
   .tm-note-link {
     display: flex; align-items: center; gap: 6px;
     padding: 8px 20px; font-size: 12px; color: var(--blue); cursor: pointer;
@@ -2123,7 +2146,7 @@
     padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer;
     font-size: 11px; font-family: var(--sans);
   }
-  .tm-delete:hover { background: #fef2f2; border-color: var(--danger); }
+  .tm-delete:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); border-color: var(--danger); }
   /* Task description + comments */
   .tm-section { padding: 0 20px 12px; }
   .tm-section-label {
@@ -2213,6 +2236,80 @@
   .summary-banner:hover { background: var(--accent); color: #fff; }
   .summary-banner span { font-size: 14px; }
 
+  /* ═══════════ DAILY SUMMARY DASHBOARD ═══════════ */
+  .ds-wrap { max-width: 780px; margin: 0 auto; padding: 32px 24px 60px; }
+  .ds-header { text-align: center; padding-bottom: 24px; border-bottom: 1px solid var(--border-light); margin-bottom: 28px; }
+  .ds-header-date { font-size: 13px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+  .ds-header-title { font-size: 26px; font-weight: 800; color: var(--text); margin: 4px 0 12px; letter-spacing: -0.3px; }
+  .ds-header-actions { display: flex; justify-content: center; gap: 8px; }
+  .ds-header-actions button {
+    font-size: 11px; padding: 5px 14px; border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text2);
+    font-family: var(--sans); transition: all 0.15s;
+  }
+  .ds-header-actions button:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+  .ds-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 32px; }
+  .ds-metric-card {
+    background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-md);
+    padding: 16px 14px; text-align: center;
+  }
+  .ds-metric-num { font-size: 32px; font-weight: 800; color: var(--text); line-height: 1; }
+  .ds-metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-top: 4px; font-weight: 600; }
+  .ds-metric-card.green { border-color: var(--green); }
+  .ds-metric-card.green .ds-metric-num { color: var(--green); }
+  .ds-section { margin-top: 28px; }
+  .ds-section-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text3);
+    font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); margin-bottom: 10px;
+  }
+  .ds-task-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-radius: var(--radius-sm); cursor: pointer; transition: background 0.1s;
+  }
+  .ds-task-row:hover { background: var(--accent-light); }
+  .ds-task-icon { font-size: 14px; flex-shrink: 0; }
+  .ds-task-title { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ds-task-time { font-size: 11px; color: var(--text3); font-family: var(--mono); flex-shrink: 0; }
+  .ds-task-note { font-size: 11px; color: var(--text3); cursor: pointer; flex-shrink: 0; }
+  .ds-task-note:hover { color: var(--accent); }
+  .ds-empty { padding: 16px; text-align: center; color: var(--text3); font-size: 12px; font-style: italic; }
+  .ds-timeline { border-left: 2px solid var(--border-light); margin-left: 12px; padding-left: 0; }
+  .ds-tl-item {
+    position: relative; padding: 8px 12px 8px 24px; cursor: pointer;
+    transition: background 0.1s; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+  .ds-tl-item:hover { background: var(--accent-light); }
+  .ds-tl-dot {
+    position: absolute; left: -6px; top: 13px; width: 10px; height: 10px;
+    border-radius: 50%; border: 2px solid var(--surface);
+  }
+  .ds-tl-dot.entry { background: var(--text3); }
+  .ds-tl-dot.note { background: var(--accent); }
+  .ds-tl-dot.task { background: var(--green); }
+  .ds-tl-dot.event { background: var(--amber); }
+  .ds-tl-time { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+  .ds-tl-text { font-size: 13px; color: var(--text); margin-top: 1px; }
+  .ds-tl-text strong { font-weight: 600; }
+  .ds-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ds-note-card {
+    border: 1px solid var(--border-light); border-radius: var(--radius-md);
+    padding: 12px 14px; cursor: pointer; transition: border-color 0.15s;
+  }
+  .ds-note-card:hover { border-color: var(--accent); }
+  .ds-note-card-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .ds-note-card-preview { font-size: 11px; color: var(--text3); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .ds-note-card-meta { font-size: 10px; color: var(--text3); margin-top: 6px; font-style: italic; }
+  .ds-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ds-pill {
+    font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; cursor: default;
+  }
+  .ds-pill-count { font-weight: 400; opacity: 0.7; margin-left: 2px; }
+  @media(max-width:600px){
+    .ds-metrics { grid-template-columns: repeat(2, 1fr); }
+    .ds-note-grid { grid-template-columns: 1fr; }
+    .ds-wrap { padding: 20px 14px 40px; }
+  }
+
   /* Search results */
   .sr-empty { padding: 40px 20px; text-align: center; color: var(--text3); font-size: 13px; }
   /* Search tab tips */
@@ -2225,9 +2322,23 @@
   .search-tip-desc { color: var(--text2); }
   .search-tip-desc code { font-family: var(--mono); font-size: 11px; background: var(--sidebar-bg); padding: 1px 4px; border-radius: 2px; }
   .search-tip-desc em { font-style: italic; color: var(--text); }
-  mark { background: #fef08a; border-radius: 2px; padding: 0 1px; }
+  mark { background: color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 2px; padding: 0 1px; }
 
   .empty { text-align: center; padding: 16px 8px; color: var(--text3); font-size: 11px; }
+  .feed-empty {
+    text-align: center; padding: 40px 20px; color: var(--text3);
+  }
+  .feed-empty svg { color: var(--border-strong); margin-bottom: 12px; }
+  .feed-empty-title { font-size: 15px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  .feed-empty-sub { font-size: 12px; line-height: 1.6; max-width: 340px; margin: 0 auto; }
+  .feed-empty-sub kbd {
+    display: inline-block; padding: 1px 5px; font-family: var(--mono); font-size: 10px;
+    background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 3px; color: var(--text2);
+  }
+  .feed-empty-sub code {
+    font-family: var(--mono); font-size: 11px; background: var(--sidebar-bg);
+    padding: 1px 4px; border-radius: 3px; color: var(--text);
+  }
 
   /* Day divider in feed */
   .day-divider {
@@ -2283,7 +2394,7 @@
   }
   .modal-btn:hover { background: var(--bg); color: var(--text); }
   .modal-btn.danger { background: var(--danger); color: white; border-color: var(--danger); }
-  .modal-btn.danger:hover { background: #dc2626; }
+  .modal-btn.danger:hover { background: color-mix(in srgb, var(--danger) 85%, #000); }
   .modal-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
   .modal-btn.primary:hover { opacity: .9; }
   .dd-dialog-input {
@@ -2401,7 +2512,7 @@
   </div>
   <!-- Sections header — fixed, always visible, not collapsible -->
   <div class="sb-sections-hdr">
-    <span class="sb-group-title">Sections</span>
+    <span class="sb-group-title" style="display:flex;flex-direction:column;line-height:1.2">Sections<span style="font-weight:400;font-size:8px;letter-spacing:0;text-transform:none;color:var(--text3)">saved filters &mdash; always updating</span></span>
     <button class="sb-group-btn" id="backlinks-toggle" onclick="toggleBacklinks()" title="Backlinks"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11.5 L6 14 A3.2 3.2 0 0 1 1.8 9.8 L5.5 6"/><path d="M11.5 8.5 L14 6 A3.2 3.2 0 0 1 18.2 10.2 L14.5 14"/><line x1="7.5" y1="12.5" x2="12.5" y2="7.5"/></svg></button>
     <button class="sb-group-btn" onclick="addSection()" title="Add section">+</button>
   </div>
@@ -2507,7 +2618,7 @@
 /* ═══════════ DATA — IndexedDB ═══════════ */
 const DB_NAME='dailydispatch';
 const DB_VERSION=3;
-const COLLECTIONS=['entries','questions','contexts','sections','settings','tasks','columns'];
+const COLLECTIONS=['entries','sections','settings','tasks','columns'];
 const genId=p=>p+'_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function dateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -2552,65 +2663,110 @@ function getAllPeople(){
 }
 
 // In-memory db object — same shape as before
-let db={entries:[],questions:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map(),tasks:[],columns:[],defaultSectionsSeeded:false};
+let db={entries:[],tagColors:{},sections:[],people:[],images:new Map(),tasks:[],columns:[],defaultSectionsSeeded:false};
 let idb=null; // IndexedDB handle
+let _idbAvailable=true; // false if IndexedDB is blocked (e.g. private browsing)
+
+function _idbError(operation,store,err){
+  console.error(`[DD-IDB] ${operation} failed on "${store}":`,err);
+  if(typeof showToast==='function')showToast('Save failed — your data may not be persisted. Try exporting a backup.','error');
+}
 
 function openIDB(){
   return new Promise((resolve,reject)=>{
-    const req=indexedDB.open(DB_NAME,DB_VERSION);
-    req.onupgradeneeded=e=>{
-      const d=e.target.result;
-      COLLECTIONS.forEach(name=>{if(!d.objectStoreNames.contains(name))d.createObjectStore(name,{keyPath:'id'});});
-      if(!d.objectStoreNames.contains('images'))d.createObjectStore('images',{keyPath:'id'});
-    };
-    req.onsuccess=e=>{idb=e.target.result;resolve(idb);};
-    req.onerror=e=>reject(e.target.error);
+    if(!window.indexedDB){
+      _idbAvailable=false;
+      reject(new Error('IndexedDB not available'));
+      return;
+    }
+    try{
+      const req=indexedDB.open(DB_NAME,DB_VERSION);
+      req.onupgradeneeded=e=>{
+        const d=e.target.result;
+        COLLECTIONS.forEach(name=>{if(!d.objectStoreNames.contains(name))d.createObjectStore(name,{keyPath:'id'});});
+        if(!d.objectStoreNames.contains('images'))d.createObjectStore('images',{keyPath:'id'});
+      };
+      req.onsuccess=e=>{idb=e.target.result;resolve(idb);};
+      req.onerror=e=>{_idbAvailable=false;reject(e.target.error);};
+      req.onblocked=()=>{_idbAvailable=false;reject(new Error('IndexedDB blocked'));};
+    }catch(e){
+      _idbAvailable=false;
+      reject(e);
+    }
   });
 }
 
 function idbGetAll(store){
   return new Promise((resolve,reject)=>{
+    if(!idb){resolve([]);return;}
     const tx=idb.transaction(store,'readonly');
     const req=tx.objectStore(store).getAll();
     req.onsuccess=()=>resolve(req.result||[]);
-    req.onerror=e=>reject(e.target.error);
+    tx.onerror=e=>{_idbError('getAll',store,e.target.error);reject(e.target.error);};
   });
 }
 
 function idbPutAll(store,items){
   return new Promise((resolve,reject)=>{
+    if(!idb){_idbError('putAll',store,'No IDB connection');reject(new Error('No IDB'));return;}
     const tx=idb.transaction(store,'readwrite');
     const os=tx.objectStore(store);
     items.forEach(item=>os.put(item));
     tx.oncomplete=()=>resolve();
-    tx.onerror=e=>reject(e.target.error);
+    tx.onerror=e=>{_idbError('putAll',store,e.target.error);reject(e.target.error);};
+    tx.onabort=e=>{_idbError('putAll (aborted)',store,tx.error);reject(tx.error);};
   });
 }
 
 function idbDelete(store,id){
   return new Promise((resolve,reject)=>{
+    if(!idb){resolve();return;}
     const tx=idb.transaction(store,'readwrite');
     tx.objectStore(store).delete(id);
     tx.oncomplete=()=>resolve();
-    tx.onerror=e=>reject(e.target.error);
+    tx.onerror=e=>{_idbError('delete',store,e.target.error);reject(e.target.error);};
   });
 }
 
 function idbClearStore(store){
   return new Promise((resolve,reject)=>{
+    if(!idb){resolve();return;}
     const tx=idb.transaction(store,'readwrite');
     tx.objectStore(store).clear();
     tx.oncomplete=()=>resolve();
-    tx.onerror=e=>reject(e.target.error);
+    tx.onerror=e=>{_idbError('clear',store,e.target.error);reject(e.target.error);};
+  });
+}
+// Atomic clear-then-put in a SINGLE transaction — no data loss on crash
+function idbClearAndPut(store,items){
+  return new Promise((resolve,reject)=>{
+    if(!idb){_idbError('clearAndPut',store,'No IDB connection');reject(new Error('No IDB'));return;}
+    const tx=idb.transaction(store,'readwrite');
+    const os=tx.objectStore(store);
+    os.clear();
+    items.forEach(item=>os.put(item));
+    tx.oncomplete=()=>resolve();
+    tx.onerror=e=>{_idbError('clearAndPut',store,e.target.error);reject(e.target.error);};
+    tx.onabort=e=>{_idbError('clearAndPut (aborted)',store,tx.error);reject(tx.error);};
   });
 }
 
 // Load all data from IndexedDB into memory
 async function loadDB(){
-  await openIDB();
+  try{ await openIDB(); }catch(err){
+    console.error('[DD-IDB] Cannot open IndexedDB:',err);
+    _idbAvailable=false;
+    // Show persistent warning — data will not be saved
+    setTimeout(()=>{
+      const banner=document.createElement('div');
+      banner.id='idb-warning';
+      banner.style.cssText='position:fixed;top:0;left:0;right:0;padding:10px 16px;background:#dc2626;color:#fff;font-size:12px;font-weight:600;text-align:center;z-index:9999;';
+      banner.textContent='Storage unavailable — your data will NOT be saved. You may be in private browsing mode.';
+      document.body.prepend(banner);
+    },100);
+    return; // skip loading — db stays empty but app can still render
+  }
   db.entries=await idbGetAll('entries');
-  db.questions=await idbGetAll('questions');
-  db.contexts=await idbGetAll('contexts');
   db.sections=await idbGetAll('sections');
   db.tasks=await idbGetAll('tasks');
   db.columns=await idbGetAll('columns');
@@ -2618,7 +2774,7 @@ async function loadDB(){
   const s=settings.find(x=>x.id==='main')||{};
   db.tagColors=s.tagColors||{};
   db.people=s.people||[];
-  db.theme=s.theme||'Warm Notion';
+  db.theme=s.theme||'Hot Pink';
   db.defaultSectionsSeeded=s.defaultSectionsSeeded||false;
   db.startersSeeded=s.startersSeeded||false;
   db.homeShownOnce=s.homeShownOnce||false;
@@ -2667,8 +2823,6 @@ async function migrateFromLocalStorage(old){
     if(!e.contextId)e.contextId=null;
     return e;
   });
-  const questions=(old.questions||[]).map(q=>{if(!q.id)q.id=genId('q');return q;});
-  const contexts=(old.contexts||[]).map(c=>{if(!c.id)c.id=genId('ctx');return c;});
   const sections=(old.sections||[]).map(s=>{if(!s.id)s.id=genId('sec');return s;});
   // Also handle notes array from v1
   if(old.notes){
@@ -2676,7 +2830,7 @@ async function migrateFromLocalStorage(old){
       entries.push({id:n.id||genId('e'),content:n.content||'',tags:n.tags||[],date:n.date,ts:n.ts||n.createdTs,isNote:true,noteTitle:n.title||'Untitled',contextId:null});
     });
   }
-  db.entries=entries;db.questions=questions;db.contexts=contexts;db.sections=sections;
+  db.entries=entries;db.sections=sections;
   db.tagColors=old.tagColors||{};
   await saveAll();
 }
@@ -2684,8 +2838,6 @@ async function migrateFromLocalStorage(old){
 // Save everything (used on migration and purge recovery)
 async function saveAll(){
   await idbPutAll('entries',db.entries);
-  await idbPutAll('questions',db.questions);
-  await idbPutAll('contexts',db.contexts);
   await idbPutAll('sections',db.sections);
   if(db.tasks&&db.tasks.length)await idbPutAll('tasks',db.tasks);
   if(db.columns&&db.columns.length)await idbPutAll('columns',db.columns);
@@ -2699,7 +2851,6 @@ async function saveAll(){
     homeShownOnce:db.homeShownOnce||false,
     floatingNote:db.floatingNote||{position:'right',width:300},
     lastBackupTs:db.lastBackupTs||0,
-    virtualPanels:db.virtualPanels||{recent:{col:'left',order:0},tags:{col:'left',order:1}},
     openTabs,activeTab,searchTabs
   }]);
 }
@@ -2718,19 +2869,20 @@ async function flushSave(){
   if(!idb||!_dirtyStores.size)return;
   const todo=[..._dirtyStores];_dirtyStores.clear();
   for(const store of todo){
-    if(store==='settings'){
-      await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Hot Pink',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,checkboxesMigrated2:db.checkboxesMigrated2||false,sbGroupState,sbGroupOrder,openTabs,activeTab,searchTabs,onboardingDone:db.onboardingDone||[],onboardingDismissed:db.onboardingDismissed||false}]);
-    } else if(store==='sections'&&db.sections){
-      // Strip transient session-only flags and drop unsaved drafts
-      const sanitized=db.sections
-        .filter(s=>!s._isNew) // unsaved drafts never persist
-        .map(s=>{const {_setupMode,_isNew,_editing,_configOpen,...rest}=s;return rest;});
-      await idbClearStore(store);
-      if(sanitized.length)await idbPutAll(store,sanitized);
-    } else if(db[store]){
-      // Clear and re-put (simple, handles deletions)
-      await idbClearStore(store);
-      if(db[store].length)await idbPutAll(store,db[store]);
+    try{
+      if(store==='settings'){
+        await idbPutAll('settings',[{id:'main',tagColors:db.tagColors,people:db.people||[],theme:db.theme||'Hot Pink',defaultSectionsSeeded:db.defaultSectionsSeeded||false,startersSeeded:db.startersSeeded||false,homeShownOnce:db.homeShownOnce||false,floatingNote:db.floatingNote||{position:'right',width:300},lastBackupTs:db.lastBackupTs||0,checkboxesMigrated:db.checkboxesMigrated||false,checkboxesMigrated2:db.checkboxesMigrated2||false,sbGroupState,sbGroupOrder,openTabs,activeTab,searchTabs,onboardingDone:db.onboardingDone||[],onboardingDismissed:db.onboardingDismissed||false}]);
+      } else if(store==='sections'&&db.sections){
+        const sanitized=db.sections
+          .filter(s=>!s._isNew)
+          .map(s=>{const {_setupMode,_isNew,_editing,_configOpen,...rest}=s;return rest;});
+        await idbClearAndPut(store,sanitized);
+      } else if(db[store]){
+        await idbClearAndPut(store,db[store]);
+      }
+    }catch(err){
+      console.error('[DD-IDB] flushSave failed for store "'+store+'":', err);
+      if(typeof showToast==='function')showToast('Save failed — your data may not be persisted. Try exporting a backup.','error');
     }
   }
 }
@@ -2889,6 +3041,7 @@ function renderMd(raw){
   t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
   t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   t=t.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g,'<em>$1</em>');
+  t=t.replace(/~~(.+?)~~/g,'<s>$1</s>');
   t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
   t=t.replace(/(^|[^"'>])(https?:\/\/[^\s<]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
   t=t.replace(/#([a-zA-Z0-9_-]+)/g,(m,tag)=>{const c=getTagColor(tag);return`<span class="tag-pill" style="background:${c}12;color:${c};border:1px solid ${c}30" onclick="event.stopPropagation();toggleFilter('${escH(tag)}')">#${escH(tag)}</span>`;});
@@ -2927,7 +3080,18 @@ function renderTabBar(){
     const isA=tid===activeTab;
     const drag=tid!=='today'?` draggable="true" ondragstart="tabDragStart(event,'${tid}')" ondragover="tabDragOver(event)" ondrop="tabDrop(event,'${tid}')" ondragend="tabDragEnd(event)"`:'';
     const dropTarget=tid==='today'?` ondragover="tabDragOver(event)" ondrop="tabDrop(event,'${tid}')"`:''
-    if(tid==='today'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('today')"${dropTarget}><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>Today</div>`;}
+    if(tid==='today'){
+      let todayLabel='Today';
+      if(selectedDate&&selectedDate!==todayStr()){
+        const sd=new Date(selectedDate+'T12:00:00');
+        const yd=new Date();yd.setDate(yd.getDate()-1);
+        if(selectedDate===dateStr(yd))todayLabel='Yesterday';
+        else{const daysDiff=Math.round((new Date(todayStr()+'T12:00:00')-sd)/(24*3600*1000));
+          if(daysDiff<=6)todayLabel=sd.toLocaleDateString('en-US',{weekday:'long'});
+          else todayLabel=sd.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+      }
+      tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('today')"${dropTarget}><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>${todayLabel}</div>`;
+    }
     else if(tid==='home'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('home')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M3 10 L10 3 L17 10"/><path d="M5 9 V17 H15 V9"/></svg>Home<span class="tab-close" onclick="event.stopPropagation();closeTab('home')">&times;</span></div>`;}
     else if(tid==='tasks'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('tasks')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>Tasks<span class="tab-close" onclick="event.stopPropagation();closeTab('tasks')">&times;</span></div>`;}
     else if(tid==='gallery'){tabsHtml+=`<div class="tab${isA?' active':''}" onclick="switchTab('gallery')"${drag}><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="M3 13 L7 9 L13 14 L17 11 L17 16 L3 16 Z"/></svg>Gallery<span class="tab-close" onclick="event.stopPropagation();closeTab('gallery')">&times;</span></div>`;}
@@ -3173,7 +3337,8 @@ function renderKanbanBoard(tasks,cols){
         <button class="kanban-col-menu" onclick="showColMenu('${col.id}',event)" title="Column options">&#8943;</button>
       </div>
       <div class="kanban-col-body" data-col="${col.id}" ondragover="kanbanCardDragOver(event)" ondrop="kanbanCardDrop(event,'${col.id}')">`;
-    colTasks.forEach(t=>{h+=renderKanbanCard(t,today);});
+    if(colTasks.length){colTasks.forEach(t=>{h+=renderKanbanCard(t,today);});}
+    else{h+=`<div class="kanban-empty">Drag tasks here or click + below</div>`;}
     h+=`<button class="kanban-col-add" onclick="quickAddToColumn('${col.id}')">+ Add task</button>
       </div>
     </div>`;
@@ -3749,7 +3914,17 @@ function renderToday(area){
     }
     h+=`</div>`; // close .day-entries
   }
-  if(!hasAny){h+=`<div class="empty">No entries${activeTagFilters.length?' matching filters':''}. Start typing above.</div>`;}
+  if(!hasAny){
+    if(activeTagFilters.length){
+      h+=`<div class="empty">No entries matching filters. <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="clearFilters()">Clear filters</span></div>`;
+    } else {
+      h+=`<div class="feed-empty">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <div class="feed-empty-title">Your feed is empty</div>
+        <div class="feed-empty-sub">Type in the capture box above and press <kbd>Cmd</kbd>+<kbd>Enter</kbd> to add your first entry.<br>Use <code>#tags</code> to organize and <code>/task</code> to create tasks.</div>
+      </div>`;
+    }
+  }
 
   // Infinite scroll sentinel — auto-loads older days when scrolled into view
   const oldestDate=dates[dates.length-1];
@@ -3845,6 +4020,7 @@ function renderMdInline(raw){
   t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
   t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   t=t.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g,'<em>$1</em>');
+  t=t.replace(/~~(.+?)~~/g,'<s>$1</s>');
   t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
   t=t.replace(/(^|[^"'>])(https?:\/\/[^\s<]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
   t=t.replace(/@([a-zA-Z0-9_.-]+)/g,'<span class="mention-pill" onclick="event.stopPropagation();toggleFilter(\'@$1\')">@$1</span>');
@@ -3866,6 +4042,8 @@ function renderEventEntry(e){
   let refLink='';
   if(e.eventType==='search_create'){
     refLink=` <span class="event-ref" onclick="reopenSearchEvent('${e.id}')">reopen</span>`;
+  } else if(e.eventType==='task_complete'&&e.refId){
+    refLink=` <span class="event-ref" onclick="openTaskDetail('${e.refId}')">details</span>`;
   } else if(e.eventType&&e.eventType.startsWith('section_')){
     refLink='';
   } else if(e.refId){
@@ -3982,6 +4160,7 @@ function setupFeedDayTracker(){
         calViewDate=calMonth;
       }
       renderCalendar();
+      renderTabBar();
       // If we scrolled back to today from a past date, re-render to show tasks
       if(nowToday&&!wasToday){
         _feedDayTrackPaused=Date.now();
@@ -4497,6 +4676,8 @@ function renderNoteEditor(area,noteId){
   if(!e||!e.isNote){switchTab('today');return;}
   // Help notes: read-only rendered view
   if(e.isHelp){renderHelpViewer(area,e);return;}
+  // Daily summary: rich dashboard view
+  if((e.tags||[]).includes('daily-summary')){renderDailySummaryDashboard(area,e);return;}
   // Lazy migration: convert any raw markdown tables into {{table:id}} tokens
   // so they become editable widgets. One-time per note.
   if(migrateMarkdownTables(e))save();
@@ -4819,6 +5000,15 @@ function cmDecorateLine(builder,line,Decoration){
     builder.push(Decoration.replace({}).range(from+s,from+s+1));
     builder.push(Decoration.mark({class:'cm-dd-italic'}).range(from+s+1,from+e-1));
     builder.push(Decoration.replace({}).range(from+e-1,from+e));
+  }
+  // Inline: strikethrough ~~text~~
+  const strikeRe=/~~(.+?)~~/g;
+  while((m=strikeRe.exec(text))!==null){
+    const s=m.index,e=s+m[0].length;
+    if(!claim(s,e))continue;
+    builder.push(Decoration.replace({}).range(from+s,from+s+2)); // hide ~~
+    builder.push(Decoration.mark({class:'cm-dd-strike'}).range(from+s+2,from+e-2)); // style text
+    builder.push(Decoration.replace({}).range(from+e-2,from+e)); // hide ~~
   }
   // Inline code `text`
   const codeRe=/`([^`]+)`/g;
@@ -5369,7 +5559,7 @@ class CmTableWidget extends CM6.WidgetType{
             const sel=window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
-          }catch(err){}
+          }catch(err){console.warn('[DD] Selection range error:',err);}
         }
         // Initial render: show markdown
         _renderCell();
@@ -5465,7 +5655,7 @@ class CmTableWidget extends CM6.WidgetType{
               const sel=window.getSelection();
               sel.removeAllRanges();
               sel.addRange(range);
-            }catch(err){}
+            }catch(err){console.warn('[DD] Selection range error:',err);}
           }
         });
         // Tab / Shift-Tab navigates cells. Tab on the last cell creates a new row.
@@ -5610,7 +5800,7 @@ class CmTableWidget extends CM6.WidgetType{
         const sel=window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-      }catch(e){}
+      }catch(e){console.warn('[DD] Selection range error:',e);}
     },0);
   }
   _insertCol(idx){
@@ -5914,22 +6104,26 @@ const SLASH_COMMANDS=[
   {name:'smartlist',label:'Smart List',desc:'Live search results in your note',run:_slashSmartList},
 ];
 function _slashTask(view,slashStart,slashEnd){
-  showPrompt('Task title:',{title:'New Task'}).then(title=>{
-    if(!title||!title.trim()){view.focus();return;}
-    const task=createTask({title:title.trim(),note_id:cmNoteId});
-    if(!task){view.focus();return;}
-    if(activeTab==='today'){task.today=true;save('tasks');}
-    // Replace the /task line content with the token in a single dispatch
-    const line=view.state.doc.lineAt(slashStart);
-    const token='{{task:'+task.id+'}}';
-    const atEnd=line.to>=view.state.doc.length;
-    view.dispatch({
-      changes:{from:line.from,to:line.to,insert:atEnd?token+'\n':token},
-      selection:{anchor:line.from+token.length+1}
-    });
-    view.focus();
-    renderSidebar();
+  // Use any existing text on the line (excluding /task command) as the title
+  const line=view.state.doc.lineAt(slashStart);
+  let lineText=line.text.replace(/\/task\s*/i,'').trim();
+  const title=lineText||'Untitled task';
+  // Create task immediately and open the full task modal for details
+  const task=createTask({title,note_id:cmNoteId});
+  if(!task){view.focus();return;}
+  if(activeTab==='today'){task.today=true;save('tasks');}
+  // Replace the /task line content with the token
+  const token='{{task:'+task.id+'}}';
+  const atEnd=line.to>=view.state.doc.length;
+  view.dispatch({
+    changes:{from:line.from,to:line.to,insert:atEnd?token+'\n':token},
+    selection:{anchor:line.from+token.length+1}
   });
+  renderSidebar();
+  // Open full task modal so user can set title, date, priority in one step
+  openTaskDetail(task.id);
+  // Auto-focus the title textarea and select all so user can type to replace
+  setTimeout(()=>{const ta=document.querySelector('.tm-title');if(ta){ta.focus();ta.select();}},50);
 }
 function _slashStatus(view,slashStart,slashEnd){
   showStatusEditor(null,null,(color,text)=>{
@@ -5939,7 +6133,7 @@ function _slashStatus(view,slashStart,slashEnd){
   });
 }
 function _slashSmartList(view,slashStart,slashEnd){
-  showPrompt('What should this list show?',{title:'Smart List',defaultVal:'#tag'}).then(query=>{
+  showPrompt('What should this list show?',{title:'Smart List',body:'Live results embedded in this note. Use #tags, @people, or keywords.',defaultVal:'#tag'}).then(query=>{
     if(!query||!query.trim()){view.focus();return;}
     const line=view.state.doc.lineAt(slashStart);
     const token='{{smartlist:'+query.trim()+'}}';
@@ -6263,7 +6457,7 @@ function noteContentChanged(id,val){
     try{localStorage.setItem('dd_float_note',JSON.stringify({
       id:e.id,content:val,tags:e.tags||[],date:e.date||todayStr(),
       ts:e.ts,isNote:true,noteTitle:e.noteTitle||'',updatedTs:e.updatedTs
-    }));}catch(err){}
+    }));}catch(err){console.error('[DD] Floating note localStorage save failed:',err);}
     return;
   }
   // Save on debounce but do NOT register mentions here — that causes partial
@@ -6508,10 +6702,7 @@ function toggleFilter(tag){
 }
 function clearFilters(){activeTagFilters=[];renderAllSections();renderSidebarTags();renderActiveView();}
 
-/* ═══════════ QUESTIONS ═══════════ */
-// Questions and Contexts systems removed — dead code from early prototyping.
-// Data is still loaded from IndexedDB for backward compat (db.questions, db.contexts)
-// but no UI references them.
+/* Questions and Contexts systems fully removed — data no longer loaded, saved, or exported. */
 
 /* Seed default sections once for brand-new users to encourage use. */
 function ensureHelpSection(){
@@ -6632,6 +6823,7 @@ const EVENT_TYPES={
   section_filter:{icon:'🔧', verb:'Section filter'},
   section_delete:{icon:'🗑️', verb:'Removed section'},
   search_create: {icon:'🔍', verb:'Search'},
+  task_complete:{icon:'✅', verb:'Completed task'},
 };
 function logEvent(eventType, label, refId){
   const ev={
@@ -7013,8 +7205,14 @@ function matchEntries(query){
     const parts=stripped.split(/\s+/).filter(Boolean);
     const tags=[],mentions=[],words=[...phrases],excludes=[...excludePhrases];
     const lineTerms=lineMode?[...phrases]:null; // literal terms that must co-occur on one line
+    let dateFilter=null;
     parts.forEach(p=>{
       if(p==='or')return; // skip stray OR
+      if(p.startsWith('date:')){
+        const dv=p.slice(5);
+        dateFilter=dv==='today'?todayStr():dv;
+        return;
+      }
       if(p.startsWith('#')){
         tags.push(p.slice(1));
         if(lineMode)lineTerms.push(p); // keep '#idea' as a literal for per-line check
@@ -7031,6 +7229,7 @@ function matchEntries(query){
     });
     base.forEach(e=>{
       if(matched.has(e.id))return;
+      if(dateFilter&&e.date!==dateFilter)return;
       const content=(e.content+' '+(e.noteTitle||'')).toLowerCase();
       if(tags.length&&!tags.every(t=>(e.tags||[]).some(et=>et.toLowerCase()===t)))return;
       if(mentions.length&&!mentions.every(m=>(e.mentions||[]).some(em=>em.toLowerCase()===m)))return;
@@ -7049,9 +7248,23 @@ function matchEntries(query){
 }
 // Match tasks against the same query syntax as matchEntries
 function matchTasks(query){
-  const tasks=(db.tasks||[]).filter(t=>!t.completed);
   if(!query||!query.trim())return[];
-  const orGroups=query.split(/\s+OR\s+/i);
+  let q=query.trim();
+  // Pre-scan for completed: operator — changes the base pool
+  let completedFilter=null;
+  q=q.replace(/\bcompleted:(\S+)/gi,(_,v)=>{
+    completedFilter=v.toLowerCase()==='today'?todayStr():v.toLowerCase();
+    return '';
+  }).trim();
+  let tasks;
+  if(completedFilter){
+    tasks=(db.tasks||[]).filter(t=>t.completed&&t.completed_at&&dateStr(new Date(t.completed_at))===completedFilter);
+  } else {
+    tasks=(db.tasks||[]).filter(t=>!t.completed);
+  }
+  // If query is now empty (was only completed:xxx), return the pool
+  if(!q)return tasks.sort((a,b)=>(b.completed_at||b.created_at||0)-(a.completed_at||a.created_at||0));
+  const orGroups=q.split(/\s+OR\s+/i);
   const matched=new Set();
   for(const group of orGroups){
     let stripped=group.trim().toLowerCase();
@@ -7061,8 +7274,10 @@ function matchTasks(query){
     stripped=stripped.replace(/"([^"]+)"/g,(_,m)=>{phrases.push(m);return ' ';});
     const parts=stripped.split(/\s+/).filter(Boolean);
     const tags=[],mentions=[],words=[...phrases];
+    let dateFilter=null;
     parts.forEach(p=>{
       if(p==='or')return;
+      if(p.startsWith('date:')){dateFilter=p.slice(5)==='today'?todayStr():p.slice(5);return;}
       if(p.startsWith('#'))tags.push(p.slice(1));
       else if(p.startsWith('@'))mentions.push(p.slice(1));
       else if(p.startsWith('-')&&p.length>1)excludes.push(p.slice(1));
@@ -7070,6 +7285,7 @@ function matchTasks(query){
     });
     tasks.forEach(t=>{
       if(matched.has(t.id))return;
+      if(dateFilter&&dateStr(new Date(t.created_at))!==dateFilter)return;
       const content=(t.title+' '+(t.description||'')).toLowerCase();
       if(tags.length&&!tags.every(tg=>(t.tags||[]).some(tt=>tt.toLowerCase()===tg)))return;
       if(mentions.length&&!mentions.every(m=>(t.mentions||[]).some(tm=>tm.toLowerCase()===m)))return;
@@ -7078,7 +7294,7 @@ function matchTasks(query){
       matched.add(t.id);
     });
   }
-  return tasks.filter(t=>matched.has(t.id)).sort((a,b)=>(b.created_at||0)-(a.created_at||0));
+  return tasks.filter(t=>matched.has(t.id)).sort((a,b)=>(b.completed_at||b.created_at||0)-(a.completed_at||a.created_at||0));
 }
 
 function updateSection(id,field,val){
@@ -7165,7 +7381,9 @@ function openSearch(){
 }
 
 /* ═══════════ FLOATING NOTE WINDOW ═══════════ */
+let _floatingWindowOpen=false;
 function openFloatingNote(){
+  _floatingWindowOpen=true;
   // Create a fresh note and store in localStorage (NOT IDB — popup reads from localStorage)
   const entry={id:genId('e'),content:'',tags:[],date:todayStr(),ts:Date.now(),isNote:true,noteTitle:'',updatedTs:Date.now()};
   localStorage.setItem('dd_float_note',JSON.stringify(entry));
@@ -7176,6 +7394,7 @@ function openFloatingNote(){
   _openFloatingWindowFor(entry.id);
 }
 function openFloatingNoteFor(id){
+  _floatingWindowOpen=true;
   // Open an EXISTING note in a floating window.
   const e=db.entries.find(x=>x.id===id&&x.isNote);
   if(!e)return;
@@ -7261,7 +7480,7 @@ async function initFloatingMode(){
   document.body.classList.add('floating-mode');
   // Load DB for theme + settings only
   await loadDB();
-  if(db.theme&&db.theme!=='Hot Pink')applyTheme(db.theme);
+  if(db.theme)applyTheme(db.theme);
 
   // Read the note from localStorage (written by main window before opening popup)
   const noteId=window.location.hash.slice(1);
@@ -7269,7 +7488,7 @@ async function initFloatingMode(){
   try{
     const raw=localStorage.getItem('dd_float_note');
     if(raw){const parsed=JSON.parse(raw);if(parsed&&parsed.id===noteId)entry=parsed;}
-  }catch(e){}
+  }catch(e){console.error('[DD] Floating note localStorage read failed:',e);}
   // Fallback: try IDB if localStorage didn't have it
   if(!entry){entry=db.entries.find(x=>x.id===noteId&&x.isNote);}
   // Last resort: create empty
@@ -7289,16 +7508,16 @@ async function initFloatingMode(){
     // Re-read from db.entries to get latest content (noteContentChanged updates it)
     const latest=db.entries.find(x=>x.id===entry.id);
     const data=latest||entry;
-    try{registerMentions(extractMentions(data.content||''));}catch(e){}
+    try{registerMentions(extractMentions(data.content||''));}catch(e){console.warn('[DD] Floating close mention extract failed:',e);}
     // Write final note state to localStorage (synchronous — guaranteed before teardown)
     try{localStorage.setItem('dd_float_note',JSON.stringify({
       id:data.id,content:data.content||'',tags:data.tags||[],date:data.date||todayStr(),
       ts:data.ts||Date.now(),isNote:true,noteTitle:data.noteTitle||'',updatedTs:data.updatedTs||Date.now()
-    }));}catch(e){}
+    }));}catch(e){console.error('[DD] CRITICAL: Floating note localStorage backup failed:',e);}
     // Signal main window to pick up the note
-    try{localStorage.setItem('dd_float_closed',JSON.stringify({noteId:data.id,ts:Date.now()}));}catch(e){}
+    try{localStorage.setItem('dd_float_closed',JSON.stringify({noteId:data.id,ts:Date.now()}));}catch(e){console.error('[DD] CRITICAL: Floating close signal failed:',e);}
     // Attempt IDB flush as bonus (may not complete)
-    try{save();flushSave();}catch(e){}
+    try{save();flushSave();}catch(e){console.warn('[DD] Floating close IDB flush failed (expected):',e);}
   });
 }
 function closeSearch(){/* compat stub — closing search tab via closeTab */}
@@ -7470,49 +7689,220 @@ function jumpToEntry(id){
 function getCtxLabel(){return null;}
 
 /* ═══════════ DAILY WRAP-UP ═══════════ */
-function generateWrapUp(){
-  const d=selectedDate;
+function gatherDailySummaryData(d){
   const allEntries=db.entries.filter(e=>e.date===d&&!e.eventType&&!e.isHelp).sort((a,b)=>a.ts-b.ts);
   const quickEntries=allEntries.filter(e=>!e.isNote);
-  const notes=allEntries.filter(e=>e.isNote);
+  const notesCreated=allEntries.filter(e=>e.isNote);
   const notesEdited=db.entries.filter(e=>e.isNote&&!e.isHelp&&e.updatedTs&&dateStr(new Date(e.updatedTs))===d&&e.date!==d);
+  const tasksCompleted=(db.tasks||[]).filter(t=>t.completed&&t.completed_at&&dateStr(new Date(t.completed_at))===d).sort((a,b)=>a.completed_at-b.completed_at);
+  const tasksCreated=(db.tasks||[]).filter(t=>t.created_at&&dateStr(new Date(t.created_at))===d).sort((a,b)=>a.created_at-b.created_at);
+  const events=db.entries.filter(e=>e.date===d&&e.eventType).sort((a,b)=>a.ts-b.ts);
   const allTags=new Set();allEntries.forEach(e=>(e.tags||[]).forEach(t=>allTags.add(t)));
   const allPeople=new Set();allEntries.forEach(e=>(e.mentions||[]).forEach(m=>allPeople.add(m)));
+  return{
+    date:d, dateLabel:fmtDateLabel(d),
+    allEntries, quickEntries, notesCreated, notesEdited,
+    tasksCompleted, tasksCreated, events,
+    allTags, allPeople,
+    metrics:{
+      entries:allEntries.length,
+      tasksCompleted:tasksCompleted.length,
+      tasksCreated:tasksCreated.length,
+      notes:notesCreated.length+notesEdited.length,
+      tagsUsed:allTags.size
+    }
+  };
+}
 
-  let md=`# Daily Summary — ${fmtDateLabel(d)}\n\n`;
+function renderDailySummaryDashboard(area,entry){
+  const data=gatherDailySummaryData(entry.date);
+  const m=data.metrics;
+  const stripT=s=>(s||'').replace(/#[a-zA-Z0-9_-]+/g,'').replace(/\{\{[^}]+\}\}/g,'').trim();
+  const stripMd=s=>(s||'').replace(/^#+ .+\n?/,'').replace(/#[a-zA-Z0-9_-]+/g,'').replace(/\{\{[^}]+\}\}/g,'').replace(/[*`_~\[\]]/g,'').trim();
+
+  let h=`<div class="ds-wrap">`;
+
+  // ── Header ──
+  h+=`<div class="ds-header">
+    <div class="ds-header-date">${escH(data.dateLabel)}</div>
+    <div class="ds-header-title">Daily Summary</div>
+    <div class="ds-header-actions">
+      <button onclick="generateWrapUp();renderActiveView()">&#8635; Regenerate</button>
+      <button onclick="copyNoteAsMarkdown('${entry.id}')">&#128203; Copy Markdown</button>
+      <button onclick="showConfirm('Delete this summary?',{title:'Delete',okLabel:'Delete',dangerOk:true}).then(ok=>{if(ok){db.entries=db.entries.filter(e=>e.id!=='${entry.id}');save();closeTab('${entry.id}');renderActiveView();renderSidebar();}})">&#128465; Delete</button>
+    </div>
+  </div>`;
+
+  // ── Metrics Row ──
+  h+=`<div class="ds-metrics">
+    <div class="ds-metric-card"><div class="ds-metric-num">${m.entries}</div><div class="ds-metric-label">Entries</div></div>
+    <div class="ds-metric-card green"><div class="ds-metric-num">${m.tasksCompleted}</div><div class="ds-metric-label">Tasks Done</div></div>
+    <div class="ds-metric-card"><div class="ds-metric-num">${m.tasksCreated}</div><div class="ds-metric-label">Tasks Created</div></div>
+    <div class="ds-metric-card"><div class="ds-metric-num">${m.notes}</div><div class="ds-metric-label">Notes</div></div>
+    <div class="ds-metric-card"><div class="ds-metric-num">${m.tagsUsed}</div><div class="ds-metric-label">Tags Used</div></div>
+  </div>`;
+
+  // ── Tasks Completed ──
+  h+=`<div class="ds-section"><div class="ds-section-title">Tasks Completed</div>`;
+  if(data.tasksCompleted.length){
+    data.tasksCompleted.forEach(t=>{
+      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+      const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
+      const noteLink=t.note_id?`<span class="ds-task-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')" title="Open linked note">&#128196;</span>`:'';
+      h+=`<div class="ds-task-row" onclick="openTaskDetail('${t.id}')">
+        <span class="ds-task-icon">&#9989;</span>
+        <span class="ds-task-title">${escH(t.title)}</span>
+        <span class="pri-tag ${pri}">${priLabel}</span>
+        <span class="ds-task-time">${fmtTime(t.completed_at)}</span>
+        ${noteLink}
+      </div>`;
+    });
+  } else {
+    h+=`<div class="ds-empty">No tasks completed</div>`;
+  }
+  h+=`</div>`;
+
+  // ── Tasks Created ──
+  h+=`<div class="ds-section"><div class="ds-section-title">Tasks Created</div>`;
+  if(data.tasksCreated.length){
+    data.tasksCreated.forEach(t=>{
+      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+      const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
+      const status=t.completed?'&#9989;':'&#9744;';
+      h+=`<div class="ds-task-row" onclick="openTaskDetail('${t.id}')">
+        <span class="ds-task-icon">${status}</span>
+        <span class="ds-task-title">${escH(t.title)}</span>
+        <span class="pri-tag ${pri}">${priLabel}</span>
+        <span class="ds-task-time">${fmtTime(t.created_at)}</span>
+      </div>`;
+    });
+  } else {
+    h+=`<div class="ds-empty">No tasks created</div>`;
+  }
+  h+=`</div>`;
+
+  // ── Activity Timeline ──
+  const timeline=[];
+  data.quickEntries.forEach(e=>timeline.push({ts:e.ts,type:'entry',icon:'entry',text:e.content.slice(0,150),id:e.id,action:`openAsNote('${e.id}')`}));
+  data.notesCreated.forEach(e=>timeline.push({ts:e.ts,type:'note',icon:'note',text:'<strong>'+escH(stripT(e.noteTitle)||'Untitled')+'</strong> — '+escH(stripMd(e.content).slice(0,100)),id:e.id,action:`openNoteTab('${e.id}')`}));
+  data.notesEdited.forEach(e=>timeline.push({ts:e.updatedTs||e.ts,type:'note',icon:'note',text:'Edited: <strong>'+escH(stripT(e.noteTitle)||'Untitled')+'</strong>',id:e.id,action:`openNoteTab('${e.id}')`}));
+  data.tasksCompleted.forEach(t=>timeline.push({ts:t.completed_at,type:'task',icon:'task',text:'Completed: <strong>'+escH(t.title)+'</strong>',id:t.id,action:`openTaskDetail('${t.id}')`}));
+  data.events.forEach(e=>{const et=EVENT_TYPES[e.eventType]||{icon:'•',verb:e.eventType};timeline.push({ts:e.ts,type:'event',icon:'event',text:et.icon+' '+et.verb+': '+escH(e.content.slice(0,100)),id:e.id,action:null});});
+  timeline.sort((a,b)=>a.ts-b.ts);
+
+  h+=`<div class="ds-section"><div class="ds-section-title">Activity Timeline</div>`;
+  if(timeline.length){
+    h+=`<div class="ds-timeline">`;
+    timeline.forEach(item=>{
+      const click=item.action?` onclick="${item.action}"`:'';
+      h+=`<div class="ds-tl-item"${click}>
+        <div class="ds-tl-dot ${item.icon}"></div>
+        <div class="ds-tl-time">${fmtTime(item.ts)}</div>
+        <div class="ds-tl-text">${item.type==='entry'?escH(item.text):item.text}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  } else {
+    h+=`<div class="ds-empty">No activity recorded</div>`;
+  }
+  h+=`</div>`;
+
+  // ── Notes ──
+  const allNotes=[...data.notesCreated,...data.notesEdited];
+  if(allNotes.length){
+    h+=`<div class="ds-section"><div class="ds-section-title">Notes</div><div class="ds-note-grid">`;
+    allNotes.forEach(e=>{
+      const title=stripT(e.noteTitle)||'Untitled';
+      const preview=stripMd(e.content).slice(0,200);
+      const isEdited=data.notesEdited.includes(e);
+      h+=`<div class="ds-note-card" onclick="openNoteTab('${e.id}')">
+        <div class="ds-note-card-title">${escH(title)}</div>
+        <div class="ds-note-card-preview">${escH(preview)}</div>
+        ${isEdited?`<div class="ds-note-card-meta">Edited (created ${e.date})</div>`:''}
+      </div>`;
+    });
+    h+=`</div></div>`;
+  }
+
+  // ── Tags & People ──
+  if(data.allTags.size||data.allPeople.size){
+    h+=`<div class="ds-section"><div class="ds-section-title">Tags & People</div><div class="ds-pills">`;
+    // Count entries per tag
+    const tagCounts={};
+    data.allEntries.forEach(e=>(e.tags||[]).forEach(t=>{tagCounts[t]=(tagCounts[t]||0)+1;}));
+    [...data.allTags].sort().forEach(tag=>{
+      const c=getTagColor(tag);
+      h+=`<span class="ds-pill" style="background:${c}18;color:${c};border:1px solid ${c}30">#${escH(tag)}<span class="ds-pill-count"> ${tagCounts[tag]||0}</span></span>`;
+    });
+    [...data.allPeople].sort().forEach(p=>{
+      h+=`<span class="ds-pill" style="background:var(--accent-light);color:var(--accent);border:1px solid var(--accent)">@${escH(p)}</span>`;
+    });
+    h+=`</div></div>`;
+  }
+
+  h+=`</div>`; // close .ds-wrap
+  area.innerHTML=h;
+}
+
+function generateWrapUp(){
+  const d=selectedDate;
+  const data=gatherDailySummaryData(d);
+
+  let md=`# Daily Summary — ${data.dateLabel}\n\n`;
 
   // Stats
   md+=`## Stats\n`;
-  md+=`- **${allEntries.length}** total entries (${quickEntries.length} quick, ${notes.length} notes)\n`;
-  if(allTags.size)md+=`- **${allTags.size}** tags used: ${[...allTags].map(t=>'#'+t).join(', ')}\n`;
-  if(allPeople.size)md+=`- **${allPeople.size}** people mentioned: ${[...allPeople].map(p=>'@'+p).join(', ')}\n`;
+  md+=`- **${data.metrics.entries}** entries (${data.quickEntries.length} quick, ${data.notesCreated.length} notes)\n`;
+  md+=`- **${data.metrics.tasksCompleted}** tasks completed\n`;
+  md+=`- **${data.metrics.tasksCreated}** tasks created\n`;
+  if(data.allTags.size)md+=`- **${data.allTags.size}** tags: ${[...data.allTags].map(t=>'#'+t).join(', ')}\n`;
+  if(data.allPeople.size)md+=`- **${data.allPeople.size}** people: ${[...data.allPeople].map(p=>'@'+p).join(', ')}\n`;
   md+='\n';
 
+  // Tasks completed
+  if(data.tasksCompleted.length){
+    md+=`## Tasks Completed\n\n`;
+    data.tasksCompleted.forEach(t=>{
+      const pri=t.priority==='H'?'HIGH':t.priority==='M'?'MED':'LOW';
+      md+=`- **${fmtTime(t.completed_at)}** ${t.title} [${pri}]\n`;
+    });
+    md+='\n';
+  }
+
+  // Tasks created
+  if(data.tasksCreated.length){
+    md+=`## Tasks Created\n\n`;
+    data.tasksCreated.forEach(t=>{
+      const pri=t.priority==='H'?'HIGH':t.priority==='M'?'MED':'LOW';
+      const status=t.completed?'done':'open';
+      md+=`- ${t.title} [${pri}] (${status})\n`;
+    });
+    md+='\n';
+  }
+
   // Timeline
-  if(quickEntries.length){
+  if(data.quickEntries.length){
     md+=`## Timeline\n\n`;
-    quickEntries.forEach(e=>{
+    data.quickEntries.forEach(e=>{
       const tags=(e.tags||[]).length?' '+e.tags.map(t=>'#'+t).join(' '):'';
       md+=`- **${fmtTime(e.ts)}** ${e.content.slice(0,150)}${e.content.length>150?'...':''}${tags}\n`;
     });
     md+='\n';
   }
 
-  // Notes created today
-  if(notes.length){
+  // Notes
+  if(data.notesCreated.length){
     md+=`## Notes Created\n\n`;
-    notes.forEach(e=>{
+    data.notesCreated.forEach(e=>{
       const title=(e.noteTitle||'Untitled').replace(/#[a-zA-Z0-9_-]+/g,'').trim();
-      const preview=e.content.replace(/^#+ .+\n?/,'').replace(/#[a-zA-Z0-9_-]+/g,'').replace(/[*`_~\[\]]/g,'').trim().slice(0,100);
+      const preview=e.content.replace(/^#+ .+\n?/,'').replace(/#[a-zA-Z0-9_-]+/g,'').replace(/\{\{[^}]+\}\}/g,'').replace(/[*`_~\[\]]/g,'').trim().slice(0,100);
       md+=`- **${title}**${preview?' — '+preview:''}\n`;
     });
     md+='\n';
   }
-
-  // Notes edited today (created on other days)
-  if(notesEdited.length){
+  if(data.notesEdited.length){
     md+=`## Notes Edited\n\n`;
-    notesEdited.forEach(e=>{
+    data.notesEdited.forEach(e=>{
       const title=(e.noteTitle||'Untitled').replace(/#[a-zA-Z0-9_-]+/g,'').trim();
       md+=`- **${title}** (created ${e.date})\n`;
     });
@@ -7520,15 +7910,14 @@ function generateWrapUp(){
   }
 
   // By tag
-  if(allTags.size){
+  if(data.allTags.size){
     md+=`## By Tag\n\n`;
     const byTag={};
-    allEntries.forEach(e=>{
+    data.allEntries.forEach(e=>{
       if(!(e.tags||[]).length)(byTag['untagged']=byTag['untagged']||[]).push(e);
       else e.tags.forEach(t=>(byTag[t]=byTag[t]||[]).push(e));
     });
-    const sorted=Object.entries(byTag).sort((a,b)=>b[1].length-a[1].length);
-    sorted.forEach(([tag,es])=>{
+    Object.entries(byTag).sort((a,b)=>b[1].length-a[1].length).forEach(([tag,es])=>{
       md+=`### #${tag} (${es.length})\n`;
       es.forEach(e=>{
         const text=e.isNote?(e.noteTitle||'Untitled'):e.content.slice(0,100);
@@ -7538,8 +7927,16 @@ function generateWrapUp(){
     });
   }
 
-  const entry={id:genId('e'),content:md,tags:['daily-summary'],date:d,ts:Date.now(),isNote:true,noteTitle:`Summary — ${fmtDateLabel(d)}`,contextId:null};
-  db.entries.push(entry);save();openNoteTab(entry.id);renderAllSections();
+  // Dedup: update existing summary for this date instead of creating a new one
+  let entry=db.entries.find(e=>e.isNote&&(e.tags||[]).includes('daily-summary')&&e.date===d);
+  if(entry){
+    entry.content=md;
+    entry.updatedTs=Date.now();
+  } else {
+    entry={id:genId('e'),content:md,tags:['daily-summary'],date:d,ts:Date.now(),isNote:true,noteTitle:`Summary — ${data.dateLabel}`,contextId:null,updatedTs:Date.now()};
+    db.entries.push(entry);
+  }
+  save();openNoteTab(entry.id);renderAllSections();
 }
 
 /* ═══════════ SIDEBAR TOGGLE ═══════════ */
@@ -7734,6 +8131,14 @@ document.addEventListener('keydown',e=>{
 
 /* ═══════════ QUICK OPEN MODAL (Cmd+Shift+O) ═══════════ */
 let _qoState=null; // {results, selected}
+const _qoNavItems=[
+  {type:'nav',label:'Go to Today',desc:'Switch to Today view',action:()=>{goToday();if(!openTabs.includes('today'))openTabs.push('today');activeTab='today';renderTabBar();renderActiveView();}},
+  {type:'nav',label:'Open Tasks',desc:'Kanban / list view',action:()=>{if(!openTabs.includes('tasks'))openTabs.push('tasks');activeTab='tasks';renderTabBar();renderActiveView();}},
+  {type:'nav',label:'Open Search',desc:'Full-text search',action:()=>{if(!openTabs.includes('search'))openTabs.push('search');activeTab='search';renderTabBar();renderActiveView();}},
+  {type:'nav',label:'Open Settings',desc:'Preferences, backup, themes',action:()=>{openSettings();}},
+  {type:'nav',label:'New Note',desc:'Create a blank note',action:()=>{createNote();}},
+  {type:'nav',label:'Open Gallery',desc:'Image gallery',action:()=>{if(!openTabs.includes('gallery'))openTabs.push('gallery');activeTab='gallery';renderTabBar();renderActiveView();}},
+];
 function openQuickOpen(){
   closeQuickOpen();
   const overlay=document.createElement('div');
@@ -7742,7 +8147,7 @@ function openQuickOpen(){
   overlay.innerHTML=`<div class="quick-open-modal">
     <div class="quick-open-input-wrap">
       <span class="quick-open-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg></span>
-      <input id="quick-open-input" type="text" placeholder="Find a note by title\u2026" autocomplete="off" spellcheck="false">
+      <input id="quick-open-input" type="text" placeholder="Search notes, tasks, commands\u2026" autocomplete="off" spellcheck="false">
       <span class="quick-open-hint"><kbd>\u2191\u2193</kbd> navigate &nbsp; <kbd>\u21b5</kbd> open &nbsp; <kbd>esc</kbd> close</span>
     </div>
     <div id="quick-open-results" class="quick-open-results"></div>
@@ -7762,19 +8167,72 @@ function openQuickOpen(){
   updateQuickOpenResults('');
   setTimeout(()=>input.focus(),10);
 }
+function _qoFuzzyMatch(text,q){
+  if(!q)return true;
+  text=text.toLowerCase();
+  // Simple substring first
+  if(text.includes(q))return true;
+  // Fuzzy: all chars of q appear in order
+  let qi=0;
+  for(let i=0;i<text.length&&qi<q.length;i++){
+    if(text[i]===q[qi])qi++;
+  }
+  return qi===q.length;
+}
 function updateQuickOpenResults(query){
   const q=(query||'').trim().toLowerCase();
   const stripT=s=>(s||'').replace(/#[a-zA-Z0-9_-]+/g,'').trim();
-  let results=db.entries
+  const results=[];
+  // 1. Notes
+  const notes=db.entries
     .filter(e=>e.isNote&&!e.eventType)
-    .filter(e=>{
-      if(!q)return true;
-      const title=stripT(e.noteTitle).toLowerCase();
-      return title.includes(q);
-    })
+    .filter(e=>_qoFuzzyMatch(stripT(e.noteTitle),q))
     .sort((a,b)=>(b.updatedTs||b.ts)-(a.updatedTs||a.ts))
-    .slice(0,50);
-  _qoState={results,selected:0};
+    .slice(0,20);
+  for(const e of notes){
+    const title=stripT(e.noteTitle)||'Untitled';
+    const preview=(e.content||'').split('\n').map(l=>l.trim()).find(l=>l&&!/^#/.test(l)&&!/^\{\{/.test(l))||'';
+    const badges=[];
+    if(e.isHelp)badges.push('help');
+    if((e.tags||[]).some(t=>t.toLowerCase()==='template'))badges.push('tpl');
+    results.push({type:'note',label:title,preview,badges,id:e.id,
+      action:()=>openNoteTab(e.id)});
+  }
+  // 2. Tasks (non-completed only)
+  const tasks=(db.tasks||[])
+    .filter(t=>!t.completed)
+    .filter(t=>_qoFuzzyMatch(t.title||'',q))
+    .sort((a,b)=>(b.created_at||0)-(a.created_at||0))
+    .slice(0,10);
+  for(const t of tasks){
+    const pri=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
+    results.push({type:'task',label:t.title,preview:t.due_date?'Due '+t.due_date+' · '+pri:pri,
+      id:t.id,action:()=>openTaskDetail(t.id)});
+  }
+  // 3. Navigation commands
+  const navMatches=_qoNavItems.filter(n=>_qoFuzzyMatch(n.label,q));
+  for(const n of navMatches){
+    results.push({type:'nav',label:n.label,preview:n.desc,action:n.action});
+  }
+  // 4. Slash commands (only if query is non-empty to avoid clutter)
+  if(q){
+    const slashCmds=(typeof SLASH_COMMANDS!=='undefined'?SLASH_COMMANDS:[])
+      .filter(c=>_qoFuzzyMatch(c.label,q)||_qoFuzzyMatch(c.name,q));
+    for(const c of slashCmds){
+      results.push({type:'cmd',label:'/'+c.name,preview:c.desc,
+        action:()=>{
+          // If we're in a note editor, execute the command
+          if(cmEditorView){
+            const pos=cmEditorView.state.selection.main.head;
+            const line=cmEditorView.state.doc.lineAt(pos);
+            c.run(cmEditorView,line.from,line.to);
+          } else {
+            showToast('Open a note first to use /'+c.name,'info');
+          }
+        }});
+    }
+  }
+  _qoState={results,selected:results.length?0:-1};
   renderQuickOpenResults();
 }
 function renderQuickOpenResults(){
@@ -7782,21 +8240,33 @@ function renderQuickOpenResults(){
   if(!el||!_qoState)return;
   const {results,selected}=_qoState;
   if(!results.length){
-    el.innerHTML='<div class="quick-open-empty">No notes match</div>';
+    el.innerHTML='<div class="quick-open-empty">No results</div>';
     return;
   }
-  const stripT=s=>(s||'').replace(/#[a-zA-Z0-9_-]+/g,'').trim();
-  el.innerHTML=results.map((e,i)=>{
-    const title=escH(stripT(e.noteTitle)||'Untitled').slice(0,80);
-    const preview=escH((e.content||'').split('\n').map(l=>l.trim()).find(l=>l&&!/^#/.test(l)&&!/^\{\{/.test(l))||'').slice(0,100);
-    const helpBadge=e.isHelp?'<span class="quick-open-badge">help</span>':'';
-    const tpl=(e.tags||[]).some(t=>t.toLowerCase()==='template')?'<span class="quick-open-badge tpl">template</span>':'';
-    return `<div class="quick-open-item${i===selected?' selected':''}" data-idx="${i}" onmousedown="event.preventDefault();_qoState.selected=${i};selectQuickOpen();">
-      <div class="quick-open-title">${title}${helpBadge}${tpl}</div>
-      ${preview?`<div class="quick-open-preview">${preview}</div>`:''}
-    </div>`;
-  }).join('');
-  // Scroll selected into view
+  // Group by type, preserving order within each group
+  const groups=[
+    {key:'note',label:'Notes',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="11" y2="10"/></svg>'},
+    {key:'task',label:'Tasks',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><polyline points="7 10 9 12 13 8"/></svg>'},
+    {key:'nav',label:'Navigation',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>'},
+    {key:'cmd',label:'Commands',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 7 10 12 15 7"/></svg>'},
+  ];
+  let html='';
+  let flatIdx=0;
+  for(const g of groups){
+    const items=results.filter(r=>r.type===g.key);
+    if(!items.length)continue;
+    html+=`<div class="quick-open-group">${g.label}</div>`;
+    for(const item of items){
+      const idx=results.indexOf(item);
+      const badgesHtml=(item.badges||[]).map(b=>`<span class="quick-open-badge${b==='tpl'?' tpl':''}">${b}</span>`).join('');
+      const typeClass=item.type==='task'?' task':item.type==='nav'?' nav':item.type==='cmd'?' cmd':'';
+      html+=`<div class="quick-open-item${idx===selected?' selected':''}" data-idx="${idx}" onmousedown="event.preventDefault();_qoState.selected=${idx};selectQuickOpen();">
+        <div class="quick-open-title"><span class="quick-open-icon-inline">${g.icon}</span>${escH(item.label)}${badgesHtml}</div>
+        ${item.preview?`<div class="quick-open-preview">${escH(item.preview)}</div>`:''}
+      </div>`;
+    }
+  }
+  el.innerHTML=html;
   const selEl=el.querySelector('.quick-open-item.selected');
   if(selEl)selEl.scrollIntoView({block:'nearest'});
 }
@@ -7806,10 +8276,10 @@ function navQuickOpen(dir){
   renderQuickOpenResults();
 }
 function selectQuickOpen(){
-  if(!_qoState||!_qoState.results.length)return;
-  const note=_qoState.results[_qoState.selected];
+  if(!_qoState||!_qoState.results.length||_qoState.selected<0)return;
+  const item=_qoState.results[_qoState.selected];
   closeQuickOpen();
-  if(note)openNoteTab(note.id);
+  if(item&&item.action)item.action();
 }
 function closeQuickOpen(){
   const o=document.getElementById('quick-open-overlay');
@@ -7940,7 +8410,7 @@ function deleteImage(id){
     // Remove from db.images
     db.images.delete(id);
     // Remove from IndexedDB
-    try{idbDelete('images',id);}catch(e){}
+    try{idbDelete('images',id);}catch(e){console.error('[DD] Image delete from IDB failed:',e);}
     // Replace all references in entry content with a placeholder
     const pattern=new RegExp('!\\[\\]\\('+id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(\\|w=\\d+)?\\)','g');
     db.entries.forEach(e=>{
@@ -8165,6 +8635,11 @@ function renderHome(area){
       <p class="home-cta-footnote">Reopen this page any time from the home icon next to the logo.</p>
     </section>
 
+    <div class="tc-footer">
+      <img class="tc-footer-logo" src="${_TC_LOGO}" alt="Torg Crafted">
+      <span class="tc-footer-text">DailyDispatch created by <strong>Torg Crafted</strong></span>
+    </div>
+
   </div>`;
 }
 function closeSettings(){
@@ -8173,8 +8648,41 @@ function closeSettings(){
 }
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
-const APP_VERSION='3.3.0';
+const _TC_LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB8QAAAe8CAYAAADLSyrKAAAACXBIWXMAABcRAAAXEQHKJvM/AAAgAElEQVR4nOzcUU0DURRF0ftI/SABLKEAcIAEnFAcIAEJOHgECUBJJpu1FHTO/dwzXTNzHgAAAAAAAABoeT7NzI2jAgAAAAAAABBzvnJRAAAAAAAAAIoEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkk4HeqjHvffDAX4HAAAAAAAAAD+01tpH2c4X4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJJ2cFQCAS1trPczMvWGBb3jde98arGGt9XXLl/++A/A9e+9lMgAALs0X4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACSdnBUAgD/wPDNnw8JFPM3MtSnhsO5m5s15AAAAjkkQBwDg4vbe7zPzbln4vbXWhxnh0N723l4CAwAAOCh/mQ4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAPDJnh3IAAAAAAzyt77HVxoBALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAALwISXoAACAASURBVAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABg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QBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASOkHjxUAAKBftdZDjwcAAADgYVSIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFIS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IA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAI2hUq4AAAcwSURBVACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAPw/9u5YxOAYRgAgjZkr2S0jJ7GG6QRzx2ol+oHAQAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkXYOOevbe74A9AAAAAAAAAAiYFMTvMwAAAAAAAADwm5fpAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAA9Ky1PnNTzKBqbMoFAAAAAElFTkSuQmCC';
+const APP_VERSION='3.4.0';
 const CHANGELOG=[
+  {
+    version:'3.4.0',
+    date:'2026-04-12',
+    title:'Daily summary dashboard + query extensions',
+    changes:[
+      '**Daily summary dashboard** — rich visual dashboard with metrics cards, task completion list, activity timeline, notes grid, and tag/people pills',
+      '**`completed:` query operator** — Smart Lists and search now support `completed:today` or `completed:2026-04-12` to find tasks completed on a date',
+      '**`date:` query operator** — filter entries by date with `date:today` or `date:2026-04-12` in Smart Lists and search',
+      '**Summary dedup** — regenerating a summary for the same date updates the existing one instead of creating a duplicate',
+      '**Merge import** — import backups with a new Merge option that adds new items and updates older duplicates',
+      '**Quick Open expanded** — `Cmd+Shift+O` now searches notes, tasks, navigation commands, and slash commands',
+      '**Strikethrough rendering** — `~~text~~` now renders with strikethrough in the editor and previews',
+      '**Task creation from notes** — `/task` and toolbar button now open the full task modal with date, priority, and column',
+      '**Task completion events** — completing a task logs an event in the feed with a link to task details',
+      '**Creator footer** — Torg Crafted branding on homepage and settings',
+    ]
+  },
+  {
+    version:'3.3.1',
+    date:'2026-04-12',
+    title:'Pre-release hardening',
+    changes:[
+      '**Atomic IndexedDB writes** — `idbClearAndPut()` replaces two-step clear+put to prevent partial-write corruption',
+      '**IDB error handling** — centralized `_idbError()` logs + toasts on failures; red banner when IDB is unavailable',
+      '**Dark theme polish** — replaced 11 hardcoded light-mode colors with `color-mix()` / CSS variables',
+      '**Dead code removed** — stripped orphaned Questions/Contexts collections and unused functions',
+      '**Silent catches eliminated** — 11 empty `catch(e){}` blocks now log to console',
+      '**Empty states** — feed, sections, search, and tasks views show helpful guidance when empty',
+      '**Floating note polling** — `_recoverFloatingNote` skips work when no floating window is open',
+      '**Hot Pink default** — correctly applies on first load and survives reload',
+    ]
+  },
   {
     version:'3.3.0',
     date:'2026-04-12',
@@ -8349,7 +8857,7 @@ const CHANGELOG=[
     changes:[
       '**Recent** and **Tags** are now section-like panels that can be dragged between the left and right sidebars',
       'Removed the fixed sidebar widgets — Recent and Tags render inside the section containers alongside Help, Meetings, etc.',
-      'Virtual panel positions persist across sessions via `db.virtualPanels` in settings',
+      'Sidebar group collapse state persists across sessions via settings',
       '**Backlinks fix**: panel no longer disappears on tab switch — `_doRenderAllSections` re-renders backlinks AFTER rebuilding section DOM so the panel is never destroyed',
       'Backlinks toggle button active state is restored after section re-renders'
     ]
@@ -8850,6 +9358,10 @@ function renderSettingsTab(area){
         </div>`;
       }).join('')}</div>
     </div>
+    <div class="tc-footer">
+      <img class="tc-footer-logo" src="${_TC_LOGO}" alt="Torg Crafted">
+      <span class="tc-footer-text">DailyDispatch created by <strong>Torg Crafted</strong></span>
+    </div>
   </div>`;
   renderTagEditor();
   renderPeopleEditor();
@@ -8979,7 +9491,7 @@ async function doPurge(){
   localStorage.removeItem('dailydispatch_v1');
   localStorage.removeItem('dailydispatch_v2');
   // Reset in-memory state
-  db={entries:[],questions:[],contexts:[],tagColors:{},sections:[],people:[],images:new Map(),tasks:[],columns:[]};
+  db={entries:[],tagColors:{},sections:[],people:[],images:new Map(),tasks:[],columns:[]};
   // Reopen fresh database
   await openIDB();
   closePurge();closeSettings();
@@ -8991,8 +9503,6 @@ function exportData(){
     version:APP_VERSION,
     exportedAt:Date.now(),
     entries:db.entries,
-    questions:db.questions||[],
-    contexts:db.contexts||[],
     sections:db.sections||[],
     tagColors:db.tagColors||{},
     people:db.people||[],
@@ -9019,43 +9529,160 @@ function importData(e){
     try{
       const data=JSON.parse(ev.target.result);
       if(!data.entries){showAlert('Invalid backup file — missing entries.',{title:'Import Error'});return;}
-      const ok=await showConfirm('Importing will REPLACE all your current data. Export first if you want to keep it. Continue?',{title:'Import Backup',okLabel:'Import',dangerOk:true});
-      if(!ok)return;
-      // Data collections
-      db.entries=data.entries||[];
-      db.questions=data.questions||[];
-      db.contexts=data.contexts||[];
-      db.sections=data.sections||[];
-      db.tasks=data.tasks||[];
-      db.columns=data.columns||[];
-      // Settings
-      db.tagColors=data.tagColors||{};
-      db.people=data.people||[];
-      if(data.theme)db.theme=data.theme;
-      if(data.floatingNote)db.floatingNote=data.floatingNote;
-      // Reset the first-launch seeding flags so they're respected next time
-      db.defaultSectionsSeeded=true;
-      db.startersSeeded=true;
-      db.homeShownOnce=true;
-      db.lastBackupTs=Date.now();
-      // Images — preserve timestamps from the backup so gallery ordering is correct
-      if(data.images&&data.images.length){
-        await idbClearStore('images');
-        await idbPutAll('images',data.images.map(i=>({id:i.id,data:i.data,mimeType:i.mimeType,ts:i.ts||Date.now(),size:0})));
-        db.images=new Map(data.images.map(i=>[i.id,{data:i.data,mimeType:i.mimeType,ts:i.ts||0}]));
-      } else {
-        await idbClearStore('images');
-        db.images=new Map();
-      }
-      await saveAll();
-      if(db.theme)applyTheme(db.theme);
-      closeSettings();
-      openTabs=['today'];activeTab='today';
-      updateDateBar();renderTabBar();renderActiveView();renderSidebar();
-      if(typeof showToast==='function')showToast('Backup imported','info');
+      const mode=await _showImportModeDialog(data);
+      if(!mode)return; // cancelled
+      if(mode==='replace') await _importReplace(data);
+      else await _importMerge(data);
     }catch(err){showAlert('Failed to parse file: '+err.message,{title:'Import Error'});}
   };
   reader.readAsText(file);e.target.value='';
+}
+function _showImportModeDialog(data){
+  // Count what's in the file for context
+  const eCnt=(data.entries||[]).length, tCnt=(data.tasks||[]).length, sCnt=(data.sections||[]).length;
+  const summary=`${eCnt} note${eCnt!==1?'s':''}, ${tCnt} task${tCnt!==1?'s':''}, ${sCnt} section${sCnt!==1?'s':''}`;
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.className='modal-overlay open';
+    ov.style.cssText='z-index:12000';
+    ov.innerHTML=`<div class="dd-dialog" style="max-width:380px">
+      <div class="dd-dialog-title">Import Backup</div>
+      <div class="dd-dialog-msg" style="margin-bottom:12px">File contains ${summary}.<br>How should this data be imported?</div>
+      <button class="modal-btn primary" style="width:100%;margin-bottom:8px;text-align:left;padding:10px 14px" data-mode="merge">
+        <strong>Merge</strong><br><span style="font-size:12px;font-weight:400;color:var(--text3)">Add new items, update older duplicates, keep everything else</span>
+      </button>
+      <button class="modal-btn danger" style="width:100%;text-align:left;padding:10px 14px" data-mode="replace">
+        <strong>Replace all data</strong><br><span style="font-size:12px;font-weight:400;color:var(--text3)">Wipe current data and replace with this file</span>
+      </button>
+      <div style="text-align:center;margin-top:10px"><button class="modal-btn" data-mode="cancel" style="background:none;color:var(--text3)">Cancel</button></div>
+    </div>`;
+    ov.addEventListener('click',e=>{
+      const btn=e.target.closest('[data-mode]');
+      if(!btn)return;
+      ov.remove();
+      const m=btn.dataset.mode;
+      resolve(m==='cancel'?null:m);
+    });
+    document.body.appendChild(ov);
+  });
+}
+async function _importReplace(data){
+  db.entries=data.entries||[];
+  db.sections=data.sections||[];
+  db.tasks=data.tasks||[];
+  db.columns=data.columns||[];
+  db.tagColors=data.tagColors||{};
+  db.people=data.people||[];
+  if(data.theme)db.theme=data.theme;
+  if(data.floatingNote)db.floatingNote=data.floatingNote;
+  db.defaultSectionsSeeded=true;
+  db.startersSeeded=true;
+  db.homeShownOnce=true;
+  db.lastBackupTs=Date.now();
+  if(data.images&&data.images.length){
+    await idbClearStore('images');
+    await idbPutAll('images',data.images.map(i=>({id:i.id,data:i.data,mimeType:i.mimeType,ts:i.ts||Date.now(),size:0})));
+    db.images=new Map(data.images.map(i=>[i.id,{data:i.data,mimeType:i.mimeType,ts:i.ts||0}]));
+  } else {
+    await idbClearStore('images');
+    db.images=new Map();
+  }
+  await saveAll();
+  if(db.theme)applyTheme(db.theme);
+  closeSettings();
+  openTabs=['today'];activeTab='today';
+  updateDateBar();renderTabBar();renderActiveView();renderSidebar();
+  showToast('Data replaced from backup','info');
+}
+async function _importMerge(data){
+  let added=0,updated=0,skipped=0;
+  // Merge entries
+  const existingEntryIds=new Set(db.entries.map(e=>e.id));
+  for(const imp of (data.entries||[])){
+    if(existingEntryIds.has(imp.id)){
+      // Update if imported version is newer
+      const existing=db.entries.find(e=>e.id===imp.id);
+      if(existing&&(imp.updatedTs||imp.ts||0)>(existing.updatedTs||existing.ts||0)){
+        Object.assign(existing,imp);
+        updated++;
+      } else { skipped++; }
+    } else {
+      db.entries.push(imp);
+      existingEntryIds.add(imp.id);
+      added++;
+    }
+  }
+  // Merge tasks
+  const existingTaskIds=new Set((db.tasks||[]).map(t=>t.id));
+  if(!db.tasks)db.tasks=[];
+  for(const imp of (data.tasks||[])){
+    if(existingTaskIds.has(imp.id)){
+      const existing=db.tasks.find(t=>t.id===imp.id);
+      if(existing&&(imp.created_at||0)>(existing.created_at||0)){
+        Object.assign(existing,imp);
+        updated++;
+      } else { skipped++; }
+    } else {
+      db.tasks.push(imp);
+      existingTaskIds.add(imp.id);
+      added++;
+    }
+  }
+  // Merge sections
+  const existingSectionIds=new Set((db.sections||[]).map(s=>s.id));
+  if(!db.sections)db.sections=[];
+  for(const imp of (data.sections||[])){
+    if(existingSectionIds.has(imp.id)){
+      skipped++;
+    } else {
+      db.sections.push(imp);
+      existingSectionIds.add(imp.id);
+      added++;
+    }
+  }
+  // Merge columns — add missing ones
+  const existingColIds=new Set((db.columns||[]).map(c=>c.id));
+  if(!db.columns)db.columns=[];
+  for(const imp of (data.columns||[])){
+    if(!existingColIds.has(imp.id)){
+      db.columns.push(imp);
+      existingColIds.add(imp.id);
+    }
+  }
+  // Merge tag colors — imported overrides if key missing locally
+  if(data.tagColors){
+    if(!db.tagColors)db.tagColors={};
+    for(const[tag,color] of Object.entries(data.tagColors)){
+      if(!db.tagColors[tag])db.tagColors[tag]=color;
+    }
+  }
+  // Merge people — union
+  if(data.people&&data.people.length){
+    if(!db.people)db.people=[];
+    const existingPeople=new Set(db.people.map(p=>p.toLowerCase()));
+    for(const p of data.people){
+      if(!existingPeople.has(p.toLowerCase())){
+        db.people.push(p);
+        existingPeople.add(p.toLowerCase());
+      }
+    }
+  }
+  // Merge images — add missing ones
+  if(data.images&&data.images.length){
+    const newImgs=[];
+    for(const img of data.images){
+      if(!db.images.has(img.id)){
+        db.images.set(img.id,{data:img.data,mimeType:img.mimeType,ts:img.ts||0});
+        newImgs.push({id:img.id,data:img.data,mimeType:img.mimeType,ts:img.ts||Date.now(),size:0});
+      }
+    }
+    if(newImgs.length)await idbPutAll('images',newImgs);
+  }
+  db.lastBackupTs=Date.now();
+  await saveAll();
+  closeSettings();
+  renderTabBar();renderActiveView();renderSidebar();
+  showToast(`Merged: ${added} added, ${updated} updated, ${skipped} unchanged`,'info');
 }
 // Human-readable "last backup" status with color coding.
 function fmtBackupStatus(ts){
@@ -9101,6 +9728,7 @@ DailyDispatch is a work journal where notes and tasks live together. Capture wha
 |----------|--------|
 | **Cmd+Enter** | Submit a quick entry |
 | **Cmd+K** | Open search |
+| **Cmd+Shift+O** | Quick Open — fuzzy search notes |
 | **Cmd+;** | New note |
 | **Cmd+D** | Close current tab |
 
@@ -9562,6 +10190,7 @@ See also: [[Import, Export & Backup]]
 | Shortcut | Action |
 |----------|--------|
 | **Cmd+K** | Open search |
+| **Cmd+Shift+O** | Quick Open — fuzzy search notes by title |
 | **Cmd+;** | New note |
 | **Cmd+D** | Close current tab |
 | **Escape** | Close menu / cancel |
@@ -9700,7 +10329,7 @@ function openTaskDetail(taskId){
         ${t.due_date
           ?`<input type="date" value="${t.due_date}" onchange="updateTask('${t.id}',{due_date:this.value||null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()">
             <button class="tm-due-clear" onclick="updateTask('${t.id}',{due_date:null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()" title="Clear date">&times;</button>`
-          :`<button class="tm-due-set" onclick="this.nextElementSibling.showPicker();this.nextElementSibling.style.display='inline-block';this.style.display='none'">Set date</button>
+          :`<button class="tm-due-set" onclick="_tmShowDatePicker(this,'${t.id}')">Set date</button>
             <input type="date" style="display:none" value="" onchange="updateTask('${t.id}',{due_date:this.value||null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()">`}
       </div>
       <div class="tm-field">
@@ -9739,6 +10368,13 @@ function openTaskDetail(taskId){
 function closeTaskModal(){
   document.getElementById('task-modal')?.classList.remove('open');
   renderActiveView();renderSidebar();
+}
+function _tmShowDatePicker(btn,taskId){
+  const inp=btn.nextElementSibling;
+  btn.style.display='none';
+  inp.style.display='inline-block';
+  // Delay showPicker so browser has time to layout the now-visible input
+  requestAnimationFrame(()=>{try{inp.showPicker();}catch(e){inp.focus();}});
 }
 // Cmd+Enter closes task modal (save & close)
 document.addEventListener('keydown',e=>{
@@ -9889,6 +10525,8 @@ function completeTask(id,completed){
     t.completed_at=Date.now();
     const doneCol=getDoneColumn();
     if(doneCol)t.column_id=doneCol.id;
+    // Log event in feed
+    logEvent('task_complete',t.title,id);
   } else {
     t.completed_at=null;
     // Move back to Inbox when unchecked
@@ -10240,7 +10878,7 @@ async function init(){
   ensureDefaultColumns();
   migrateCheckboxesToTaskWidgets();
   ensureHelpNotes();
-  if(db.theme&&db.theme!=='Hot Pink')applyTheme(db.theme);
+  if(db.theme)applyTheme(db.theme);
   // First-launch: open the home tab once so new users get the landing page.
   // Users can close it; if they click the home icon later, it comes back.
   if(!db.homeShownOnce){
@@ -10265,6 +10903,7 @@ async function init(){
   // This function reads the note data from localStorage, updates db.entries, saves to IDB,
   // and opens the note as a tab. Simple, synchronous data flow — no IDB race conditions.
   function _recoverFloatingNote(){
+    if(!_floatingWindowOpen)return;
     try{
       const raw=localStorage.getItem('dd_float_closed');
       if(!raw)return;
@@ -10275,7 +10914,7 @@ async function init(){
       const noteRaw=localStorage.getItem('dd_float_note');
       localStorage.removeItem('dd_float_note');
       let noteData=null;
-      if(noteRaw){try{noteData=JSON.parse(noteRaw);}catch(e){}}
+      if(noteRaw){try{noteData=JSON.parse(noteRaw);}catch(e){console.error('[DD] Failed to parse floating note recovery data:',e);}}
       // Find or create the entry in db.entries
       let entry=db.entries.find(x=>x.id===signal.noteId);
       if(entry&&noteData){
@@ -10298,11 +10937,14 @@ async function init(){
       }
       // Save to IDB (main window does this reliably — no teardown race)
       save();
+      _floatingWindowOpen=false;
       // Open as tab
       openNoteTab(entry.id);
       renderAllSections();renderSidebar();
     }catch(err){console.error('[DD-FLOAT] Recovery error:',err);}
   }
+  // If there's leftover floating note data from a previous session, enable recovery
+  if(localStorage.getItem('dd_float_note')||localStorage.getItem('dd_float_closed'))_floatingWindowOpen=true;
   // Poll every second — most reliable cross-window detection method
   setInterval(_recoverFloatingNote,1000);
   // Also try immediately on focus/visibility change
