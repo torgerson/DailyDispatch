@@ -281,7 +281,7 @@
   .tab {
     display: flex; align-items: center; gap: 4px; padding: 6px 12px 4px;
     font-size: var(--fs-sm); font-weight: 500; color: var(--text2); cursor: pointer;
-    white-space: nowrap; margin: 0;
+    white-space: nowrap; margin: 0; user-select: none; -webkit-user-select: none;
     border-bottom: 3px solid transparent; margin-bottom: -1px;
     border-right: 1px solid var(--border-light);
     transition: color 0.1s;
@@ -448,7 +448,7 @@
 
   /* Note editor */
   .note-editor {
-    max-width: 75%; margin: 0 auto; display: flex; flex-direction: column;
+    max-width: min(75%, 1200px); min-width: 400px; margin: 0 auto; display: flex; flex-direction: column;
     height: 100%; width: 100%;
   }
   .note-title {
@@ -505,7 +505,7 @@
   /* Smart List widget */
   .cm-smartlist {
     border: 1px solid var(--border); border-radius: var(--radius-md);
-    background: var(--surface); margin: 4px 0; overflow: hidden; font-size: 14px;
+    background: var(--surface); margin: 4px 0; overflow: hidden; font-size: 14px !important; line-height: 1.4 !important;
   }
   .cm-sl-hdr {
     display: flex; align-items: center; gap: 6px;
@@ -541,10 +541,10 @@
   }
   .cm-task-card {
     display: flex; align-items: center; gap: 10px;
-    padding: 6px 12px; margin: 0;
+    padding: 6px 12px; margin: 0; width: 100%;
     background: var(--surface); border-bottom: 1px solid var(--border-light);
     cursor: pointer; transition: background 0.1s;
-    font-size: 14px;
+    font-size: 14px !important; line-height: 1.4 !important; min-width: 0; box-sizing: border-box;
   }
   .cm-task-card:hover { background: var(--bg); }
   .cm-task-card.done { opacity: 0.55; }
@@ -557,7 +557,7 @@
   }
   .cm-tc-chk:hover { border-color: var(--green); }
   .cm-tc-chk.checked { background: var(--green); border-color: var(--green); color: #fff; }
-  .cm-tc-title { flex: 1; font-size: var(--fs-base); font-weight: 500; color: var(--text); }
+  .cm-tc-title { flex: 1; font-size: var(--fs-base); font-weight: 500; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pri-tag {
     font-size: var(--fs-xs); font-weight: 600; padding: 1px 5px; border-radius: 3px;
     text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; white-space: nowrap;
@@ -1115,6 +1115,117 @@
   .home-cta h2 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
   .home-cta p { color: var(--text2); margin-bottom: 20px; }
   .home-cta-footnote { font-size: var(--fs-sm); color: var(--text3); margin-top: 16px !important; }
+  .home-upsell {
+    text-align: center; padding: 40px 28px; margin: 0 -28px;
+    background: linear-gradient(180deg, var(--surface) 0%, var(--accent-light) 100%);
+    border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
+  }
+  .home-upsell-badge {
+    display: inline-block; font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--green); background: rgba(0,179,60,0.1);
+    border: 1px solid rgba(0,179,60,0.25); padding: 3px 12px; border-radius: 12px; margin-bottom: 14px;
+  }
+  .home-upsell h2 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+  .home-upsell p { color: var(--text2); font-size: var(--fs-base); line-height: 1.6; max-width: 560px; margin: 0 auto 16px; }
+  .home-upsell-features {
+    display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 16px;
+  }
+  .home-upsell-feature {
+    font-size: var(--fs-sm); color: var(--text2); display: flex; align-items: center; gap: 6px;
+  }
+  .home-upsell-feature svg { color: var(--accent); flex-shrink: 0; }
+  .home-upsell-soon {
+    display: inline-block; margin-top: 18px; font-size: var(--fs-sm); font-weight: 600;
+    color: var(--accent); border: 1px solid var(--accent); padding: 6px 18px;
+    border-radius: var(--radius-sm); cursor: default;
+  }
+
+  /* ═══════════ HOMEPAGE APP SCREENSHOT ═══════════ */
+  .home-screenshot {
+    max-width: 820px; margin: -20px auto 48px; border-radius: var(--radius-lg);
+    overflow: hidden; box-shadow: var(--shadow-lg), 0 0 0 1px var(--border);
+    background: var(--bg); transform: scale(1); transition: transform 0.2s;
+  }
+  .home-screenshot:hover { transform: scale(1.01); }
+  .home-ss-chrome {
+    display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+    background: var(--surface); border-bottom: 1px solid var(--border-light);
+  }
+  .home-ss-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .home-ss-dot.r { background: #e16259; } .home-ss-dot.y { background: #d97706; } .home-ss-dot.g { background: #4daa57; }
+  .home-ss-chrome-title { flex: 1; text-align: center; font-size: var(--fs-xs); color: var(--text3); font-weight: 500; }
+  .home-ss-body { display: grid; grid-template-columns: 160px 1fr 220px; min-height: 320px; }
+  .home-ss-sidebar {
+    background: var(--sidebar-bg); border-right: 1px solid var(--border-light);
+    padding: 8px 0; font-size: var(--fs-xs); overflow: hidden;
+  }
+  .home-ss-nav-item {
+    display: flex; align-items: center; gap: 6px; padding: 4px 10px;
+    font-size: 10px; color: var(--text2); font-weight: 500;
+  }
+  .home-ss-nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; border-radius: var(--radius-sm); margin: 0 4px; }
+  .home-ss-nav-item svg { width: 12px; height: 12px; }
+  .home-ss-sep { height: 1px; background: var(--border-light); margin: 6px 10px; }
+  .home-ss-cal { padding: 4px 10px; }
+  .home-ss-cal-title { font-size: 8px; font-weight: 600; color: var(--text2); margin-bottom: 3px; text-align: center; }
+  .home-ss-cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; text-align: center;
+    font-size: 7px; color: var(--text3); line-height: 1.8;
+  }
+  .home-ss-cal-today { background: var(--accent); color: #fff; border-radius: 50%; font-weight: 700; }
+  .home-ss-cal-dot { color: var(--text); font-weight: 600; }
+  .home-ss-sec { margin: 4px 6px; background: var(--surface); border: 1px solid var(--border-light); border-radius: 3px; padding: 4px 6px; }
+  .home-ss-sec-hdr { display: flex; align-items: center; gap: 3px; font-size: 8px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .home-ss-sec-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--green); }
+  .home-ss-sec-count { margin-left: auto; font-size: 7px; color: var(--text3); background: var(--accent-light); padding: 0 4px; border-radius: 6px; }
+  .home-ss-sec-entry { font-size: 7px; color: var(--text3); padding: 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .home-ss-feed { border-right: 1px solid var(--border-light); padding: 0; overflow: hidden; }
+  .home-ss-tabbar {
+    display: flex; align-items: center; gap: 0; padding: 0 8px;
+    background: var(--surface); border-bottom: 1px solid var(--border-light); height: 26px;
+  }
+  .home-ss-tab {
+    font-size: 8px; padding: 4px 10px; color: var(--text3); font-weight: 500;
+    border-bottom: 2px solid transparent;
+  }
+  .home-ss-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .home-ss-tab-sep { width: 1px; height: 12px; background: var(--border); margin: 0 2px; }
+  .home-ss-capture {
+    margin: 8px 12px 4px; padding: 6px 8px; border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm); font-size: 8px; color: var(--text3);
+  }
+  .home-ss-day-hdr { font-size: 8px; font-weight: 700; color: var(--text); padding: 8px 12px 2px; }
+  .home-ss-entry {
+    display: flex; gap: 6px; padding: 4px 12px; font-size: 8px; border-left: 2px solid transparent;
+  }
+  .home-ss-entry-time { font-family: var(--mono); font-size: 7px; color: var(--text3); white-space: nowrap; }
+  .home-ss-entry-text { color: var(--text2); flex: 1; }
+  .home-ss-entry-text strong { color: var(--text); font-weight: 600; }
+  .home-ss-tag { font-size: 6px; padding: 0 3px; border-radius: 2px; font-weight: 600; }
+  .home-ss-note { background: var(--surface); padding: 10px; overflow: hidden; }
+  .home-ss-note-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .home-ss-note-body { font-size: 8px; color: var(--text2); line-height: 1.6; }
+  .home-ss-note-body strong { color: var(--text); }
+  .home-ss-note-body ul { padding-left: 12px; margin: 4px 0; }
+  .home-ss-note-body li { margin-bottom: 2px; }
+  .home-ss-task-card {
+    margin: 6px 0; padding: 5px 7px; border: 1px solid var(--border-light);
+    border-radius: 3px; border-left: 2px solid var(--accent);
+    display: flex; align-items: center; gap: 5px; font-size: 8px;
+  }
+  .home-ss-task-chk { width: 8px; height: 8px; border: 1.5px solid var(--border); border-radius: 50%; }
+  .home-ss-task-pri { font-size: 6px; padding: 0 3px; border-radius: 2px; font-weight: 700; text-transform: uppercase; }
+
+  /* ═══════════ HOMEPAGE PERSONA CARDS ═══════════ */
+  .home-personas { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .home-persona {
+    padding: 20px; border: 1px solid var(--border-light); border-radius: var(--radius-md);
+    background: var(--surface); transition: border-color 0.15s;
+  }
+  .home-persona:hover { border-color: var(--accent); }
+  .home-persona-emoji { font-size: 28px; margin-bottom: 8px; }
+  .home-persona h3 { font-size: var(--fs-base); font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .home-persona p { font-size: var(--fs-sm); color: var(--text2); line-height: 1.5; }
 
   /* Responsive */
   @media (max-width: 820px) {
@@ -1122,6 +1233,9 @@
     .home-feature-reverse .home-feature-text { order: 0; }
     .home-feature-reverse .home-feature-mock { order: 0; }
     .home-hero-title { font-size: 32px; }
+    .home-ss-body { grid-template-columns: 1fr; }
+    .home-ss-sidebar, .home-ss-note { display: none; }
+    .home-personas { grid-template-columns: 1fr; }
   }
 
   /* Floating note popup window */
@@ -1415,7 +1529,7 @@
   .rs-panel {
     display: flex; flex-direction: column; min-height: 80px; position: relative; transition: opacity 0.15s;
     background: var(--capture-bg, #fdf9f3); border-radius: var(--radius-md); border: 1px solid var(--border-light);
-    margin-bottom: 8px;
+    margin-bottom: 8px; overflow: hidden; min-width: 0;
   }
   .rs-panel.sec-dragging { opacity: 0.15; height: 0 !important; min-height: 0 !important; overflow: hidden; padding: 0 !important; margin: 0 !important; border: none !important; flex: none !important; }
   .rs-panel.sec-drop-above, .rs-panel.sec-drop-below { position: relative; }
@@ -1444,6 +1558,11 @@
     display: flex; align-items: center; gap: 5px; padding: 6px 10px;
     flex-shrink: 0;
   }
+  .rs-live-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+    display: inline-block; flex-shrink: 0; animation: rsLivePulse 2s ease-in-out 3;
+  }
+  @keyframes rsLivePulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
   .rs-drag-handle {
     cursor: grab; color: var(--text3); font-size: 10px; padding: 2px;
     display: flex; align-items: center; user-select: none; flex-shrink: 0;
@@ -1476,7 +1595,7 @@
     border-radius: 3px;
   }
   .rs-del:hover { color: var(--danger); }
-  .rs-body { flex: 1; overflow-y: auto; padding: 4px 8px; }
+  .rs-body { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 8px; min-width: 0; }
   .rs-entry {
     padding: 3px 0; font-size: var(--fs-sm); line-height: 1.4; cursor: pointer;
     border-top: 1px solid var(--border-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -1486,20 +1605,20 @@
   .rs-entry .rs-time { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-right: 4px; }
   .rs-entry .rs-tags { }
   .rs-task {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: flex-start; gap: 6px;
     padding: 3px 0; font-size: var(--fs-sm); line-height: 1.4; cursor: pointer;
-    border-top: 1px solid var(--border-light); overflow: hidden;
+    border-top: 1px solid var(--border-light); min-width: 0;
   }
   .rs-task:first-of-type { border-top: none; }
   .rs-task:hover { color: var(--accent); }
   .rs-task-chk {
     width: 12px; height: 12px; border: 1.5px solid var(--border-strong); border-radius: 50%;
-    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 2px;
   }
   .rs-task-chk:hover { border-color: var(--green); }
   .rs-task-chk.checked { background: var(--green); border-color: var(--green); }
   .rs-task-chk.checked::after { content: '\2713'; color: #fff; font-size: 7px; font-weight: 700; }
-  .rs-task-title { flex: 1; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rs-task-title { flex: 1; font-weight: 500; min-width: 0; word-break: break-word; }
   .rs-task .pri-tag { font-size: 7px; padding: 0 4px; }
   .rs-empty { padding: 10px 8px; text-align: center; color: var(--text3); font-size: 10px; font-style: italic; }
   .rs-show-more {
@@ -1650,10 +1769,10 @@
 
   /* Summary banner */
   /* Today view — centered content wrapper */
-  .today-wrap { max-width: 740px; margin: 0 auto; padding: 0 4px 40px; width: 100%; }
+  .today-wrap { max-width: 890px; margin: 0 auto; padding: 0 4px 40px; width: 100%; }
 
   /* Tasks view — fill height so Kanban board doesn't collapse */
-  #content-area.tasks-view-active { overflow-y: hidden; }
+  #content-area.tasks-view-active { overflow-y: hidden; padding-bottom: 0; }
 
   /* Today view — unified command card */
   .today-card {
@@ -1773,6 +1892,77 @@
     font-size: var(--fs-sm); cursor: pointer; font-family: var(--sans);
   }
   .task-add-cancel:hover { color: var(--text); }
+  /* ═══ Task Calendar View ═══ */
+  .tc-calendar { display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 0; }
+  .tc-nav {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding: 10px 16px; flex-shrink: 0;
+  }
+  .tc-nav-btn {
+    background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    width: 28px; height: 28px; cursor: pointer; color: var(--text2); font-size: 10px;
+    display: flex; align-items: center; justify-content: center; font-family: var(--sans);
+  }
+  .tc-nav-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+  .tc-nav-title { font-size: var(--fs-base); font-weight: 700; color: var(--text); min-width: 120px; text-align: center; }
+  .tc-nav-today {
+    font-size: var(--fs-xs); color: var(--accent); cursor: pointer; background: none;
+    border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 2px 8px;
+    font-family: var(--sans); font-weight: 600;
+  }
+  .tc-nav-today:hover { background: var(--accent); color: #fff; }
+  .tc-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: auto repeat(6, 1fr);
+    flex: 1; border-top: 1px solid var(--border-light); border-left: 1px solid var(--border-light);
+  }
+  .tc-dow {
+    padding: 6px 4px; text-align: center; font-size: var(--fs-xs); font-weight: 600;
+    color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px;
+    border-right: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
+    background: var(--sidebar-bg);
+  }
+  .tc-day {
+    padding: 4px; border-right: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light); position: relative;
+    display: flex; flex-direction: column; background: var(--surface);
+    overflow: hidden; min-height: 0;
+  }
+  .tc-day:hover { background: var(--bg); }
+  .tc-day.other-month { background: var(--sidebar-bg); opacity: 0.5; }
+  .tc-day.today { box-shadow: inset 0 0 0 2px var(--accent); }
+  .tc-day-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; flex-shrink: 0; }
+  .tc-day-num { font-size: 10px; font-weight: 600; color: var(--text2); }
+  .tc-day.today .tc-day-num { color: var(--accent); font-weight: 700; }
+  .tc-day-add {
+    width: 16px; height: 16px; border-radius: 50%; border: none; background: none;
+    color: var(--text3); font-size: 12px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; opacity: 0; transition: opacity 0.1s;
+    font-family: var(--sans); line-height: 1; padding: 0;
+  }
+  .tc-day:hover .tc-day-add { opacity: 1; }
+  .tc-day-add:hover { background: var(--accent); color: #fff; }
+  .tc-tasks { flex: 1; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; min-height: 0; }
+  .tc-task {
+    font-size: var(--fs-xs); padding: 2px 4px; border-radius: 2px; cursor: pointer;
+    white-space: normal; word-break: break-word; line-height: 1.3;
+    border-left: 2px solid var(--border); background: var(--bg); color: var(--text2);
+    font-weight: 500; flex-shrink: 0;
+  }
+  .tc-task:hover { color: var(--accent); background: var(--accent-light); }
+  .tc-task.high { border-left-color: var(--danger); }
+  .tc-task.med { border-left-color: var(--amber); }
+  .tc-task.low { border-left-color: var(--green); }
+  .tc-chk {
+    display: inline-block; width: 8px; height: 8px; border: 1.5px solid var(--border-strong);
+    border-radius: 50%; flex-shrink: 0; margin-right: 3px; vertical-align: middle; cursor: pointer;
+  }
+  .tc-chk:hover { border-color: var(--green); }
+  .tc-chk.checked { background: var(--green); border-color: var(--green); }
+  .tc-task.done { opacity: 0.4; text-decoration: line-through; }
+  .tc-more { font-size: 8px; color: var(--accent); cursor: pointer; padding: 1px 4px; font-weight: 600; flex-shrink: 0; }
+  .tc-more:hover { text-decoration: underline; }
+
   /* ═══ Tasks toolbar & filters ═══ */
   .tasks-toolbar {
     display: flex; align-items: center; gap: 14px;
@@ -1790,7 +1980,7 @@
   }
   .tasks-view-toggle button.active { background: var(--accent); color: #fff; }
   .tasks-view-toggle button:not(.active):hover { background: var(--bg); }
-  .tasks-view-toggle button:first-child { border-right: 1px solid var(--border); }
+  .tasks-view-toggle button:not(:last-child) { border-right: 1px solid var(--border); }
   .tasks-new-btn {
     display: flex; align-items: center; gap: 5px;
     padding: 5px 12px; border-radius: var(--radius-md);
@@ -2786,14 +2976,13 @@ async function migrateFromLocalStorage(old){
     if(!e.tags)e.tags=[];
     if(e.isNote===undefined)e.isNote=false;
     if(!e.noteTitle)e.noteTitle='';
-    if(!e.contextId)e.contextId=null;
     return e;
   });
   const sections=(old.sections||[]).map(s=>{if(!s.id)s.id=genId('sec');return s;});
   // Also handle notes array from v1
   if(old.notes){
     old.notes.forEach(n=>{
-      entries.push({id:n.id||genId('e'),content:n.content||'',tags:n.tags||[],date:n.date,ts:n.ts||n.createdTs,isNote:true,noteTitle:n.title||'Untitled',contextId:null});
+      entries.push({id:n.id||genId('e'),content:n.content||'',tags:n.tags||[],date:n.date,ts:n.ts||n.createdTs,isNote:true,noteTitle:n.title||'Untitled'});
     });
   }
   db.entries=entries;db.sections=sections;
@@ -3168,10 +3357,18 @@ function switchTab(t){
 }
 function closeTab(t){
   _commitMentionsForTab(t);
+  // Clean up empty notes — no title and no content means it was never used
+  if(t&&!t.startsWith('search_')&&t!=='today'&&t!=='tasks'&&t!=='home'&&t!=='settings'&&t!=='gallery'){
+    const entry=db.entries.find(e=>e.id===t);
+    if(entry&&entry.isNote&&!(entry.noteTitle||'').trim()&&!(entry.content||'').trim()){
+      db.entries=db.entries.filter(e=>e.id!==t);
+      save('entries');
+    }
+  }
   openTabs=openTabs.filter(x=>x!==t);
   if(t.startsWith('search_'))searchTabs=searchTabs.filter(s=>s.id!==t);
   if(activeTab===t)activeTab=openTabs[openTabs.length-1]||'today';
-  renderTabBar();renderActiveView();
+  renderTabBar();renderActiveView();renderSidebar();
 }
 // Register mentions only at commit points (tab switch / close / submit).
 // This prevents partial @names from leaking into the people list when the
@@ -3193,7 +3390,7 @@ function renderActiveView(){
   }
   // Toggle overflow mode: Kanban needs the content area to NOT scroll
   // (the board fills the viewport), everything else scrolls normally.
-  a.classList.toggle('tasks-view-active',activeTab==='tasks'&&tasksViewMode==='kanban');
+  a.classList.toggle('tasks-view-active',activeTab==='tasks'&&(tasksViewMode==='kanban'||tasksViewMode==='calendar'));
   if(activeTab==='today'){renderToday(a);if(selectedDate===todayStr())setTimeout(()=>{const ci=document.getElementById('capture-input');if(ci)ci.focus();},0);}
   else if(activeTab==='home')renderHome(a);
   else if(activeTab==='tasks')renderTasksView(a);
@@ -3250,8 +3447,9 @@ function renderTasksView(area){
   let h=`<div class="tasks-toolbar">
     <span class="tasks-toolbar-title">Tasks</span>
     <div class="tasks-view-toggle">
-      <button class="${tasksViewMode==='kanban'?'active':''}" onclick="tasksViewMode='kanban';renderActiveView()">Kanban</button>
+      <button class="${tasksViewMode==='kanban'?'active':''}" onclick="tasksViewMode='kanban';renderActiveView()">Board</button>
       <button class="${tasksViewMode==='list'?'active':''}" onclick="tasksViewMode='list';renderActiveView()">List</button>
+      <button class="${tasksViewMode==='calendar'?'active':''}" onclick="tasksViewMode='calendar';renderActiveView()">Calendar</button>
     </div>
     <button class="tasks-new-btn" onclick="showNewTaskForm()">
       <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
@@ -3262,8 +3460,8 @@ function renderTasksView(area){
   // Filter bar
   const priActive=p=>tasksFilter.priorities.includes(p);
   const dueActive=v=>(tasksFilter.dueRange||'')===v;
-  h+=`<div class="tasks-filters">
-    <input class="tasks-search" type="text" placeholder="Search\u2026" value="${escH(tasksFilter.search)}" oninput="tasksFilter.search=this.value;renderActiveView()">
+  if(tasksViewMode!=='calendar') h+=`<div class="tasks-filters">
+    <input class="tasks-search" type="text" placeholder="Search\u2026" value="${escH(tasksFilter.search)}" oninput="tasksFilter.search=this.value;const _p=this.selectionStart;renderActiveView();const _i=document.querySelector('.tasks-search');if(_i){_i.focus();_i.selectionStart=_i.selectionEnd=_p;}">
     <div class="seg-group">
       <button class="seg-btn${priActive('H')?' on s-red':''}" onclick="toggleTaskPriFilter('H')">High</button>
       <button class="seg-btn${priActive('M')?' on s-amber':''}" onclick="toggleTaskPriFilter('M')">Med</button>
@@ -3282,6 +3480,10 @@ function renderTasksView(area){
 
   if(tasksViewMode==='kanban'){
     h+=renderKanbanBoard(filtered,cols);
+  } else if(tasksViewMode==='calendar'){
+    // Calendar uses ALL tasks (including completed) so they show on their due dates
+    const allTasks=(db.tasks||[]).filter(t=>t.due_date);
+    h+=renderTaskCalendar(allTasks);
   } else {
     h+=renderTaskList(filtered,cols);
   }
@@ -3702,6 +3904,78 @@ function renderTaskList(tasks,cols){
   return h;
 }
 
+/* ── Task Calendar View ── */
+let _taskCalDate=new Date();
+function renderTaskCalendar(tasks){
+  const y=_taskCalDate.getFullYear(),m=_taskCalDate.getMonth();
+  const monthLabel=_taskCalDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const today=todayStr();
+  // Group tasks by due_date
+  const byDate={};
+  tasks.forEach(t=>{if(t.due_date)(byDate[t.due_date]=byDate[t.due_date]||[]).push(t);});
+  // Build calendar grid
+  const dows=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const fd=new Date(y,m,1).getDay();
+  const dim=new Date(y,m+1,0).getDate();
+  const pdim=new Date(y,m,0).getDate();
+  let h=`<div class="tc-calendar">`;
+  // Nav
+  h+=`<div class="tc-nav">
+    <button class="tc-nav-btn" onclick="_taskCalDate.setMonth(_taskCalDate.getMonth()-1);renderActiveView()">&#9664;</button>
+    <span class="tc-nav-title">${monthLabel}</span>
+    <button class="tc-nav-btn" onclick="_taskCalDate.setMonth(_taskCalDate.getMonth()+1);renderActiveView()">&#9654;</button>
+    <button class="tc-nav-today" onclick="_taskCalDate=new Date();renderActiveView()">Today</button>
+  </div>`;
+  h+=`<div class="tc-grid">`;
+  // Day-of-week headers
+  dows.forEach(d=>{h+=`<div class="tc-dow">${d}</div>`;});
+  // Previous month trailing days
+  for(let i=fd-1;i>=0;i--){
+    const d=pdim-i;
+    const ds=dateStr(new Date(y,m-1,d));
+    h+=_tcDayCell(ds,d,byDate[ds]||[],true,today);
+  }
+  // Current month days
+  for(let d=1;d<=dim;d++){
+    const ds=dateStr(new Date(y,m,d));
+    h+=_tcDayCell(ds,d,byDate[ds]||[],false,today);
+  }
+  // Next month leading days — always pad to exactly 42 cells (6 rows) for consistent grid
+  const totalCells=fd+dim;
+  const rem=42-totalCells; // always 6 rows for consistent proportions
+  for(let d=1;d<=rem;d++){
+    const ds=dateStr(new Date(y,m+1,d));
+    h+=_tcDayCell(ds,d,byDate[ds]||[],true,today);
+  }
+  h+=`</div></div>`;
+  return h;
+}
+function _tcDayCell(ds,dayNum,tasks,isOther,today){
+  const isToday=ds===today;
+  const cls='tc-day'+(isOther?' other-month':'')+(isToday?' today':'');
+  let h=`<div class="${cls}">`;
+  h+=`<div class="tc-day-hdr"><span class="tc-day-num">${dayNum}</span><button class="tc-day-add" onclick="event.stopPropagation();_taskCalAddTask('${ds}')" title="Add task on ${ds}">+</button></div>`;
+  h+=`<div class="tc-tasks">`;
+  const maxShow=3;
+  const shown=tasks.slice(0,maxShow);
+  shown.forEach(t=>{
+    const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+    const done=t.completed?' done':'';
+    h+=`<div class="tc-task ${pri}${done}" onclick="event.stopPropagation();openTaskDetail('${t.id}')" title="${escH(t.title)}"><span class="tc-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!t.completed});renderActiveView();renderSidebar()"></span>${escH(t.title)}</div>`;
+  });
+  if(tasks.length>maxShow){
+    h+=`<span class="tc-more" onclick="event.stopPropagation();">+${tasks.length-maxShow} more</span>`;
+  }
+  h+=`</div></div>`;
+  return h;
+}
+function _taskCalAddTask(ds){
+  const task=createTask({title:'Untitled task',due_date:ds});
+  if(!task)return;
+  openTaskDetail(task.id);
+  setTimeout(()=>{const ta=document.querySelector('.tm-title');if(ta){ta.focus();ta.select();}},50);
+}
+
 function showNewTaskForm(){
   // Add task to the first non-done column (e.g. Inbox) and stay on tasks page
   const cols=(db.columns||[]).filter(c=>!c.isDone).sort((a,b)=>(a.order||0)-(b.order||0));
@@ -3765,7 +4039,7 @@ function renderToday(area){
   h+=`<div class="today-card">`;
   // Capture input
   h+=`<div class="today-card-capture" onclick="if(event.target===this||event.target.classList.contains('spacer')){const i=document.getElementById('capture-input');if(i)i.focus();}">
-    <textarea id="capture-input" placeholder="What's happening? (#tags supported)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)"></textarea>
+    <textarea id="capture-input" placeholder="What's happening? (log a quick #idea, remember a key #decision, take some notes, paste a screenshot)" rows="1" oninput="autoGrow(this);checkAC(this)" onkeydown="captureKey(event)"></textarea>
     <div id="capture-bar"><div class="spacer"></div><span class="cap-hint">&#8984;Enter</span><button id="submit-btn" class="btn-primary" onclick="submitEntry()">Add</button></div>
   </div>`;
   // Tasks section
@@ -3863,12 +4137,10 @@ function renderToday(area){
   let hasAny=false;
   for(const ds of dates){
     const dayEntries=byDate[ds]||[];
-    h+=renderDayDivider(ds);
-    if(dayEntries.length===0){
-      h+=`<div class="day-entries"><div class="empty" style="padding:8px 0;font-size:12px;color:var(--text3)">No entries</div></div>`;
-      continue;
-    }
+    // Skip empty days entirely — no placeholder needed, cleaner feed
+    if(dayEntries.length===0)continue;
     hasAny=true;
+    h+=renderDayDivider(ds);
     h+=`<div class="day-entries">`;
 
     // Cap per-day rendering
@@ -4038,14 +4310,35 @@ function reopenSearchEvent(eventId){
 }
 let feedScrollObserver=null;
 let feedScrollObserverTop=null;
-function loadMoreDays(){feedDaysLoaded+=7;renderActiveView();}
+function loadMoreDays(){
+  // Jump ahead enough to find the next day with content (skip empty gaps)
+  const selD=new Date(getFeedTopDate()+'T12:00:00');
+  const oldestLoaded=new Date(selD);oldestLoaded.setDate(oldestLoaded.getDate()-(feedDaysLoaded-1));
+  const oldestStr=dateStr(oldestLoaded);
+  // Find the next entry before the oldest loaded date
+  const nextEntry=db.entries.filter(e=>e.date<oldestStr&&!e.eventType&&!e.isHelp).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  if(nextEntry){
+    // Load enough days to include that entry plus a buffer
+    const gapDays=Math.ceil((oldestLoaded-new Date(nextEntry.date+'T12:00:00'))/(24*3600*1000));
+    feedDaysLoaded+=Math.max(7,gapDays+3);
+  } else {
+    feedDaysLoaded+=7;
+  }
+  renderActiveView();
+}
 function loadMoreNewerDays(){
   const t=todayStr();
   const top=getFeedTopDate();
   if(top>=t)return;
-  // Move feedTopDate forward by 7 days, capped at today
+  // Jump forward to the next day with content (skip gaps)
+  const nextEntry=db.entries.filter(e=>e.date>top&&e.date<=t&&!e.eventType&&!e.isHelp).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  let jump=7;
+  if(nextEntry){
+    const gapDays=Math.ceil((new Date(nextEntry.date+'T12:00:00')-new Date(top+'T12:00:00'))/(24*3600*1000));
+    jump=Math.max(7,gapDays+3);
+  }
   const d=new Date(top+'T12:00:00');
-  d.setDate(d.getDate()+7);
+  d.setDate(d.getDate()+jump);
   const newTop=dateStr(d);
   feedTopDate=newTop>t?t:newTop;
   // Preserve scroll position when prepending content
@@ -4079,9 +4372,6 @@ function setupFeedScrollObserver(){
       feedScrollObserver=new IntersectionObserver(entries=>{
         if(entries[0].isIntersecting){
           feedScrollObserver.disconnect();
-          const now=Date.now();
-          if(now-_lastScrollLoad<500)return;
-          _lastScrollLoad=now;
           loadMoreDays();
         }
       },{root:container,rootMargin:'200px'});
@@ -4094,9 +4384,6 @@ function setupFeedScrollObserver(){
     feedScrollObserverTop=new IntersectionObserver(entries=>{
       if(entries[0].isIntersecting){
         feedScrollObserverTop.disconnect();
-        const now=Date.now();
-        if(now-_lastScrollLoadTop<500)return;
-        _lastScrollLoadTop=now;
         loadMoreNewerDays();
       }
     },{root:container,rootMargin:'200px'});
@@ -4155,7 +4442,7 @@ function submitEntry(){
   const content=inp.value.trim();if(!content)return;
   const ts=Date.now();
   const mentions=extractMentions(content);
-  db.entries.push({id:genId('e'),content,tags:extractTags(content),mentions,date:todayStr(),ts,isNote:false,noteTitle:'',contextId:null});
+  db.entries.push({id:genId('e'),content,tags:extractTags(content),mentions,date:todayStr(),ts,isNote:false,noteTitle:''});
   registerMentions(mentions);
   save();inp.value='';inp.style.height='auto';renderActiveView();renderAllSections();
   completeOnboardingStep('gs_entry');
@@ -4305,7 +4592,7 @@ function downloadNoteAsMarkdown(id){const e=db.entries.find(x=>x.id===id);if(!e)
 function createNote(){
   // Always stamp with today + now so new notes land in the current feed day
   const today=todayStr();
-  const entry={id:genId('e'),content:'',tags:[],date:today,ts:Date.now(),isNote:true,noteTitle:'',contextId:null};
+  const entry={id:genId('e'),content:'',tags:[],date:today,ts:Date.now(),isNote:true,noteTitle:''};
   db.entries.push(entry);
   // Anchor the feed to today so the new note is visible when switching back
   selectedDate=today;
@@ -4871,8 +5158,23 @@ function cmBuildDecorations(view){
           if(m){
             builder.push(Decoration.replace({widget:new CmTableWidget(m[1],cmNoteId)}).range(line.from,line.to));
           }
-        } else if(line.number!==cursorLine&&!codeLines.has(line.number)){
-          cmDecorateLine(builder,line,Decoration);
+        } else {
+          // Block-level widgets (task, image, smartlist) ALWAYS render — even on cursor line.
+          // Users can't meaningfully edit raw tokens; these should never show as text.
+          const lt=line.text;
+          const taskM=lt.match(/^\{\{task:([a-z0-9_]+)\}\}$/i);
+          const imgM=lt.match(/^!\[\]\((img_[a-z0-9_]+)(?:\|w=(\d+))?\)$/);
+          const slM=lt.match(/^\{\{smartlist:(.+)\}\}$/i);
+          if(taskM&&!codeLines.has(line.number)){
+            builder.push(Decoration.replace({widget:new CmTaskWidget(taskM[1])}).range(line.from,line.to));
+          } else if(imgM&&!codeLines.has(line.number)){
+            const w=imgM[2]?parseInt(imgM[2],10):0;
+            builder.push(Decoration.replace({widget:new CmImageWidget(imgM[1],w,line.number)}).range(line.from,line.to));
+          } else if(slM&&!codeLines.has(line.number)){
+            builder.push(Decoration.replace({widget:new CmSmartListWidget(slM[1],line.number)}).range(line.from,line.to));
+          } else if(line.number!==cursorLine&&!codeLines.has(line.number)){
+            cmDecorateLine(builder,line,Decoration);
+          }
         }
         // Hanging indent for wrapped lines: if a line has leading spaces and
         // is NOT inside a code block, add padding-left + negative text-indent
@@ -6804,7 +7106,7 @@ const EVENT_TYPES={
 function logEvent(eventType, label, refId){
   const ev={
     id:genId('ev'), date:todayStr(), ts:Date.now(),
-    content:label, tags:[], isNote:false, noteTitle:'', contextId:null,
+    content:label, tags:[], isNote:false, noteTitle:'',
     eventType:eventType, refId:refId||null
   };
   db.entries.push(ev);
@@ -6968,6 +7270,7 @@ function renderSectionPanel(sec){
   return`<div class="rs-panel" data-sid="${sec.id}" draggable="true" ondragstart="dragSecStart(event,'${sec.id}')" ondragend="dragSecEnd(event)" ondragover="dragSecOver(event)" ondrop="dragSecDrop(event,'${sec.id}')" style="height:${sec.height||200}px;flex:none">
     <div class="rs-header">
       <span class="rs-drag-handle" title="Drag to reorder">&#x2630;</span>
+      ${totalAll?'<span class="rs-live-dot"></span>':''}
       <span class="rs-title-display" ondblclick="editSection('${sec.id}')" title="Double-click to edit">${escH(sec.name||'Untitled')}</span>
       <button class="rs-edit" onclick="editSection('${sec.id}')" title="Edit section">&#9998;</button>
       <button class="rs-del" onclick="delSection('${sec.id}')" title="Remove">&times;</button>
@@ -7495,6 +7798,11 @@ async function initFloatingMode(){
       id:data.id,content:data.content||'',tags:data.tags||[],date:data.date||todayStr(),
       ts:data.ts||Date.now(),isNote:true,noteTitle:data.noteTitle||'',updatedTs:data.updatedTs||Date.now()
     }));}catch(e){console.error('[DD] CRITICAL: Floating note localStorage backup failed:',e);}
+    // Save any tasks linked to this note (created during floating session)
+    try{
+      const noteTasks=(db.tasks||[]).filter(t=>t.note_id===data.id);
+      if(noteTasks.length)localStorage.setItem('dd_float_tasks',JSON.stringify(noteTasks));
+    }catch(e){console.error('[DD] Floating task localStorage backup failed:',e);}
     // Signal main window to pick up the note
     try{localStorage.setItem('dd_float_closed',JSON.stringify({noteId:data.id,ts:Date.now()}));}catch(e){console.error('[DD] CRITICAL: Floating close signal failed:',e);}
   });
@@ -7912,7 +8220,7 @@ function generateWrapUp(){
     entry.content=md;
     entry.updatedTs=Date.now();
   } else {
-    entry={id:genId('e'),content:md,tags:['daily-summary'],date:d,ts:Date.now(),isNote:true,noteTitle:`Summary — ${data.dateLabel}`,contextId:null,updatedTs:Date.now()};
+    entry={id:genId('e'),content:md,tags:['daily-summary'],date:d,ts:Date.now(),isNote:true,noteTitle:`Summary — ${data.dateLabel}`,updatedTs:Date.now()};
     db.entries.push(entry);
   }
   save();openNoteTab(entry.id);renderAllSections();
@@ -8121,7 +8429,7 @@ document.addEventListener('keydown',e=>{
 let _qoState=null; // {results, selected}
 const _qoNavItems=[
   {type:'nav',label:'Go to Today',desc:'Switch to Today view',action:()=>{goToday();if(!openTabs.includes('today'))openTabs.push('today');activeTab='today';renderTabBar();renderActiveView();}},
-  {type:'nav',label:'Open Tasks',desc:'Kanban / list view',action:()=>{if(!openTabs.includes('tasks'))openTabs.push('tasks');activeTab='tasks';renderTabBar();renderActiveView();}},
+  {type:'nav',label:'Open Tasks',desc:'Board / list / calendar view',action:()=>{if(!openTabs.includes('tasks'))openTabs.push('tasks');activeTab='tasks';renderTabBar();renderActiveView();}},
   {type:'nav',label:'Open Search',desc:'Full-text search',action:()=>{if(!openTabs.includes('search'))openTabs.push('search');activeTab='search';renderTabBar();renderActiveView();}},
   {type:'nav',label:'Open Settings',desc:'Preferences, backup, themes',action:()=>{openSettings();}},
   {type:'nav',label:'New Note',desc:'Create a blank note',action:()=>{createNote();}},
@@ -8449,6 +8757,108 @@ function renderHome(area){
       </div>
     </section>
 
+    <!-- APP SCREENSHOT -->
+    <div class="home-screenshot">
+      <div class="home-ss-chrome">
+        <span class="home-ss-dot r"></span><span class="home-ss-dot y"></span><span class="home-ss-dot g"></span>
+        <span class="home-ss-chrome-title">DailyDispatch</span>
+      </div>
+      <div class="home-ss-body">
+        <!-- Sidebar -->
+        <div class="home-ss-sidebar">
+          <div class="home-ss-nav-item active">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg>
+            Today
+          </div>
+          <div class="home-ss-nav-item">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="7" x2="17" y2="7"/><line x1="7" y1="3" x2="7" y2="17"/></svg>
+            Tasks
+          </div>
+          <div class="home-ss-nav-item">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg>
+            Search
+          </div>
+          <div class="home-ss-sep"></div>
+          <div class="home-ss-cal">
+            <div class="home-ss-cal-title">Apr 2026</div>
+            <div class="home-ss-cal-grid">
+              <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+              <span></span><span></span><span></span><span class="home-ss-cal-dot">1</span><span>2</span><span class="home-ss-cal-dot">3</span><span>4</span>
+              <span>5</span><span class="home-ss-cal-dot">6</span><span class="home-ss-cal-dot">7</span><span class="home-ss-cal-dot">8</span><span>9</span><span class="home-ss-cal-dot">10</span><span class="home-ss-cal-dot">11</span>
+              <span class="home-ss-cal-today">12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span>
+            </div>
+          </div>
+          <div class="home-ss-sep"></div>
+          <div class="home-ss-sec">
+            <div class="home-ss-sec-hdr"><span class="home-ss-sec-dot"></span> Meetings <span class="home-ss-sec-count">5</span></div>
+            <div class="home-ss-sec-entry">12 Apr &middot; Sprint retro</div>
+            <div class="home-ss-sec-entry">11 Apr &middot; Client sync call</div>
+            <div class="home-ss-sec-entry">10 Apr &middot; Design review</div>
+          </div>
+          <div class="home-ss-sec">
+            <div class="home-ss-sec-hdr"><span class="home-ss-sec-dot"></span> Ideas <span class="home-ss-sec-count">3</span></div>
+            <div class="home-ss-sec-entry">11 Apr &middot; Offline sync approach</div>
+            <div class="home-ss-sec-entry">9 Apr &middot; New onboarding flow</div>
+          </div>
+        </div>
+        <!-- Feed -->
+        <div class="home-ss-feed">
+          <div class="home-ss-tabbar">
+            <div class="home-ss-tab active">Today</div>
+            <span class="home-ss-tab-sep"></span>
+            <div class="home-ss-tab">Sprint Notes</div>
+            <div class="home-ss-tab">API Migration</div>
+          </div>
+          <div class="home-ss-capture">What's happening? (log a quick #idea, remember a key #decision, take some notes, paste a screenshot)</div>
+          <div class="home-ss-day-hdr">Today, Sat Apr 12</div>
+          <div class="home-ss-entry" style="border-left-color:var(--accent)">
+            <span class="home-ss-entry-time">3:15 PM</span>
+            <span class="home-ss-entry-text"><strong>Sprint retro notes</strong> &mdash; velocity up 12%, discussed deployment bottleneck</span>
+          </div>
+          <div class="home-ss-entry" style="border-left-color:var(--green)">
+            <span class="home-ss-entry-time">1:40 PM</span>
+            <span class="home-ss-entry-text">Shipped v3.4 with daily summary dashboard <span class="home-ss-tag" style="background:rgba(0,179,60,0.12);color:var(--green)">#shipped</span></span>
+          </div>
+          <div class="home-ss-entry">
+            <span class="home-ss-entry-time">11:20 AM</span>
+            <span class="home-ss-entry-text">Call with @sarah about Q3 roadmap, agreed on priorities <span class="home-ss-tag" style="background:var(--accent-light);color:var(--accent)">#meeting</span></span>
+          </div>
+          <div class="home-ss-entry" style="border-left-color:#d97706">
+            <span class="home-ss-entry-time">9:05 AM</span>
+            <span class="home-ss-entry-text">Reviewed PR #142, left comments on error handling <span class="home-ss-tag" style="background:rgba(217,119,6,0.12);color:#d97706">#code-review</span></span>
+          </div>
+          <div class="home-ss-day-hdr" style="opacity:0.5">Yesterday, Fri Apr 11</div>
+          <div class="home-ss-entry" style="opacity:0.5">
+            <span class="home-ss-entry-time">4:30 PM</span>
+            <span class="home-ss-entry-text">Wrapped up API migration planning doc</span>
+          </div>
+        </div>
+        <!-- Note panel -->
+        <div class="home-ss-note">
+          <div class="home-ss-note-title">Sprint Notes <span class="home-ss-tag" style="background:var(--accent-light);color:var(--accent)">#q2</span></div>
+          <div class="home-ss-note-body">
+            <strong>Sprint 14 Retro</strong>
+            <ul>
+              <li>Velocity: 42 pts (up from 38)</li>
+              <li>Deploy bottleneck &mdash; need CI pipeline fix</li>
+              <li>@dave taking point on infra</li>
+            </ul>
+            <div style="margin-top:8px"><strong>Action Items</strong></div>
+            <div class="home-ss-task-card">
+              <span class="home-ss-task-chk"></span>
+              <span style="flex:1;font-weight:600;color:var(--text)">Fix CI deploy pipeline</span>
+              <span class="home-ss-task-pri" style="background:rgba(226,0,116,0.1);color:var(--accent)">HIGH</span>
+            </div>
+            <div class="home-ss-task-card">
+              <span class="home-ss-task-chk"></span>
+              <span style="flex:1;font-weight:600;color:var(--text)">Write migration runbook</span>
+              <span class="home-ss-task-pri" style="background:rgba(217,119,6,0.1);color:#d97706">MED</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- WHY DAILYDISPATCH -->
     <section class="home-section">
       <div class="home-section-head">
@@ -8465,7 +8875,7 @@ function renderHome(area){
         <div class="home-step">
           <div class="home-step-num">${iconTask}</div>
           <h3>Tasks inside notes</h3>
-          <p>Create tasks with <code>/task</code> right where you're writing. They show up on your Kanban board and Today view automatically. Notes and tasks stay linked.</p>
+          <p>Create tasks with <code>/task</code> right where you're writing. They show up on your board and Today view automatically. Notes and tasks stay linked.</p>
         </div>
         <div class="home-step">
           <div class="home-step-num">${iconSearch}</div>
@@ -8480,9 +8890,9 @@ function renderHome(area){
       <div class="home-feature-text">
         <span class="home-feature-kicker">Built-in task management</span>
         <h2 class="home-feature-title">Tasks that live where you think</h2>
-        <p class="home-feature-lead">Most note apps treat tasks as an afterthought &mdash; a checkbox you can't track. DailyDispatch gives you a full Kanban board, drag-and-drop columns, priority levels, due dates, and a Today view that pulls it all together.</p>
+        <p class="home-feature-lead">Most note apps treat tasks as an afterthought &mdash; a checkbox you can't track. DailyDispatch gives you a full task board, drag-and-drop columns, priority levels, due dates, and a Today view that pulls it all together.</p>
         <ul class="home-feature-bullets">
-          <li><strong>Kanban board</strong> &mdash; drag cards between columns, reorder within</li>
+          <li><strong>Board view</strong> &mdash; drag cards between columns, reorder within</li>
           <li><strong>Linked to notes</strong> &mdash; type <code>/task</code> in a note, it appears on the board</li>
           <li><strong>Today view</strong> &mdash; starred + due + overdue tasks at a glance</li>
           <li><strong>Description + comments</strong> &mdash; add context and track progress on each task</li>
@@ -8606,6 +9016,36 @@ function renderHome(area){
       </div>
     </section>
 
+    <!-- DESIGNED FOR -->
+    <section class="home-section">
+      <div class="home-section-head">
+        <span class="home-section-kicker">Who it's for</span>
+        <h2 class="home-section-title">Designed for people who think for a living.</h2>
+      </div>
+      <div class="home-personas">
+        <div class="home-persona">
+          <div class="home-persona-emoji">&#128187;</div>
+          <h3>Engineer</h3>
+          <p>Drowns in Slack threads and PR reviews. Needs one place for daily decisions, blockers, and context that doesn't require a login or a sync service.</p>
+        </div>
+        <div class="home-persona">
+          <div class="home-persona-emoji">&#128202;</div>
+          <h3>Product Manager</h3>
+          <p>Lives in meetings. Needs notes that spawn tasks and a board that tracks what shipped &mdash; without switching between three different apps.</p>
+        </div>
+        <div class="home-persona">
+          <div class="home-persona-emoji">&#128300;</div>
+          <h3>Researcher &amp; Designer</h3>
+          <p>Collects insights across dozens of sessions. Needs tags, search, and sidebar sections that organize themselves as new data comes in.</p>
+        </div>
+        <div class="home-persona">
+          <div class="home-persona-emoji">&#127793;</div>
+          <h3>Founder &amp; Consultant</h3>
+          <p>Juggles multiple workstreams solo. Needs a private journal that doubles as a task manager &mdash; all in a single file they control.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- PRIVACY -->
     <section class="home-privacy">
       <div class="home-privacy-icon">${svg(40,40,'<rect x="7" y="11" width="10" height="9" rx="1.5"/><path d="M9 11 V8 a3 3 0 0 1 6 0 V11"/>')}</div>
@@ -8613,6 +9053,21 @@ function renderHome(area){
       <p>No account. No cloud. No telemetry. Everything lives in your browser's local storage. DailyDispatch is a single HTML file &mdash; you can inspect every line of it.</p>
       <p>Back up with JSON export. Move by copying one file. Your most private thinking deserves tooling that respects that.</p>
       <button onclick="switchTab('settings')" class="home-btn secondary">Open settings &rarr;</button>
+    </section>
+
+    <!-- UPSELL: ONLINE + MOBILE -->
+    <section class="home-upsell">
+      <span class="home-upsell-badge">&#10003; You're using the free local edition</span>
+      <h2>Love DailyDispatch? There's more coming.</h2>
+      <p>This local version is free forever &mdash; no account, no limits, no catches. Perfect for work environments where installing software isn't an option.</p>
+      <p>Want cloud sync across devices, a native mobile app, and team features? <strong>DailyDispatch Online</strong> is coming soon.</p>
+      <div class="home-upsell-features">
+        <span class="home-upsell-feature"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14 L4 17 L16 17 L16 14"/><polyline points="7 10 10 13 13 10"/><line x1="10" y1="3" x2="10" y2="13"/></svg> Cloud sync</span>
+        <span class="home-upsell-feature"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="8" height="14" rx="2"/><line x1="9" y1="15" x2="11" y2="15"/></svg> Mobile app</span>
+        <span class="home-upsell-feature"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><circle cx="5" cy="14" r="2.5"/><circle cx="15" cy="14" r="2.5"/></svg> Team workspaces</span>
+        <span class="home-upsell-feature"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="12" rx="2"/><line x1="3" y1="9" x2="17" y2="9"/><line x1="8" y1="5" x2="8" y2="17"/></svg> Advanced views</span>
+      </div>
+      <span class="home-upsell-soon">Coming soon</span>
     </section>
 
     <!-- FINAL CTA -->
@@ -8637,8 +9092,49 @@ function closeSettings(){
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
 const _TC_LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB8QAAAe8CAYAAADLSyrKAAAACXBIWXMAABcRAAAXEQHKJvM/AAAgAElEQVR4nOzcUU0DURRF0ftI/SABLKEAcIAEnFAcIAEJOHgECUBJJpu1FHTO/dwzXTNzHgAAAAAAAABoeT7NzI2jAgAAAAAAABBzvnJRAAAAAAAAAIoEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkk4HeqjHvffDAX4HAAAAAAAAAD+01tpH2c4X4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJJ2cFQCAS1trPczMvWGBb3jde98arGGt9XXLl/++A/A9e+9lMgAALs0X4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACSdnBUAgD/wPDNnw8JFPM3MtSnhsO5m5s15AAAAjkkQBwDg4vbe7zPzbln4vbXWhxnh0N723l4CAwAAOCh/mQ4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAPDJnh3IAAAAAAzyt77HVxoBALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAALwISXoAACAASURBVAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABg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QBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASOkHjxUAAKBftdZDjwcAAADgYVSIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFIS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IA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAI2hUq4AAAcwSURBVACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAPw/9u5YxOAYRgAgjZkr2S0jJ7GG6QRzx2ol+oHAQAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkXYOOevbe74A9AAAAAAAAAAiYFMTvMwAAAAAAAADwm5fpAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAA9Ky1PnNTzKBqbMoFAAAAAElFTkSuQmCC';
-const APP_VERSION='3.4.1';
+const APP_VERSION='3.6.1';
 const CHANGELOG=[
+  {
+    version:'3.6.1',
+    date:'2026-04-13',
+    title:'Widget rendering fix, UX polish, GTM',
+    changes:[
+      '**Task widget rendering fixed** — block widgets (tasks, images, Smart Lists) now always render even when cursor is on their line',
+      '**Task title visibility fixed** — `line-height: 0` from parent CM6 line was collapsing widget text; overridden with `!important`',
+      '**Floating note task persistence** — tasks created in floating window now saved to localStorage and recovered by main window',
+      '**Feed infinite scroll fixed** — gap-jumping for both older and newer days; removed debounce deadlock on IntersectionObserver',
+      '**Empty notes auto-cleanup** — closing a note tab with no title or content deletes the entry',
+      '**Import dialog fixed** — modal now uses proper `.modal-box` styling with readable button text',
+      '**GTM upsell** — homepage section and settings footer promoting DailyDispatch Online (coming soon)',
+      '**Today feed widened** — max-width bumped from 740px to 890px',
+      '**Tab drag fix** — `user-select: none` prevents text selection when dragging tabs',
+      '**Capture placeholder updated** — now shows example use cases (#idea, #decision, notes, screenshots)',
+      '**Task text overflow** — sidebar section tasks and CM6 task cards now handle long titles correctly',
+    ]
+  },
+  {
+    version:'3.6.0',
+    date:'2026-04-12',
+    title:'Calendar view + Board rename',
+    changes:[
+      '**Calendar view** — new task view showing tasks on a monthly grid by due date, with `+` buttons to create tasks on any day',
+      '**Board rename** — "Kanban" renamed to "Board" in all user-facing text; internal code unchanged',
+      '**Three task views** — toggle between Board, List, and Calendar on the Tasks page',
+    ]
+  },
+  {
+    version:'3.5.0',
+    date:'2026-04-12',
+    title:'Homepage visual overhaul',
+    changes:[
+      '**App screenshot** — CSS art hero image showing the full app layout with sidebar, feed, note editor, tasks, and calendar',
+      '**Persona cards** — "Designed for" section with 4 target user profiles: Engineer, PM, Researcher, Founder',
+      '**Section live dots** — green dot next to section names indicates the filter is active and finding results',
+      '**Note editor width** — capped at `min(75%, 1200px)` with 400px minimum for comfortable reading',
+      '**Download .md** — new toolbar button to download any note as a markdown file',
+      '**Dead code cleanup** — removed all `contextId` references (9 occurrences)',
+    ]
+  },
   {
     version:'3.4.1',
     date:'2026-04-12',
@@ -8754,7 +9250,7 @@ const CHANGELOG=[
       '**Sidebar architecture** — Calendar and Tags anchored above scroll area, Sections header always visible',
       '**Getting Started onboarding** — 8-step checklist with auto-detection, launchable from homepage',
       '**Homepage rewrite** — new positioning: "Think. Track. Ship." with tasks and Smart Lists featured',
-      '**Help pages rewrite** — all 13 pages updated for current features, added Tasks & Kanban guide',
+      '**Help pages rewrite** — all 13 pages updated for current features, added Tasks & Board guide',
       '**Token humanization** in feed — task/table/status/smartlist tokens render as readable text',
       '**Calendar scroll tracking** — calendar highlight follows the day you\'re scrolling through',
       '**Today/selected day visual** — today shown as ring, selected day as solid fill',
@@ -9364,6 +9860,12 @@ function renderSettingsTab(area){
         </div>`;
       }).join('')}</div>
     </div>
+    <div style="text-align:center;padding:20px 16px 8px;margin-top:12px;border-top:1px solid var(--border-light)">
+      <div style="font-size:var(--fs-sm);color:var(--text3);line-height:1.6">
+        <strong style="color:var(--text2)">Free Local Edition</strong> &mdash; no account, no limits, no data leaves your machine.<br>
+        <span style="color:var(--accent)">DailyDispatch Online</span> with cloud sync, mobile app, and team features is coming soon.
+      </div>
+    </div>
     <div class="tc-footer">
       <img class="tc-footer-logo" src="${_TC_LOGO}" alt="Torg Crafted">
       <span class="tc-footer-text">DailyDispatch created by <strong>Torg Crafted</strong></span>
@@ -9551,14 +10053,14 @@ function _showImportModeDialog(data){
     const ov=document.createElement('div');
     ov.className='modal-overlay open';
     ov.style.cssText='z-index:12000';
-    ov.innerHTML=`<div class="dd-dialog" style="max-width:380px">
-      <div class="dd-dialog-title">Import Backup</div>
-      <div class="dd-dialog-msg" style="margin-bottom:12px">File contains ${summary}.<br>How should this data be imported?</div>
+    ov.innerHTML=`<div class="modal-box" style="max-width:380px">
+      <div class="modal-title">Import Backup</div>
+      <div class="modal-msg" style="margin-bottom:12px">File contains ${summary}.<br>How should this data be imported?</div>
       <button class="modal-btn primary" style="width:100%;margin-bottom:8px;text-align:left;padding:10px 14px" data-mode="merge">
-        <strong>Merge</strong><br><span style="font-size:12px;font-weight:400;color:var(--text3)">Add new items, update older duplicates, keep everything else</span>
+        <strong>Merge</strong><br><span style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.8)">Add new items, update older duplicates, keep everything else</span>
       </button>
       <button class="modal-btn danger" style="width:100%;text-align:left;padding:10px 14px" data-mode="replace">
-        <strong>Replace all data</strong><br><span style="font-size:12px;font-weight:400;color:var(--text3)">Wipe current data and replace with this file</span>
+        <strong>Replace all data</strong><br><span style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.8)">Wipe current data and replace with this file</span>
       </button>
       <div style="text-align:center;margin-top:10px"><button class="modal-btn" data-mode="cancel" style="background:none;color:var(--text3)">Cancel</button></div>
     </div>`;
@@ -9741,7 +10243,7 @@ DailyDispatch is a work journal where notes and tasks live together. Capture wha
 ## Help Topics
 
 - [[Today View & Feed]] — Your daily timeline
-- [[Tasks & Kanban]] — Task management, boards, and priorities
+- [[Tasks & Board]] — Task management, boards, and priorities
 - [[Notes & Markdown Editor]] — Rich markdown editing
 - [[Slash Commands]] — Quick formatting, tasks, and Smart Lists
 - [[Tags & Filtering]] — Organization and sidebar filters
@@ -9787,20 +10289,21 @@ Click "Generate daily summary" to create a markdown note summarizing all entries
 
 Quick entries support inline markdown: **bold**, *italic*, \`code\`, links, #tags, and @mentions. Click any entry in the feed to open it as a full note.
 
-See also: [[Tasks & Kanban]], [[Tags & Filtering]]
+See also: [[Tasks & Board]], [[Tags & Filtering]]
 
 ---
 #DailyDispatchHelp`},
 
-{id:'help_tasks',noteTitle:'Tasks & Kanban',content:`# Tasks & Kanban
+{id:'help_tasks',noteTitle:'Tasks & Board',content:`# Tasks & Board
 
-DailyDispatch has built-in task management with a Kanban board, list view, and deep integration with notes.
+DailyDispatch has built-in task management with a board view, list view, calendar view, and deep integration with notes.
 
 ## Creating Tasks
 
 - Type \`/task\` in any note to create a task linked to that note
 - Click **+ New task** on the Tasks page
-- Click **+ Add task** on the Today view or inside a Kanban column
+- Click **+ Add task** on the Today view or inside a board column
+- Click **+** on any day in the calendar view
 
 ## Task Properties
 
@@ -9808,18 +10311,22 @@ Each task has:
 - **Title** — what needs to be done
 - **Priority** — High, Medium, or Low (shown as colored tags)
 - **Due date** — optional, shows in the Today view when due
-- **Column** — which Kanban column it belongs to (Inbox, Backlog, In Work, Done)
+- **Column** — which board column it belongs to (Inbox, Backlog, In Work, Done)
 - **Star** — mark for Today view without changing the due date
 - **Description** — markdown details field for context
 - **Comments** — timestamped progress log (Enter to add, newest on top)
 
-## Kanban Board
+## Board View
 
-Navigate to **Tasks** in the sidebar to see the Kanban board. Drag cards between columns to change their status. Drag within a column to reorder. Dragging to Done auto-completes the task.
+Navigate to **Tasks** in the sidebar to see the board. Drag cards between columns to change their status. Drag within a column to reorder. Dragging to Done auto-completes the task.
 
 ## List View
 
 Toggle to **List** view for a flat grouped table. Tasks are grouped by column, sorted by your drag order. Drag rows to reorder within or between groups.
+
+## Calendar View
+
+Toggle to **Calendar** to see tasks plotted on a monthly grid by due date. Click any task to open the detail modal. Click **+** on any day to create a new task with that date pre-filled.
 
 ## Today View
 
@@ -9837,9 +10344,9 @@ Click any task to open a detail modal where you can edit all properties, add a d
 
 ## Column Management
 
-- **Rename** — double-click a column title in Kanban or List view
+- **Rename** — double-click a column title in Board or List view
 - **Change color** — right-click column header > Change color (visual swatch picker)
-- **Add column** — click the + button at the end of the Kanban board
+- **Add column** — click the + button at the end of the board
 - **Delete column** — right-click header > Delete (tasks move to first column)
 
 See also: [[Today View & Feed]], [[Slash Commands]]
@@ -9874,7 +10381,7 @@ The editor shows **rendered markdown on lines you're not editing** and **raw mar
 
 ## Task Widgets
 
-Type \`/task\` to create a task. It renders as an inline card showing the checkbox, title, priority, and due date. Tasks are live — check them off in the note or on the Kanban board.
+Type \`/task\` to create a task. It renders as an inline card showing the checkbox, title, priority, and due date. Tasks are live — check them off in the note or on the board.
 
 ## Smart Lists
 
@@ -9901,7 +10408,7 @@ The first line automatically becomes the tab title.
 
 Above the editor: **Copy** markdown, **Link** to this note, **Delete** the note.
 
-See also: [[Slash Commands]], [[Tasks & Kanban]], [[Tags & Filtering]]
+See also: [[Slash Commands]], [[Tasks & Board]], [[Tags & Filtering]]
 
 ---
 #DailyDispatchHelp`},
@@ -9933,7 +10440,7 @@ Type \`/\` at the start of a line to open the command menu. Filter by typing, na
 
 ## Task Creation
 
-\`/task\` prompts for a title, creates a task in your Kanban board, and inserts a live task widget in the note. The task and note stay linked — see [[Tasks & Kanban]].
+\`/task\` prompts for a title, creates a task on your board, and inserts a live task widget in the note. The task and note stay linked — see [[Tasks & Board]].
 
 ## Smart Lists
 
@@ -9952,7 +10459,7 @@ See [[Notes & Markdown Editor]] for more on Smart Lists.
 
 Any note tagged \`#template\` becomes available via \`/template\`. Three starters are included: Meeting notes, Daily journal, and 1:1.
 
-See also: [[Notes & Markdown Editor]], [[Tasks & Kanban]]
+See also: [[Notes & Markdown Editor]], [[Tasks & Board]]
 
 ---
 #DailyDispatchHelp`},
@@ -10076,10 +10583,10 @@ In **Settings > Floating Note Window**:
 ## Tips
 
 - Start with \`/h1 Meeting title\` then \`/bullet\` for attendees
-- Use \`/task\` for action items — they'll appear on your Kanban board
+- Use \`/task\` for action items — they'll appear on your task board
 - Tag with \`#meeting @attendee\` so it appears in your Meetings section
 
-See also: [[Notes & Markdown Editor]], [[Tasks & Kanban]]
+See also: [[Notes & Markdown Editor]], [[Tasks & Board]]
 
 ---
 #DailyDispatchHelp`},
@@ -10707,7 +11214,7 @@ function ensureHelpNotes(){
       db.entries.push({
         id:h.id, content:h.content, tags, mentions:[],
         date:'2026-01-01', ts:new Date('2026-01-01T00:01:00').getTime(),
-        isNote:true, noteTitle:h.noteTitle, contextId:null, isHelp:true
+        isNote:true, noteTitle:h.noteTitle, isHelp:true
       });
       changed=true;
     } else if(existing.content!==h.content||existing.noteTitle!==h.noteTitle||!(existing.tags||[]).includes('DailyDispatchHelp')){
@@ -10796,7 +11303,7 @@ function ensureStarterTemplates(){
     db.entries.push({
       id:t.id, content:t.content, tags:['template'], mentions:[],
       date:todayStr(), ts:Date.now(),
-      isNote:true, noteTitle:t.noteTitle, contextId:null
+      isNote:true, noteTitle:t.noteTitle
     });
     changed=true;
   });
@@ -10988,12 +11495,25 @@ async function init(){
         entry={id:noteData.id||signal.noteId,content:noteData.content||'',
           tags:noteData.tags||[],mentions:[],date:noteData.date||todayStr(),
           ts:noteData.ts||Date.now(),isNote:true,noteTitle:noteData.noteTitle||'',
-          contextId:null,updatedTs:noteData.updatedTs||Date.now()};
+          updatedTs:noteData.updatedTs||Date.now()};
         db.entries.push(entry);
       } else if(entry&&!noteData){
         // No localStorage data but entry exists — just open it as-is
       } else {
         return; // No entry and no data — nothing to recover
+      }
+      // Recover tasks created in the floating window
+      const tasksRaw=localStorage.getItem('dd_float_tasks');
+      localStorage.removeItem('dd_float_tasks');
+      if(tasksRaw){
+        try{
+          const floatTasks=JSON.parse(tasksRaw);
+          if(!db.tasks)db.tasks=[];
+          const existingIds=new Set(db.tasks.map(t=>t.id));
+          floatTasks.forEach(t=>{
+            if(!existingIds.has(t.id)){db.tasks.push(t);existingIds.add(t.id);}
+          });
+        }catch(e){console.error('[DD] Failed to recover floating tasks:',e);}
       }
       // Save to IDB (main window does this reliably — no teardown race)
       save();
