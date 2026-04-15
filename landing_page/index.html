@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DailyDispatch — A Private Work Journal in a Single HTML File</title>
+<meta name="description" content="One file. No account. No cloud. A local-first work journal for engineers, PMs, designers, and knowledge workers. Markdown, tasks, tables, floating notes — all in 880KB.">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf8f5;--surface:#fff;--surface-hover:#f5f2ed;
+  --border:#e8e0d4;--border-light:#f0ece6;
+  --text:#37352f;--text2:#787774;--text3:#9b9a97;
+  --accent:#cb912f;--accent-light:rgba(203,145,47,0.12);
+  --brown:#8b7355;
+  --green:#4daa57;--blue:#5b9bd5;--purple:#9065b0;--danger:#e16259;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.04);--shadow-md:0 4px 12px rgba(0,0,0,0.06);
+  --radius:10px;--fs:16px;--fs-sm:14px;--fs-xs:12px;
+  --max-w:720px;
+}
+html{font-size:var(--fs);scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Layout ── */
+.wrap{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+section{padding:56px 0}
+section+section{border-top:1px solid var(--border-light)}
+
+/* ── Hero ── */
+.hero{padding:80px 0 56px;text-align:center}
+.hero-badge{display:inline-block;font-size:var(--fs-xs);font-weight:600;letter-spacing:0.04em;
+  text-transform:uppercase;color:var(--accent);background:var(--accent-light);
+  padding:4px 12px;border-radius:20px;margin-bottom:20px}
+.hero h1{font-size:2.4rem;font-weight:700;line-height:1.2;color:var(--text);margin-bottom:16px;letter-spacing:-0.02em}
+.hero .subtitle{font-size:1.15rem;color:var(--text2);max-width:520px;margin:0 auto 32px;line-height:1.55}
+.hero .tagline{font-size:var(--fs-sm);color:var(--text3);margin-top:8px}
+.cta-btn{display:inline-block;background:var(--accent);color:#fff;font-size:1rem;font-weight:600;
+  padding:14px 36px;border-radius:8px;border:none;cursor:pointer;transition:opacity 0.15s}
+.cta-btn:hover{opacity:0.88;text-decoration:none}
+.cta-btn:active{opacity:0.76}
+/* ── Top nav ── */
+.top-nav{padding:16px 0;border-bottom:1px solid var(--border-light)}
+.top-nav .wrap{display:flex;align-items:center;justify-content:space-between}
+.top-nav-brand{display:flex;align-items:center;gap:8px;font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:-0.01em}
+.top-nav-brand svg{color:var(--accent)}
+.top-nav-link{font-size:var(--fs-sm);font-weight:600;color:var(--accent);
+  padding:8px 20px;border-radius:6px;border:1.5px solid var(--accent);transition:all 0.15s}
+.top-nav-link:hover{background:var(--accent);color:#fff;text-decoration:none}
+
+.cta-secondary{display:inline-block;font-size:var(--fs-sm);color:var(--text2);margin-top:14px}
+
+/* ── Hero screenshot ── */
+.hero-screenshot{max-width:900px;margin:48px auto 0;padding:0 24px}
+.hero-screenshot img{width:100%;height:auto;border-radius:12px;border:1px solid var(--border);
+  box-shadow:0 8px 32px rgba(0,0,0,0.10),0 2px 8px rgba(0,0,0,0.06)}
+
+/* ── Section headers ── */
+.section-label{font-size:var(--fs-xs);font-weight:600;letter-spacing:0.05em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+section h2{font-size:1.55rem;font-weight:700;line-height:1.3;margin-bottom:8px;letter-spacing:-0.01em}
+section .section-desc{color:var(--text2);margin-bottom:32px;max-width:560px}
+
+/* ── Feature cards ── */
+.features{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.feature{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;box-shadow:var(--shadow-sm)}
+.feature .feat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;margin-bottom:12px;background:var(--accent-light);color:var(--accent)}
+.feature h3{font-size:1rem;font-weight:650;margin-bottom:6px;color:var(--text)}
+.feature p{font-size:var(--fs-sm);color:var(--text2);line-height:1.55}
+
+/* ── What you don't get ── */
+.anti-list{list-style:none;columns:2;column-gap:32px}
+.anti-list li{font-size:var(--fs-sm);color:var(--text2);padding:6px 0;padding-left:22px;position:relative;break-inside:avoid}
+.anti-list li::before{content:'';position:absolute;left:0;top:12px;width:12px;height:12px;
+  border:1.6px solid var(--text3);border-radius:50%;opacity:0.5}
+
+/* ── Who it's for ── */
+.audience p{color:var(--text2);font-size:var(--fs);line-height:1.65;margin-bottom:16px}
+
+/* ── Specs ── */
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:12px 32px}
+.spec{display:flex;gap:10px;align-items:baseline}
+.spec-label{font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;
+  color:var(--text3);white-space:nowrap;min-width:80px}
+.spec-value{font-size:var(--fs-sm);color:var(--text2)}
+
+/* ── Final CTA ── */
+.final-cta{text-align:center;padding:64px 0 80px}
+.final-cta h2{font-size:1.55rem;font-weight:700;margin-bottom:8px}
+.final-cta p{color:var(--text2);margin-bottom:28px;font-size:1.05rem}
+.final-cta .tagline{margin-top:24px;font-size:var(--fs-sm);color:var(--text3);font-style:italic}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .hero h1{font-size:1.8rem}
+  .hero .subtitle{font-size:1rem}
+  .features{grid-template-columns:1fr}
+  .anti-list{columns:1}
+  .specs{grid-template-columns:1fr}
+  section{padding:40px 0}
+  .hero{padding:56px 0 40px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Top nav ── -->
+<nav class="top-nav">
+  <div class="wrap">
+    <div class="top-nav-brand">
+      <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="11" y2="10"/><line x1="7" y1="13" x2="9" y2="13"/></svg>
+      DailyDispatch
+    </div>
+    <a href="https://torgerson5.gumroad.com/l/DailyDispatch" class="top-nav-link">Buy Now</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-badge">Single HTML File</div>
+    <h1>A Private Work Journal<br>in One File</h1>
+    <p class="subtitle">No account. No cloud. No install. Open a single HTML file and you have a full-featured journal with notes, tasks, tables, and search &mdash; all stored locally on your device.</p>
+    <a href="https://torgerson5.gumroad.com/l/DailyDispatch" class="cta-btn">Buy on Gumroad</a>
+    <br>
+    <span class="cta-secondary">880 KB &middot; Works in any browser &middot; Yours forever</span>
+    <div class="hero-screenshot">
+      <img src="images/DailyDispatch.png" alt="DailyDispatch — Today view with tasks, daily feed, and sidebar sections" loading="eager">
+    </div>
+  </div>
+</header>
+
+<!-- ── Features ── -->
+<section>
+  <div class="wrap">
+    <div class="section-label">What you get</div>
+    <h2>Everything you need, nothing you don't</h2>
+    <p class="section-desc">A working system on day one &mdash; a feed, a capture box, filtered sections, a task board, and a note editor. All in one file you can inspect, back up, and own.</p>
+
+    <div class="features">
+
+      <div class="feature">
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="11" y2="10"/></svg></div>
+        <h3>Single file, zero dependencies</h3>
+        <p>One 880KB HTML file. No install, no build step, no Electron, no npm. Double-click to open in Chrome, Safari, Edge, Firefox, Arc, or Brave. Works on macOS, Windows, and Linux.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="11" rx="1.5"/><line x1="3" y1="9" x2="17" y2="9"/><line x1="7" y1="5" x2="7" y2="16"/></svg></div>
+        <h3>Private and portable</h3>
+        <p>No account. No cloud. No network requests. Your data lives in your browser's local storage and never leaves your machine. Export everything as JSON anytime, or download individual notes as Markdown. Back up to iCloud, Dropbox, git, a USB stick &mdash; your data is always yours, never locked in.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 12"/></svg></div>
+        <h3>Daily feed + capture</h3>
+        <p>Type a thought, press Cmd+Enter. It's timestamped, tagged, and in your feed. No folder decisions, no friction. Tags and @mentions are extracted automatically.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 8 7"/><polyline points="4 10 12 10"/><polyline points="4 13 10 13"/><path d="M15 5l1.5 1.5L13 10"/></svg></div>
+        <h3>Markdown native</h3>
+        <p>Write in Markdown &mdash; headings, lists, code blocks, blockquotes, bold, italic all render live as you type. Download any note as a .md file. Import and export your full journal as JSON. Everything round-trips cleanly &mdash; if you leave, your notes work in any Markdown tool.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><polyline points="7 10 9 12 13 8"/></svg></div>
+        <h3>Built-in task board</h3>
+        <p>Kanban columns, priorities, due dates, a Today star, drag-and-drop ordering &mdash; all stored inside your notes. No separate app needed.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="10" height="8" rx="1.5"/><rect x="8" y="8" width="10" height="8" rx="1.5"/></svg></div>
+        <h3>Floating note window</h3>
+        <p>Pop any note into its own window. Take meeting notes during a video call without switching apps or losing your place. Changes sync back when you close it.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 7 10 12 15 7"/></svg></div>
+        <h3>16 slash commands</h3>
+        <p>/table, /task, /date, /template, /status, /code, /smartlist, and more. Type a slash in any note and pick from the menu. Power features without memorizing shortcuts.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="6" r="4"/><circle cx="6" cy="14" r="4"/><circle cx="14" cy="14" r="4"/></svg></div>
+        <h3>15 themes</h3>
+        <p>10 light + 5 dark. Switch with one click in Settings. From Warm Notion to Midnight to Hot Pink &mdash; find the palette that fits how you think.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── What you don't get ── -->
+<section>
+  <div class="wrap">
+    <div class="section-label">What you don't get</div>
+    <h2>By design, not by accident</h2>
+    <p class="section-desc">Every note app wants something from you. DailyDispatch doesn't.</p>
+    <ul class="anti-list">
+      <li>No account to create</li>
+      <li>No subscription to manage</li>
+      <li>No cloud sync to configure</li>
+      <li>No Electron app to install</li>
+      <li>No build step or dependencies</li>
+      <li>No terms of service over your journal</li>
+      <li>No one reading your notes but you</li>
+      <li>No data lock-in, ever</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── Who it's for ── -->
+<section>
+  <div class="wrap audience">
+    <div class="section-label">Who it's for</div>
+    <h2>You've tried the alternatives</h2>
+    <p>You've tried Obsidian but didn't want to design your own system from scratch. You've looked at Notion but don't want your work journal on someone else's infrastructure. You've used Apple Notes but outgrown it.</p>
+    <p>DailyDispatch is for engineers, PMs, designers, researchers, and founders &mdash; people whose work is thinking and typing. It hands you a working system on day one: a feed, a capture box, filtered sections, a task board, and a note editor &mdash; all in one file you can inspect, back up, and own forever.</p>
+  </div>
+</section>
+
+<!-- ── Keyboard ── -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Keyboard-first</div>
+    <h2>Built for people who don't reach for the mouse</h2>
+    <p class="section-desc">Every common action has a shortcut. Open the command palette, find any note, create a task, submit an entry &mdash; without lifting your hands.</p>
+    <div class="features" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="feature" style="text-align:center">
+        <p style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:4px">Find anything</p>
+        <p style="font-weight:650;font-size:var(--fs)">Cmd+Shift+O</p>
+      </div>
+      <div class="feature" style="text-align:center">
+        <p style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:4px">Full-text search</p>
+        <p style="font-weight:650;font-size:var(--fs)">Cmd+K</p>
+      </div>
+      <div class="feature" style="text-align:center">
+        <p style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:4px">New note</p>
+        <p style="font-weight:650;font-size:var(--fs)">Cmd+;</p>
+      </div>
+      <div class="feature" style="text-align:center">
+        <p style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:4px">Submit entry</p>
+        <p style="font-weight:650;font-size:var(--fs)">Cmd+Enter</p>
+      </div>
+      <div class="feature" style="text-align:center">
+        <p style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:4px">Close tab</p>
+        <p style="font-weight:650;font-size:var(--fs)">Cmd+D</p>
+      </div>
+      <div class="feature" style="text-align:center">
+        <p style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:4px">Floating window</p>
+        <p style="font-weight:650;font-size:var(--fs)">Cmd+Shift+F</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Specs ── -->
+<section>
+  <div class="wrap">
+    <div class="section-label">The fine print</div>
+    <h2>Specs</h2>
+    <p class="section-desc" style="margin-bottom:24px"></p>
+    <div class="specs">
+      <div class="spec"><span class="spec-label">Works in</span><span class="spec-value">Chrome, Edge, Arc, Brave, Safari, Firefox</span></div>
+      <div class="spec"><span class="spec-label">Runs on</span><span class="spec-value">macOS, Windows, Linux</span></div>
+      <div class="spec"><span class="spec-label">File size</span><span class="spec-value">~880 KB, single index.html</span></div>
+      <div class="spec"><span class="spec-label">Storage</span><span class="spec-value">Browser IndexedDB (local, persistent)</span></div>
+      <div class="spec"><span class="spec-label">Export</span><span class="spec-value">Full JSON backup, per-note Markdown</span></div>
+      <div class="spec"><span class="spec-label">License</span><span class="spec-value">Yours to keep. One purchase, forever.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Final CTA ── -->
+<section class="final-cta" style="border-top:1px solid var(--border-light)">
+  <div class="wrap">
+    <h2>Your journal should be as private as your thoughts</h2>
+    <p>One file. No strings attached.</p>
+    <a href="https://torgerson5.gumroad.com/l/DailyDispatch" class="cta-btn">Buy DailyDispatch</a>
+    <p class="tagline">DailyDispatch keeps it that way.</p>
+  </div>
+</section>
+
+</body>
+</html>
