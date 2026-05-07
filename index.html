@@ -539,6 +539,13 @@
   .cm-sl-empty {
     padding: 12px; text-align: center; color: var(--text3); font-size: var(--fs-sm); font-style: italic;
   }
+  /* Line-level search results (line: queries) */
+  .line-result { display:flex; align-items:baseline; gap:8px; padding:5px 8px; border-bottom:1px solid var(--border-light); cursor:default; font-size:var(--fs-base); }
+  .line-result:last-child { border-bottom:none; }
+  .line-result-text { flex:1; color:var(--text); line-height:1.5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .line-result-text mark { background:var(--accent-light); color:var(--accent); border-radius:2px; padding:0 1px; }
+  .line-result-note { flex-shrink:0; font-size:var(--fs-xs); color:var(--text3); white-space:nowrap; cursor:pointer; max-width:140px; overflow:hidden; text-overflow:ellipsis; }
+  .line-result-note:hover { color:var(--accent); text-decoration:underline; }
   .cm-task-card {
     display: flex; align-items: center; gap: 10px;
     padding: 6px 12px; margin: 0; width: 100%;
@@ -560,8 +567,9 @@
   .cm-tc-title { flex: 1; font-size: var(--fs-base); font-weight: 500; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pri-tag {
     font-size: var(--fs-xs); font-weight: 600; padding: 1px 5px; border-radius: 3px;
-    text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; white-space: nowrap;
+    text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; white-space: nowrap; cursor: pointer;
   }
+  .pri-tag:hover { filter: brightness(0.9); }
   .pri-tag.high { background: rgba(220,38,38,0.1); color: var(--danger); }
   .pri-tag.med { background: rgba(217,119,6,0.1); color: var(--amber); }
   .pri-tag.low { background: rgba(107,114,128,0.08); color: var(--text3); }
@@ -1139,6 +1147,45 @@
     color: var(--accent); border: 1px solid var(--accent); padding: 6px 18px;
     border-radius: var(--radius-sm); cursor: default;
   }
+  .bmc-support {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    text-align: left; max-width: 420px; margin-left: auto; margin-right: auto;
+    background: var(--surface); border: 1px solid var(--border-light);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+  }
+  .home-bmc-support {
+    padding: 14px 16px; margin-bottom: 24px;
+  }
+  .settings-bmc-support {
+    padding: 14px 16px; margin-top: 14px;
+  }
+  .bmc-support-copy { min-width: 0; }
+  .bmc-support-title {
+    font-size: var(--fs-sm); font-weight: 800; color: var(--text);
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .bmc-support-text {
+    color: var(--text2); font-size: var(--fs-sm); line-height: 1.45; margin-top: 3px;
+  }
+  .bmc-qr-thumb {
+    width: 96px; height: 96px; flex-shrink: 0; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: #fff; padding: 5px;
+    cursor: zoom-in; box-shadow: var(--shadow-sm);
+  }
+  .bmc-qr-thumb:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .bmc-qr-modal {
+    position: fixed; inset: 0; z-index: 14000;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.55); cursor: zoom-out; padding: 24px;
+  }
+  .bmc-qr-modal img {
+    width: min(700px, 92vw, 82vh); height: auto; background: #fff;
+    border-radius: var(--radius-md); padding: 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+  }
+  @media (max-width: 520px) {
+    .bmc-support { align-items: flex-start; }
+    .bmc-qr-thumb { width: 82px; height: 82px; }
+  }
 
   /* ═══════════ HOMEPAGE APP SCREENSHOT ═══════════ */
   .home-screenshot {
@@ -1456,13 +1503,21 @@
     position: fixed; z-index: 500;
     background: var(--text); color: #fff;
     border-radius: 6px; padding: 3px 4px;
-    display: flex; gap: 1px;
+    display: flex; gap: 1px; align-items: center; white-space: nowrap;
     box-shadow: 0 4px 16px rgba(0,0,0,0.25);
     pointer-events: auto;
   }
   .cm-sel-toolbar .fmt-btn { color: rgba(255,255,255,0.7); font-size: 12px; min-width: 24px; height: 24px; }
   .cm-sel-toolbar .fmt-btn:hover { color: #fff; background: rgba(255,255,255,0.15); }
   .cm-sel-toolbar .fmt-sep { background: rgba(255,255,255,0.15); height: 14px; }
+  .cm-sel-toolbar .copy-as-label {
+    color: rgba(255,255,255,0.45); font-size: 10px; line-height: 1;
+    padding: 0 3px 0 4px; user-select: none;
+  }
+  .cm-sel-toolbar .copy-choice {
+    min-width: auto; height: 22px; padding: 3px 5px;
+    font-size: 10px; font-weight: 650; letter-spacing: 0;
+  }
 
   /* ── RIGHT SIDEBAR ── */
   #right { /* Legacy — replaced by sidebar sections. Hidden. */
@@ -1719,7 +1774,7 @@
   /* ── AUTOCOMPLETE ── */
   #autocomplete {
     display: none; position: fixed; background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); box-shadow: var(--shadow-md); z-index: 400;
+    border-radius: var(--radius-sm); box-shadow: var(--shadow-md); z-index: 13000;
     max-height: 160px; overflow-y: auto; min-width: 150px;
   }
   #autocomplete.open { display: block; }
@@ -1876,14 +1931,13 @@
   .tap-pill.active.med { background: var(--amber); color: #fff; border-color: var(--amber); }
   .tap-pill.active.low { background: var(--border-strong); color: #fff; border-color: var(--border-strong); }
   .tap-pill:hover { filter: brightness(1.1); }
-  .task-add-due-btn {
-    display: flex; align-items: center; gap: 5px;
-    padding: 4px 10px; border-radius: 12px; font-size: var(--fs-sm);
+  .task-add-date-input {
+    height: 26px; padding: 3px 8px; border-radius: 12px; font-size: var(--fs-sm);
     background: var(--sidebar-bg); border: 1px solid var(--border);
     color: var(--text2); cursor: pointer; font-family: var(--sans);
-    position: relative;
   }
-  .task-add-due-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .task-add-date-input:hover,
+  .task-add-date-input:focus { border-color: var(--accent); color: var(--accent); outline: none; }
   .task-add-spacer { flex: 1; }
   .task-add-submit { padding: 4px 14px; }
   .task-add-cancel {
@@ -2146,6 +2200,38 @@
   .kc-due.future { background: var(--bg); color: var(--text3); }
   .kc-note { font-size: var(--fs-xs); color: var(--blue); cursor: pointer; margin-left: auto; }
   .kc-note:hover { text-decoration: underline; }
+  .task-tag-list { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+  .task-tag-pill {
+    font-size: 9px; line-height: 1.2; font-weight: 600; padding: 2px 5px;
+    border-radius: 6px; border: 1px solid currentColor; cursor: pointer;
+    white-space: nowrap; max-width: 96px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .task-tag-pill:hover { filter: brightness(0.9); }
+  .task-tag-more {
+    font-size: 9px; color: var(--text3); padding: 2px 2px; white-space: nowrap;
+  }
+  .tm-tag-editor { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .tm-tag-editor .task-tag-pill { display: inline-flex; align-items: center; gap: 4px; max-width: none; padding: 3px 7px; }
+  .task-tag-remove {
+    border: 0; background: transparent; color: inherit; cursor: pointer; padding: 0;
+    font: inherit; line-height: 1; opacity: 0.7;
+  }
+  .task-tag-remove:hover { opacity: 1; }
+  .tm-tag-input {
+    min-width: 96px; flex: 1; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); padding: 5px 8px; font-size: 12px;
+    font-family: var(--sans); outline: none;
+  }
+  .tm-tag-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  .task-stale {
+    font-size: 9px; line-height: 1.2; font-weight: 700; padding: 2px 6px;
+    border-radius: 6px; white-space: nowrap; cursor: pointer;
+    background: color-mix(in srgb, var(--danger) 9%, transparent); color: var(--danger);
+  }
+  .task-stale:hover { filter: brightness(0.9); }
+  .kc-tags { margin-top: 6px; }
+  .tl-tags { flex: 0 1 auto; max-width: 220px; }
+  .tt-tags { flex: 0 1 auto; max-width: 180px; }
 
   /* ═══ Task list view ═══ */
   .task-list-view { padding: 8px 20px 40px; }
@@ -2260,12 +2346,11 @@
   }
   .tm-col-pill:hover { opacity: 0.85; }
   .tm-col-pill.active { font-weight: 700; }
-  .tm-due-set {
-    padding: 5px 12px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm);
-    background: transparent; color: var(--text3); font-size: var(--fs-sm); font-family: var(--sans);
-    cursor: pointer; flex: 1; text-align: left;
+  .tm-date-input {
+    cursor: pointer;
   }
-  .tm-due-set:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .tm-date-input:hover,
+  .tm-date-input:focus { border-color: var(--accent); color: var(--accent); outline: none; }
   .tm-due-clear {
     background: none; border: none; color: var(--text3); font-size: 14px; cursor: pointer;
     padding: 2px 6px; border-radius: 3px; flex-shrink: 0;
@@ -2526,7 +2611,8 @@
     white-space: nowrap;
   }
   .day-divider-sublabel {
-    font-size: var(--fs-sm); font-weight: 400; color: var(--text3); margin-left: 0;
+    font-size: var(--fs-base); font-weight: 400; color: var(--text3); margin-left: 0;
+    white-space: nowrap;
   }
   /* Indented entries container under each day */
   .day-entries {
@@ -2693,13 +2779,13 @@
       <div class="sb-tag-cloud" id="sb-tags-cloud"></div>
     </div>
   </div>
-  <!-- Sections header — fixed, always visible, not collapsible -->
+  <!-- Smart Lists header — fixed, always visible, not collapsible -->
   <div class="sb-sections-hdr">
-    <span class="sb-group-title" style="display:flex;flex-direction:column;line-height:1.2">Sections<span style="font-weight:400;font-size:8px;letter-spacing:0;text-transform:none;color:var(--text3)">saved filters &mdash; always updating</span></span>
+    <span class="sb-group-title" style="display:flex;flex-direction:column;line-height:1.2">Smart Lists<span style="font-weight:400;font-size:8px;letter-spacing:0;text-transform:none;color:var(--text3)">saved filters &mdash; always updating</span></span>
     <button class="sb-group-btn" id="backlinks-toggle" onclick="toggleBacklinks()" title="Backlinks"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11.5 L6 14 A3.2 3.2 0 0 1 1.8 9.8 L5.5 6"/><path d="M11.5 8.5 L14 6 A3.2 3.2 0 0 1 18.2 10.2 L14.5 14"/><line x1="7.5" y1="12.5" x2="12.5" y2="7.5"/></svg></button>
-    <button class="sb-group-btn" onclick="addSection()" title="Add section">+</button>
+    <button class="sb-group-btn" onclick="addSection()" title="Add Smart List">+</button>
   </div>
-  <!-- Sections body — scrollable -->
+  <!-- Smart Lists body — scrollable -->
   <div class="sb-groups-scroll" id="sb-sections" ondragover="sbScrollDragOver(event)" ondrop="sbScrollDrop(event)">
     <div id="sb-backlinks-body"></div>
     <div id="sb-sections-body"></div>
@@ -2768,7 +2854,7 @@
 <div class="modal-overlay" id="purge-modal" onclick="if(event.target===this)closePurge()">
   <div class="modal-box">
     <div class="modal-title" style="color:var(--danger)">&#9888; Purge All Data</div>
-    <div class="modal-msg">This will permanently delete <strong>all entries, notes, sections, and settings</strong>. This cannot be undone.</div>
+    <div class="modal-msg">This will permanently delete <strong>all entries, notes, Smart Lists, and settings</strong>. This cannot be undone.</div>
     <div class="modal-msg">Type <strong>PURGE</strong> to confirm:</div>
     <input id="purge-input" style="width:100%;padding:8px 10px;border:2px solid var(--danger);border-radius:var(--radius-sm);font-family:var(--mono);font-size:14px;outline:none;text-align:center;margin-bottom:12px" placeholder="Type PURGE here" oninput="document.getElementById('purge-btn').disabled=this.value!=='PURGE'">
     <div class="modal-actions">
@@ -2848,6 +2934,7 @@ function getAllPeople(){
   const set=new Set();
   (db.people||[]).forEach(p=>set.add(p));
   db.entries.filter(e=>!e.eventType&&!e.isHelp).forEach(e=>(e.mentions||[]).forEach(m=>set.add(m)));
+  (db.tasks||[]).forEach(t=>(t.mentions||[]).forEach(m=>set.add(m)));
   return [...set].sort((a,b)=>a.localeCompare(b));
 }
 
@@ -3044,11 +3131,11 @@ function buildSettingsObject(){
   };
 }
 async function saveAll(){
-  await idbPutAll('entries',db.entries);
-  await idbPutAll('sections',db.sections);
-  if(db.tasks&&db.tasks.length)await idbPutAll('tasks',db.tasks);
-  if(db.columns&&db.columns.length)await idbPutAll('columns',db.columns);
-  await idbPutAll('settings',[buildSettingsObject()]);
+  await idbClearAndPut('entries',db.entries||[]);
+  await idbClearAndPut('sections',db.sections||[]);
+  await idbClearAndPut('tasks',db.tasks||[]);
+  await idbClearAndPut('columns',db.columns||[]);
+  await idbClearAndPut('settings',[buildSettingsObject()]);
 }
 
 // Incremental save — debounced, writes only changed collections
@@ -3057,7 +3144,7 @@ let _saveTimer=null;
 function save(...stores){
   if(stores.length===0)stores=['entries','sections','settings','tasks','columns'];
   stores.forEach(s=>_dirtyStores.add(s));
-  if(stores.includes('entries')||stores.length===0)invalidateTagCache();
+  if(stores.includes('entries')||stores.includes('tasks'))invalidateTagCache();
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(flushSave,100);
 }
@@ -3276,6 +3363,29 @@ function hourLabel(ts){const h=new Date(ts).getHours();if(h===0)return'12 AM';if
 function updateDateBar(){const el=document.getElementById('date-label');if(el)el.textContent=fmtDateLabel(selectedDate);const tb=document.getElementById('today-btn');if(tb)tb.style.display=selectedDate===todayStr()?'none':'inline-block';}
 function navDay(d){const dt=new Date(selectedDate+'T12:00:00');dt.setDate(dt.getDate()+d);selectedDate=dateStr(dt);feedTopDate=selectedDate>=todayStr()?null:selectedDate;feedDaysLoaded=7;feedDayShowMore={};updateDateBar();renderActiveView();renderCalendar();}
 function goToday(){selectedDate=todayStr();feedTopDate=null;calViewDate=new Date();feedDaysLoaded=7;feedDayShowMore={};updateDateBar();renderActiveView();renderCalendar();}
+let _lastKnownToday=todayStr();
+function checkDateRollover(){
+  const currentToday=todayStr();
+  if(currentToday===_lastKnownToday)return false;
+  const previousToday=_lastKnownToday;
+  _lastKnownToday=currentToday;
+
+  const wasParkedOnToday=selectedDate===previousToday||!selectedDate;
+  if(wasParkedOnToday){
+    selectedDate=currentToday;
+    feedTopDate=null;
+    feedDaysLoaded=7;
+    feedDayShowMore={};
+    calViewDate=new Date();
+  }
+
+  updateDateBar();
+  renderTabBar();
+  renderCalendar();
+  if(activeTab==='today'||activeTab==='tasks'||activeTab.startsWith('search_'))renderActiveView();
+  renderAllSections();
+  return true;
+}
 
 /* ═══════════ TAB BAR ═══════════ */
 function renderTabBar(){
@@ -3461,6 +3571,24 @@ function getFeedTopDate(){
 /* ═══════════ TASKS VIEW (Kanban + List) ═══════════ */
 let tasksViewMode='kanban';
 let tasksFilter={search:'',priorities:[],dueRange:null,showDone:false};
+const TASK_STALE_DAYS=14;
+
+function taskActivityTs(t){
+  return t?(t.last_activity_at||t.updated_at||t.created_at||0):0;
+}
+function touchTaskActivity(t,ts=Date.now()){
+  if(!t)return;
+  t.updated_at=ts;
+  t.last_activity_at=ts;
+}
+function taskIdleDays(t){
+  const ts=taskActivityTs(t);
+  if(!ts)return 0;
+  return Math.floor((new Date(todayStr()+'T12:00:00')-new Date(dateStr(new Date(ts))+'T12:00:00'))/(24*3600*1000));
+}
+function isTaskStale(t){
+  return !!(t&&!t.completed&&taskIdleDays(t)>=TASK_STALE_DAYS);
+}
 
 function renderTasksView(area){
   const allTasks=db.tasks||[];
@@ -3469,8 +3597,7 @@ function renderTasksView(area){
   // Filter tasks
   let filtered=allTasks;
   if(tasksFilter.search){
-    const q=tasksFilter.search.toLowerCase();
-    filtered=filtered.filter(t=>t.title.toLowerCase().includes(q));
+    filtered=filterTaskPoolByQuery(filtered,tasksFilter.search);
   }
   if(tasksFilter.priorities.length){
     filtered=filtered.filter(t=>tasksFilter.priorities.includes(t.priority));
@@ -3482,6 +3609,7 @@ function renderTasksView(area){
     else if(tasksFilter.dueRange==='7d'){const d=new Date();d.setDate(d.getDate()+7);const end=dateStr(d);filtered=filtered.filter(t=>t.due_date&&t.due_date<=end&&t.due_date>=today);}
     else if(tasksFilter.dueRange==='30d'){const d=new Date();d.setDate(d.getDate()+30);const end=dateStr(d);filtered=filtered.filter(t=>t.due_date&&t.due_date<=end&&t.due_date>=today);}
     else if(tasksFilter.dueRange==='none')filtered=filtered.filter(t=>!t.due_date);
+    else if(tasksFilter.dueRange==='stale')filtered=filtered.filter(isTaskStale);
   }
 
   // Toolbar
@@ -3502,7 +3630,7 @@ function renderTasksView(area){
   const priActive=p=>tasksFilter.priorities.includes(p);
   const dueActive=v=>(tasksFilter.dueRange||'')===v;
   if(tasksViewMode!=='calendar') h+=`<div class="tasks-filters">
-    <input class="tasks-search" type="text" placeholder="Search\u2026" value="${escH(tasksFilter.search)}" oninput="tasksFilter.search=this.value;const _p=this.selectionStart;renderActiveView();const _i=document.querySelector('.tasks-search');if(_i){_i.focus();_i.selectionStart=_i.selectionEnd=_p;}">
+    <input class="tasks-search" type="text" placeholder='Search, #tag, @person, "phrase", -exclude\u2026' value="${escH(tasksFilter.search)}" oninput="tasksFilter.search=this.value;const _p=this.selectionStart;renderActiveView();const _i=document.querySelector('.tasks-search');if(_i){_i.focus();_i.selectionStart=_i.selectionEnd=_p;}">
     <div class="seg-group">
       <button class="seg-btn${priActive('H')?' on s-red':''}" onclick="toggleTaskPriFilter('H')">High</button>
       <button class="seg-btn${priActive('M')?' on s-amber':''}" onclick="toggleTaskPriFilter('M')">Med</button>
@@ -3511,6 +3639,7 @@ function renderTasksView(area){
     <div class="seg-group">
       <button class="seg-btn${dueActive('')?' on s-accent':''}" onclick="tasksFilter.dueRange=null;renderActiveView()">All</button>
       <button class="seg-btn${dueActive('overdue')?' on s-accent':''}" onclick="tasksFilter.dueRange='overdue';renderActiveView()">Overdue</button>
+      <button class="seg-btn${dueActive('stale')?' on s-accent':''}" onclick="tasksFilter.dueRange='stale';renderActiveView()">Stale</button>
       <button class="seg-btn${dueActive('today')?' on s-accent':''}" onclick="tasksFilter.dueRange='today';renderActiveView()">Today</button>
       <button class="seg-btn${dueActive('7d')?' on s-accent':''}" onclick="tasksFilter.dueRange='7d';renderActiveView()">7d</button>
       <button class="seg-btn${dueActive('30d')?' on s-accent':''}" onclick="tasksFilter.dueRange='30d';renderActiveView()">30d</button>
@@ -3536,6 +3665,81 @@ function toggleTaskPriFilter(p){
   if(i>=0)tasksFilter.priorities.splice(i,1);
   else tasksFilter.priorities.push(p);
   renderActiveView();
+}
+
+function filterTasksByTag(tag){
+  tasksFilter.search='#'+tag;
+  if(!openTabs.includes('tasks'))openTabs.push('tasks');
+  activeTab='tasks';
+  document.getElementById('task-modal')?.classList.remove('open');
+  renderTabBar();renderActiveView();renderSidebar();
+}
+
+function filterTasksByPriority(priority){
+  tasksFilter.priorities=[priority];
+  if(!openTabs.includes('tasks'))openTabs.push('tasks');
+  activeTab='tasks';
+  document.getElementById('task-modal')?.classList.remove('open');
+  renderTabBar();renderActiveView();renderSidebar();
+}
+
+function filterTasksByStale(){
+  tasksFilter.dueRange='stale';
+  if(!openTabs.includes('tasks'))openTabs.push('tasks');
+  activeTab='tasks';
+  document.getElementById('task-modal')?.classList.remove('open');
+  renderTabBar();renderActiveView();renderSidebar();
+}
+
+function getTaskFilterTags(){
+  const q=tasksFilter.search||'';
+  const tags=[...q.matchAll(/#([a-zA-Z0-9_-]+)/g)].map(m=>m[1]);
+  return [...new Set(tags)];
+}
+
+function getActiveContextTags(){
+  const tags=[];
+  if(activeTab==='tasks')tags.push(...getTaskFilterTags());
+  if(activeTagFilters&&activeTagFilters.length){
+    activeTagFilters.forEach(f=>{if(f&&!f.startsWith('@'))tags.push(f);});
+  }
+  if(activeTab&&activeTab.startsWith('search_')){
+    const st=searchTabs.find(s=>s.id===activeTab);
+    if(st&&st.query)tags.push(...[...st.query.matchAll(/#([a-zA-Z0-9_-]+)/g)].map(m=>m[1]));
+  }
+  return [...new Set(tags.filter(Boolean))];
+}
+
+function renderTaskTagPills(t,limit=2,extraClass=''){
+  const tags=[...new Set((t.tags||[]).filter(Boolean))];
+  if(!tags.length)return'';
+  const shown=tags.slice(0,limit);
+  const more=tags.length-shown.length;
+  return`<span class="task-tag-list ${extraClass}">${shown.map(tag=>{
+    const c=getTagColor(tag);
+    return`<span class="task-tag-pill" style="color:${c};background:${c}12;border-color:${c}55" onclick="event.stopPropagation();filterTasksByTag('${escH(tag)}')" title="Filter tasks by #${escH(tag)}">#${escH(tag)}</span>`;
+  }).join('')}${more>0?`<span class="task-tag-more">+${more}</span>`:''}</span>`;
+}
+
+function renderTaskTagEditor(t){
+  const tags=[...new Set((t.tags||[]).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const pills=tags.map(tag=>{
+    const c=getTagColor(tag);
+    return`<span class="task-tag-pill" style="color:${c};background:${c}12;border-color:${c}55" title="#${escH(tag)}">#${escH(tag)}<button class="task-tag-remove" onclick="event.stopPropagation();removeTaskTag('${t.id}','${escH(tag)}')" title="Remove #${escH(tag)}">&times;</button></span>`;
+  }).join('');
+  return`<div class="tm-tag-editor">${pills}<input class="tm-tag-input" type="text" placeholder="Add #tag" oninput="taskTagInputChanged(this,'${t.id}')" onkeydown="taskTagInputKey(event,'${t.id}')" onblur="addTaskTagFromInput('${t.id}',this)"></div>`;
+}
+
+function renderTaskPriorityPill(t){
+  const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
+  const label=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
+  return`<span class="pri-tag ${pri}" onclick="event.stopPropagation();filterTasksByPriority('${t.priority}')" title="Filter tasks by ${label} priority">${label}</span>`;
+}
+
+function renderTaskStaleBadge(t){
+  if(!isTaskStale(t))return'';
+  const days=taskIdleDays(t);
+  return`<span class="task-stale" onclick="event.stopPropagation();filterTasksByStale()" title="Filter tasks not touched in at least ${TASK_STALE_DAYS} days">${days}d idle</span>`;
 }
 
 function renderKanbanBoard(tasks,cols){
@@ -3592,13 +3796,15 @@ function renderKanbanCard(t,today){
     :t.due_date===today?'today'
     :fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
   const dueClass=!t.due_date?'':(t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':'future');
+  const tags=renderTaskTagPills(t,2,'kc-tags');
   return`<div class="kanban-card${isDone?' done':''} pri-${pri}" draggable="true" data-task="${t.id}" ondragstart="kanbanCardDragStart(event,'${t.id}')" ondragend="kanbanCardDragEnd(event)" onmousedown="_kcMD=event.clientX+event.clientY" onclick="if(Math.abs((event.clientX+event.clientY)-(_kcMD||0))<5)openTaskDetail('${t.id}')">
     <div class="kc-top">
       <div class="kc-chk${isDone?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!isDone});renderActiveView();renderSidebar()"></div>
       <span class="kc-title${isDone?' strikethrough':''}">${escH(t.title)}</span>
       <span class="kc-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Add to Today'}">&#9733;</span>
     </div>
-    <div class="kc-meta"><span class="pri-tag ${pri}">${t.priority==='H'?'High':t.priority==='M'?'Med':'Low'}</span>${dueLabel?`<span class="kc-due ${dueClass}">${dueLabel}</span>`:''}${t.note_id?`<span class="kc-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:''}</div>
+    <div class="kc-meta">${renderTaskPriorityPill(t)}${renderTaskStaleBadge(t)}${dueLabel?`<span class="kc-due ${dueClass}">${dueLabel}</span>`:''}${t.note_id?`<span class="kc-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:''}</div>
+    ${tags}
   </div>`;
 }
 
@@ -3669,6 +3875,7 @@ function kanbanCardDrop(e,colId){
   } else if(doneCol&&colId!==doneCol.id&&t.completed){
     t.completed=false;t.completed_at=null;
   }
+  touchTaskActivity(t);
   // Reorder: get all tasks in this column sorted by order, insert dragged task at position
   const colTasks=(db.tasks||[]).filter(x=>x.column_id===colId&&x.id!==t.id).sort((a,b)=>(a.order||0)-(b.order||0));
   let insertIdx=colTasks.length; // default: end
@@ -3825,7 +4032,7 @@ function colMenuDelete(colId){
   showConfirm(`Delete column "${col.name}"? Tasks will move to Inbox.`,{title:'Delete Column',okLabel:'Delete',dangerOk:true}).then(ok=>{
     if(!ok)return;
     const inbox=(db.columns||[]).find(c=>!c.isDone&&c.order===0);
-    (db.tasks||[]).filter(t=>t.column_id===colId).forEach(t=>{t.column_id=inbox?inbox.id:'col_inbox';});
+    (db.tasks||[]).filter(t=>t.column_id===colId).forEach(t=>{t.column_id=inbox?inbox.id:'col_inbox';touchTaskActivity(t);});
     db.columns=db.columns.filter(c=>c.id!==colId);
     save('columns');save('tasks');renderActiveView();
   });
@@ -3865,6 +4072,7 @@ function tlDrop(e,targetTaskId,colId){
   t.column_id=colId;
   if(doneCol&&colId===doneCol.id&&!t.completed){t.completed=true;t.completed_at=Date.now();}
   else if(doneCol&&colId!==doneCol.id&&t.completed){t.completed=false;t.completed_at=null;}
+  touchTaskActivity(t);
   // Reorder within column
   const colTasks=(db.tasks||[]).filter(x=>x.column_id===colId&&x.id!==t.id).sort((a,b)=>(a.order||0)-(b.order||0));
   const tgtIdx=colTasks.findIndex(x=>x.id===targetTaskId);
@@ -3886,9 +4094,16 @@ function quickAddToColumn(colId){
   wrap.className='kanban-inline-add';
   wrap.innerHTML=`<input type="text" placeholder="Task title\u2026" autofocus>`;
   const inp=wrap.querySelector('input');
+  inp.addEventListener('input',()=>taskInputChanged(inp));
   inp.addEventListener('keydown',ev=>{
+    if(taskInputKey(ev,()=>{
+      if(!inp.value.trim())return;
+      createTask({title:inp.value.trim(),column_id:colId,tags:getActiveContextTags()});
+      wrap.remove();
+      renderActiveView();renderSidebar();
+    },()=>wrap.remove()))return;
     if(ev.key==='Enter'&&inp.value.trim()){
-      createTask({title:inp.value.trim(),column_id:colId});
+      createTask({title:inp.value.trim(),column_id:colId,tags:getActiveContextTags()});
       wrap.remove();
       renderActiveView();renderSidebar();
     }
@@ -3927,10 +4142,13 @@ function renderTaskList(tasks,cols){
       const isDone=t.completed;
       const dueLabel=!t.due_date?'':t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':fmtShortDate(new Date(t.due_date+'T12:00:00').getTime());
       const dueClass=!t.due_date?'none':(t.due_date<today&&!isDone?'overdue':t.due_date===today?'today':'future');
+      const tags=renderTaskTagPills(t,2,'tl-tags');
       h+=`<div class="tl-row${isDone?' done':''}" draggable="true" data-task="${t.id}" data-col="${col.id}" onclick="openTaskDetail('${t.id}')" ondragstart="tlDragStart(event,'${t.id}')" ondragend="tlDragEnd(event)" ondragover="tlDragOver(event)" ondrop="tlDrop(event,'${t.id}','${col.id}')">
         <div class="tl-chk${isDone?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!isDone});renderActiveView();renderSidebar()"></div>
         <span class="tl-title${isDone?' strikethrough':''}">${escH(t.title)}</span>
-        <span class="pri-tag ${pri}">${t.priority==='H'?'High':t.priority==='M'?'Med':'Low'}</span>
+        ${tags}
+        ${renderTaskPriorityPill(t)}
+        ${renderTaskStaleBadge(t)}
         ${dueLabel?`<span class="tl-due ${dueClass}">${dueLabel}</span>`:''}
         ${t.note_id?`<span class="tl-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:''}
         <span class="tl-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Star for Today'}">&#9733;</span>
@@ -4011,7 +4229,7 @@ function _tcDayCell(ds,dayNum,tasks,isOther,today){
   return h;
 }
 function _taskCalAddTask(ds){
-  const task=createTask({title:'Untitled task',due_date:ds});
+  const task=createTask({title:'Untitled task',due_date:ds,tags:getActiveContextTags()});
   if(!task)return;
   openTaskDetail(task.id);
   setTimeout(()=>{const ta=document.querySelector('.tm-title');if(ta){ta.focus();ta.select();}},50);
@@ -4022,9 +4240,9 @@ function showNewTaskForm(){
   const cols=(db.columns||[]).filter(c=>!c.isDone).sort((a,b)=>(a.order||0)-(b.order||0));
   const firstCol=cols[0];
   if(!firstCol)return;
-  showPrompt('Task title:',{title:'New Task'}).then(title=>{
+  showPrompt('Task title:',{title:'New Task',autocomplete:true}).then(title=>{
     if(!title||!title.trim())return;
-    const task=createTask({title:title.trim(),column_id:firstCol.id});
+    const task=createTask({title:title.trim(),column_id:firstCol.id,tags:getActiveContextTags()});
     if(!task)return;
     save('tasks');
     renderActiveView();renderSidebar();
@@ -4132,10 +4350,13 @@ function renderToday(area){
       const noteLink=t.note_id?`<span class="tt-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')">&#128196;</span>`:'';
       const isStarredOnly=t.today&&!(t.due_date&&t.due_date<=today);
       const starBtn=`<span class="tt-star${t.today?' active':''}" onclick="event.stopPropagation();toggleTaskToday('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Add to Today'}">&#9733;</span>`;
+      const tags=renderTaskTagPills(t,2,'tt-tags');
       h+=`<div class="today-task-row${isStarredOnly?' starred':''}" onclick="openTaskDetail('${t.id}')">
         <div class="tt-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',!${t.completed});renderActiveView();renderSidebar()"></div>
         <span class="tt-title${t.completed?' done':''}">${escH(t.title)}</span>
-        <span class="pri-tag ${pri}">${t.priority==='H'?'High':t.priority==='M'?'Med':'Low'}</span>
+        ${tags}
+        ${renderTaskPriorityPill(t)}
+        ${renderTaskStaleBadge(t)}
         ${dueLabel?`<span class="tt-due ${dueClass}">${dueLabel}</span>`:''}
         ${col?`<span class="tt-col">${escH(col)}</span>`:''}
         ${noteLink}
@@ -4150,18 +4371,14 @@ function renderToday(area){
       <span class="task-add-label">Add a task</span>
     </div>
     <div class="task-add-card" id="task-add-card" style="display:none">
-      <input id="task-add-title" class="task-add-title" type="text" placeholder="What needs to be done?" onkeydown="if(event.key==='Enter'){event.preventDefault();submitTaskAdd();}if(event.key==='Escape'){collapseTaskAdd();}">
+      <input id="task-add-title" class="task-add-title" type="text" placeholder="What needs to be done? Use #tag or @person" oninput="taskInputChanged(this)" onkeydown="taskInputKey(event,submitTaskAdd,collapseTaskAdd)">
       <div class="task-add-options">
         <div class="task-add-pri" id="task-add-pri" data-val="L">
           <span class="tap-pill high" onclick="setTaskAddPri('H')">High</span>
           <span class="tap-pill med" onclick="setTaskAddPri('M')">Medium</span>
           <span class="tap-pill low active" onclick="setTaskAddPri('L')">Low</span>
         </div>
-        <button class="task-add-due-btn" id="task-add-due-btn" onclick="toggleTaskAddDate()">
-          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="12" rx="2"/><line x1="3" y1="9" x2="17" y2="9"/><line x1="7" y1="3" x2="7" y2="6"/><line x1="13" y1="3" x2="13" y2="6"/></svg>
-          <span id="task-add-due-label">No date</span>
-        </button>
-        <input type="date" id="task-add-due-input" style="display:none;position:absolute;opacity:0" onchange="setTaskAddDate(this.value)">
+        <input type="date" id="task-add-due-input" class="task-add-date-input" title="Due date" onchange="setTaskAddDate(this.value)">
         <div class="task-add-spacer"></div>
         <button class="btn-primary task-add-submit" onclick="submitTaskAdd()">Add</button>
         <button class="task-add-cancel" onclick="collapseTaskAdd()">Cancel</button>
@@ -4176,15 +4393,16 @@ function renderToday(area){
     h+=`<div id="feed-scroll-sentinel-top" style="height:1px"></div>`;
   }
 
-  // Daily summary banner — show if viewing today (or selected date) and no summary exists yet
-  h+=`<div class="summary-banner" onclick="generateWrapUp()"><span>&#128203;</span> Generate daily summary for ${selectedDate===todayStr()?'today':fmtDateLabel(selectedDate)}</div>`;
-  // Weekly review banner — show Thu-Mon if no review exists for this week
-  {const dow=new Date().getDay();
-  if(dow>=4||dow<=1){
-    const ws=getWeekStart(todayStr()),we=getWeekEnd(todayStr());
+  if(viewingToday){
+    const staleTasks=(db.tasks||[]).filter(isTaskStale);
+    if(staleTasks.length)h+=`<div class="summary-banner" onclick="filterTasksByStale()" style="border-color:var(--danger);color:var(--danger);background:rgba(225,98,89,0.06)"><span>&#9888;</span> Review ${staleTasks.length} stale open task${staleTasks.length===1?'':'s'}</div>`;
+  }
+  const hasDaily=db.entries.some(e=>e.isNote&&(e.tags||[]).includes('daily-summary')&&e.date===selectedDate);
+  h+=`<div class="summary-banner" onclick="openOrGenerateDailySummary('${selectedDate}')"><span>&#128203;</span> ${hasDaily?'Open':'Generate'} daily review for ${selectedDate===todayStr()?'today':fmtDateLabel(selectedDate)}</div>`;
+  {const ws=getWeekStart(selectedDate),we=getWeekEnd(selectedDate);
     const hasWeekly=db.entries.some(e=>e.isNote&&(e.tags||[]).includes('weekly-summary')&&e.date>=ws&&e.date<=we);
-    if(!hasWeekly)h+=`<div class="summary-banner" onclick="generateWeeklyWrapUp()" style="border-color:var(--green);color:var(--green);background:rgba(0,179,60,0.06)"><span>&#128202;</span> Generate weekly review for ${fmtWeekRange(ws,we)}</div>`;
-  }}
+    h+=`<div class="summary-banner" onclick="openOrGenerateWeeklyReview('${selectedDate}')" style="border-color:var(--green);color:var(--green);background:rgba(0,179,60,0.06)"><span>&#128202;</span> ${hasWeekly?'Open':'Generate'} weekly review for ${fmtWeekRange(ws,we)}</div>`;
+  }
 
   let hasAny=false;
   for(const ds of dates){
@@ -4251,7 +4469,7 @@ function renderDayDivider(ds){
     else label=d.toLocaleDateString('en-US',{weekday:'long'});
   }
   const fullDate=d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  return`<div class="day-divider" data-date="${ds}"><span class="day-divider-label">${label}</span><span class="day-divider-sublabel">&mdash; ${fullDate}</span><div class="day-divider-line"></div></div>`;
+  return`<div class="day-divider" data-date="${ds}"><span class="day-divider-label">${label}</span><span class="day-divider-sublabel">${fullDate}</span><div class="day-divider-line"></div></div>`;
 }
 function getEntryBorderColor(tags){
   if(!tags||!tags.length)return 'var(--border)';
@@ -4273,6 +4491,26 @@ function humanizeTokens(text,entry){
     .replace(/\{\{smartlist:(.+?)\}\}/gi,(m,query)=>'[list: '+query+']')
     // Catch any remaining unknown tokens
     .replace(/\{\{[^}]+\}\}/g,'');
+}
+// Strip markdown formatting for plain-text display in search results.
+// Resolves tokens first (tasks, tables, status badges), then removes
+// markdown syntax characters while preserving readable text.
+function cleanForDisplay(text,entry){
+  return humanizeTokens(text,entry||{})
+    .replace(/!\[\]\([^)]+\)/g,'')       // image tokens
+    .replace(/\[([^\]]*)\]\([^)]+\)/g,'$1') // [text](url) → text
+    .replace(/^#{1,6}\s+/gm,'')          // heading prefixes
+    .replace(/\*\*([^*]+)\*\*/g,'$1')    // **bold** → bold
+    .replace(/__([^_]+)__/g,'$1')        // __bold__ → bold
+    .replace(/\*([^*]+)\*/g,'$1')        // *italic* → italic
+    .replace(/_([^_]+)_/g,'$1')          // _italic_ → italic
+    .replace(/~~([^~]+)~~/g,'$1')        // ~~strike~~ → strike
+    .replace(/`([^`]+)`/g,'$1')          // `code` → code
+    .replace(/^>\s+/gm,'')              // blockquote prefix
+    .replace(/^[-*]\s+/gm,'')           // bullet prefix
+    .replace(/^\d+\.\s+/gm,'')         // numbered list prefix
+    .replace(/\[\[([^\]]+)\]\]/g,'$1')   // [[link]] → link
+    .trim();
 }
 function renderEntryCard(e,isEditRef){
   const noteClass=e.isNote?' entry-note':'';
@@ -4520,12 +4758,17 @@ function closeDeleteModal(){pendingDeleteId=null;document.getElementById('delete
 
 /* ── Generic Dialog Utilities (replace native alert/confirm/prompt) ── */
 let _ddDialogResolve=null;
-function _ddDialogOpen(title,msg,{input=false,defaultVal='',okLabel='OK',okClass='primary',dangerOk=false}={}){
+function _ddDialogOpen(title,msg,{input=false,defaultVal='',okLabel='OK',okClass='primary',dangerOk=false,autocomplete=false}={}){
   const el=document.getElementById('dd-dialog');
   document.getElementById('dd-dialog-title').textContent=title;
   document.getElementById('dd-dialog-msg').textContent=msg;
   const inp=document.getElementById('dd-dialog-input');
   inp.style.display=input?'block':'none';
+  inp.oninput=null;inp.onkeydown=null;
+  if(input&&autocomplete){
+    inp.oninput=()=>taskInputChanged(inp);
+    inp.onkeydown=e=>taskInputKey(e,()=>_ddDialogOk(),()=>_ddDialogCancel());
+  }
   if(input){inp.value=defaultVal;setTimeout(()=>{inp.focus();inp.select();},50);}
   const okBtn=document.getElementById('dd-dialog-ok');
   okBtn.textContent=okLabel;
@@ -4548,7 +4791,7 @@ function _ddDialogOk(){
 // showConfirm('Delete this?',{title:'Confirm',okLabel:'Delete',dangerOk:true}).then(ok=>{if(ok)...})
 function showConfirm(msg,opts={}){return _ddDialogOpen(opts.title||'Confirm',msg,{okLabel:opts.okLabel||'OK',dangerOk:opts.dangerOk||false});}
 // showPrompt('Enter name:',{title:'Rename',defaultVal:'foo'}).then(val=>{if(val!==null)...})
-function showPrompt(msg,opts={}){return _ddDialogOpen(opts.title||msg,opts.body||msg,{input:true,defaultVal:opts.defaultVal||'',okLabel:opts.okLabel||'OK'});}
+function showPrompt(msg,opts={}){return _ddDialogOpen(opts.title||msg,opts.body||msg,{input:true,defaultVal:opts.defaultVal||'',okLabel:opts.okLabel||'OK',autocomplete:!!opts.autocomplete});}
 // showAlert('Something happened',{title:'Notice'}).then(()=>{})
 function showAlert(msg,opts={}){
   document.getElementById('dd-dialog-cancel').style.display='none';
@@ -4559,6 +4802,9 @@ function showAlert(msg,opts={}){
 // Enter key submits the dialog — ignore if dialog just opened (same keypress that triggered it)
 let _ddDialogOpenTs=0;
 document.addEventListener('keydown',e=>{
+  if(acState&&acState.el===document.getElementById('dd-dialog-input')){
+    if(e.key==='Enter'||e.key==='Tab'||e.key==='ArrowDown'||e.key==='ArrowUp'||e.key==='Escape')return;
+  }
   if(e.key==='Enter'&&document.getElementById('dd-dialog').classList.contains('open')){
     if(Date.now()-_ddDialogOpenTs<200)return; // ignore Enter that opened the dialog
     e.preventDefault();_ddDialogOk();
@@ -4635,7 +4881,7 @@ function openAsNote(id){
   // Convert to note if not already
   if(!entry.isNote){
     entry.isNote=true;
-    entry.noteTitle=(entry.content.split('\n')[0]||'').trim().slice(0,80)||'Untitled';
+    entry.noteTitle=(entry.content.split('\n')[0]||'').trim().replace(/^#{1,6}\s+/,'').slice(0,80)||'Untitled';
   }
   save();
   openNoteTab(entry.id);
@@ -4882,6 +5128,119 @@ function cmInsertLink(){
     cmEditorView.focus();
   });
 }
+function cmGetSelectedMarkdown(){
+  if(!cmEditorView)return '';
+  const state=cmEditorView.state;
+  const parts=[];
+  state.selection.ranges.forEach(r=>{
+    if(!r.empty)parts.push(state.doc.sliceString(r.from,r.to));
+  });
+  return parts.join('\n');
+}
+function cmSelectionInlineHtml(text){
+  let h=escH(text);
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  h=h.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g,'<a href="$2">$1</a>');
+  h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/__(.+?)__/g,'<strong>$1</strong>');
+  h=h.replace(/~~(.+?)~~/g,'<s>$1</s>');
+  h=h.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,'$1<em>$2</em>');
+  h=h.replace(/(^|[^_])_([^_\n]+)_(?!_)/g,'$1<em>$2</em>');
+  h=h.replace(/\[\[([^\]]+)\]\]/g,'$1');
+  return h;
+}
+function cmSelectionMarkdownToHtml(md){
+  const lines=md.replace(/\r\n/g,'\n').split('\n');
+  let html='',list=null,quote=[];
+  const para=[];
+  const flushPara=()=>{if(para.length){html+='<p>'+para.join('<br>')+'</p>';para.length=0;}};
+  const closeList=()=>{if(list){html+='</'+list+'>';list=null;}};
+  const flushQuote=()=>{if(quote.length){html+='<blockquote>'+quote.join('<br>')+'</blockquote>';quote.length=0;}};
+  lines.forEach(line=>{
+    if(!line.trim()){flushPara();closeList();flushQuote();return;}
+    const heading=line.match(/^(#{1,6})\s+(.+)$/);
+    if(heading){flushPara();closeList();flushQuote();html+='<h'+heading[1].length+'>'+cmSelectionInlineHtml(heading[2])+'</h'+heading[1].length+'>';return;}
+    if(/^(---+|\*\*\*+|___+)\s*$/.test(line)){flushPara();closeList();flushQuote();html+='<hr>';return;}
+    const bullet=line.match(/^\s*[-*]\s+(.+)$/);
+    if(bullet){flushPara();flushQuote();if(list!=='ul'){closeList();html+='<ul>';list='ul';}html+='<li>'+cmSelectionInlineHtml(bullet[1])+'</li>';return;}
+    const numbered=line.match(/^\s*\d+[.)]\s+(.+)$/);
+    if(numbered){flushPara();flushQuote();if(list!=='ol'){closeList();html+='<ol>';list='ol';}html+='<li>'+cmSelectionInlineHtml(numbered[1])+'</li>';return;}
+    const q=line.match(/^>\s?(.+)$/);
+    if(q){flushPara();closeList();quote.push(cmSelectionInlineHtml(q[1]));return;}
+    closeList();flushQuote();para.push(cmSelectionInlineHtml(line));
+  });
+  flushPara();closeList();flushQuote();
+  return html||'<p></p>';
+}
+function cmPlainTextFromMarkdown(md){
+  return cleanForDisplay(md,{});
+}
+function cmCopyTextFallback(text){
+  const ta=document.createElement('textarea');
+  ta.value=text;
+  ta.setAttribute('readonly','');
+  ta.style.position='fixed';
+  ta.style.left='-9999px';
+  ta.style.top='0';
+  document.body.appendChild(ta);
+  ta.select();
+  const ok=document.execCommand('copy');
+  ta.remove();
+  if(!ok)throw new Error('Copy failed');
+}
+function cmCopyHtmlFallback(html,plain){
+  const holder=document.createElement('div');
+  holder.contentEditable='true';
+  holder.style.position='fixed';
+  holder.style.left='-9999px';
+  holder.style.top='0';
+  holder.innerHTML=html;
+  document.body.appendChild(holder);
+  const range=document.createRange();
+  range.selectNodeContents(holder);
+  const sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  const ok=document.execCommand('copy');
+  sel.removeAllRanges();
+  holder.remove();
+  if(!ok)cmCopyTextFallback(plain);
+}
+async function cmCopySelectionAs(mode){
+  const md=cmGetSelectedMarkdown();
+  if(!md.trim())return;
+  try{
+    if(mode==='rich'){
+      const html=cmSelectionMarkdownToHtml(md);
+      const plain=cmPlainTextFromMarkdown(md)||md;
+      if(navigator.clipboard&&window.ClipboardItem&&navigator.clipboard.write){
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/html':new Blob(['<meta charset="utf-8">'+html],{type:'text/html'}),
+          'text/plain':new Blob([plain],{type:'text/plain'})
+        })]);
+      } else {
+        cmCopyHtmlFallback(html,plain);
+      }
+      showToast&&showToast('Copied as rich text','info');
+    } else {
+      if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(md);
+      else cmCopyTextFallback(md);
+      showToast&&showToast('Copied as markdown','info');
+    }
+  } catch(err){
+    try{
+      if(mode==='rich')cmCopyHtmlFallback(cmSelectionMarkdownToHtml(md),cmPlainTextFromMarkdown(md)||md);
+      else cmCopyTextFallback(md);
+      showToast&&showToast(mode==='rich'?'Copied as rich text':'Copied as markdown','info');
+    }
+    catch(e){
+      try{cmCopyTextFallback(mode==='rich'?(cmPlainTextFromMarkdown(md)||md):md);showToast&&showToast('Copied as plain text','info');}
+      catch(fallbackErr){showToast&&showToast('Copy failed','error');}
+    }
+  }
+  hideSelToolbar();
+  cmEditorView&&cmEditorView.focus();
+}
 function cmInsertNoteLink(){
   if(!cmEditorView)return;
   const pos=cmEditorView.state.selection.main.head;
@@ -4977,12 +5336,17 @@ function showSelToolbar(x,y){
       <button class="fmt-btn" onmousedown="event.preventDefault();cmWrapSelection('\`','\`')" title="Code" style="font-family:var(--mono);font-size:10px">&lt;/&gt;</button>
       <span class="fmt-sep"></span>
       <button class="fmt-btn" onmousedown="event.preventDefault();cmInsertLink()" title="Link"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 9 L5.5 10.5 A2.5 2.5 0 0 1 2 7 L4 5 A2.5 2.5 0 0 1 7.5 5"/><path d="M9 7 L10.5 5.5 A2.5 2.5 0 0 1 14 9 L12 11 A2.5 2.5 0 0 1 8.5 11"/></svg></button>
+      <span class="fmt-sep"></span>
+      <span class="copy-as-label">Copy as:</span>
+      <button class="fmt-btn copy-choice" onmousedown="event.preventDefault();cmCopySelectionAs('md')" title="Copy selected markdown">MD</button>
+      <button class="fmt-btn copy-choice" onmousedown="event.preventDefault();cmCopySelectionAs('rich')" title="Copy selected markdown as rich text">Rich Text</button>
     `;
     document.body.appendChild(tb);
   }
-  tb.style.left=Math.max(8,x)+'px';
-  tb.style.top=Math.max(8,y)+'px';
   tb.style.display='flex';
+  const w=tb.offsetWidth||0;
+  tb.style.left=Math.max(8,Math.min(x,window.innerWidth-w-8))+'px';
+  tb.style.top=Math.max(8,y)+'px';
 }
 function hideSelToolbar(){
   const tb=document.getElementById('cm-sel-toolbar');
@@ -5660,6 +6024,34 @@ class CmSmartListWidget extends CM6.WidgetType{
     // Results
     const body=document.createElement('div');
     body.className='cm-sl-body';
+    const isLineQuery=this.query.trim().toLowerCase().startsWith('line:');
+    if(isLineQuery){
+      // Line-level results: show individual matching lines
+      const lineResults=matchLines(this.query).filter(r=>r.entryId!==this.noteId); // skip self
+      count.textContent=lineResults.length;
+      if(!lineResults.length){
+        const empty=document.createElement('div');empty.className='cm-sl-empty';
+        empty.textContent='No matching lines';body.appendChild(empty);
+      } else {
+        const hlTerms=this.query.trim().replace(/^line:\s*/i,'').replace(/"([^"]+)"/g,'$1')
+          .split(/\s+/).filter(w=>!w.startsWith('-')&&w!=='or'&&!w.startsWith('date:')).join('|')||'NOMATCH';
+        lineResults.slice(0,50).forEach(r=>{
+          const row=document.createElement('div');
+          row.className='line-result';
+          const text=document.createElement('span');
+          text.className='line-result-text';
+          text.innerHTML=hlMatch(escH(cleanForDisplay(r.line)),hlTerms);
+          row.appendChild(text);
+          const note=document.createElement('span');
+          note.className='line-result-note';
+          note.textContent=r.noteTitle.slice(0,30);
+          note.title=r.noteTitle;
+          note.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();openNoteTab(r.entryId);});
+          row.appendChild(note);
+          body.appendChild(row);
+        });
+      }
+    } else {
     const allResults=matchEntries(this.query).filter(e=>!e.isHelp);
     const taskResults=matchTasks(this.query);
     const results=allResults.slice(0,50);
@@ -5719,6 +6111,7 @@ class CmSmartListWidget extends CM6.WidgetType{
         body.appendChild(row);
       });
     }
+    } // end else (non-line-mode)
     wrap.appendChild(body);
     return wrap;
   }
@@ -6772,6 +7165,47 @@ function _floatingSaveNote(e){
     tables:e.tables||null,editDates:e.editDates||null,mentions:e.mentions||[]
   }));}catch(err){console.error('[DD] Floating note localStorage save failed:',err);showToast('Note save failed — storage may be full. Copy your work now.','error');}
 }
+// Propagate a note rename to all [[links]] across the journal.
+// Debounced so it doesn't fire on every keystroke while editing line 1.
+let _renameTimer=null,_renameOldTitle=null,_renameSourceId=null;
+function _debouncedRenamePropagate(noteId,oldTitle,newTitle){
+  // Capture the FIRST old title in a typing burst — that's the one links still reference.
+  if(_renameSourceId!==noteId||!_renameOldTitle){_renameOldTitle=oldTitle;_renameSourceId=noteId;}
+  clearTimeout(_renameTimer);
+  _renameTimer=setTimeout(()=>{
+    const finalOld=_renameOldTitle;
+    _renameOldTitle=null;_renameSourceId=null;
+    // Read current title from db (may have changed during debounce)
+    const entry=db.entries.find(e=>e.id===noteId);
+    if(!entry)return;
+    const finalNew=entry.noteTitle;
+    if(!finalOld||!finalNew||finalOld===finalNew||finalNew==='Untitled')return;
+    _propagateNoteRename(noteId,finalOld,finalNew);
+  },600);
+}
+function _propagateNoteRename(sourceId,oldTitle,newTitle){
+  // Escape for regex — old title may contain special chars
+  const esc=oldTitle.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const re=new RegExp('\\[\\['+esc+'\\]\\]','gi');
+  let changed=false;
+  db.entries.forEach(e=>{
+    if(e.id===sourceId)return; // don't rewrite the note being renamed
+    if(!e.content||!re.test(e.content))return;
+    re.lastIndex=0; // reset after .test()
+    e.content=e.content.replace(re,'[['+newTitle+']]');
+    e.updatedTs=Date.now();
+    changed=true;
+    // If this entry is open in the CM6 editor, update its buffer too
+    if(cmEditorView&&cmNoteId===e.id){
+      const doc=cmEditorView.state.doc.toString();
+      const updated=doc.replace(re,'[['+newTitle+']]');
+      if(updated!==doc){
+        cmEditorView.dispatch({changes:{from:0,to:doc.length,insert:updated}});
+      }
+    }
+  });
+  if(changed)save();
+}
 function noteContentChanged(id,val){
   const e=db.entries.find(x=>x.id===id);if(!e)return;
   e.content=val;
@@ -6790,10 +7224,16 @@ function noteContentChanged(id,val){
     else{e.editDates.push({date:today,ts:e.updatedTs});}
   }
   renderNoteMetaBar(id);
-  // Derive title from first line (including hashtags)
-  const firstLine=(val.split('\n')[0]||'').trim().slice(0,80);
+  // Derive title from first line — strip leading markdown heading prefix (# / ## / ###)
+  // so tabs, links, and sidebar show "Meeting Notes" not "# Meeting Notes".
+  const oldTitle=e.noteTitle||'';
+  const firstLine=(val.split('\n')[0]||'').trim().replace(/^#{1,6}\s+/,'').slice(0,80);
   e.noteTitle=firstLine||'Untitled';
   renderTabBar();
+  // If the title meaningfully changed, propagate the rename to all [[links]]
+  if(oldTitle&&e.noteTitle!=='Untitled'&&oldTitle!=='Untitled'&&oldTitle!==e.noteTitle){
+    _debouncedRenamePropagate(e.id,oldTitle,e.noteTitle);
+  }
   // Auto-expand {{date}}, {{time}}, {{datetime}} macros — unless this is a
   // template note (which keeps them as placeholders for /template insertion).
   // Uses a flag to prevent recursion: the expansion dispatch triggers another
@@ -6919,6 +7359,85 @@ function checkAC(el){
   const lm=text.match(/\[\[([^\]]*)$/);
   if(lm){const q=lm[1].toLowerCase(),stT=s=>(s||'').replace(/#[a-zA-Z0-9_-]+/g,'').trim(),nm=db.entries.filter(e=>e.isNote&&stT(e.noteTitle).toLowerCase().includes(q)).slice(0,8).map(n=>({label:stT(n.noteTitle)||'Untitled',id:n.id}));if(nm.length>0){showACLinks(el,nm,lm.index);return;}}
   closeAC();
+}
+function taskInputChanged(el){
+  if(!el)return;
+  checkAC(el);
+  if(el.tagName==='TEXTAREA'){
+    el.style.height='auto';
+    el.style.height=el.scrollHeight+'px';
+  }
+}
+function taskModalFieldChanged(el,taskId,field){
+  taskInputChanged(el);
+  const value=field==='title'?el.value.trim():el.value;
+  updateTask(taskId,{[field]:value});
+  renderSidebar();
+}
+function normalizeTaskTagName(raw){
+  return(raw||'').trim().replace(/^#/,'').replace(/[^a-zA-Z0-9_-]/g,'');
+}
+function recomputeTaskTags(t){
+  if(!t)return;
+  const text=(t.title||'')+' '+(t.description||'');
+  t.inheritedTags=[...new Set((t.inheritedTags||[]).map(normalizeTaskTagName).filter(Boolean))];
+  t.tags=[...new Set([...extractTags(text),...t.inheritedTags])];
+  invalidateTagCache();
+}
+function addTaskTag(taskId,rawTag,{rerender=true}={}){
+  const t=(db.tasks||[]).find(x=>x.id===taskId);
+  const tag=normalizeTaskTagName(rawTag);
+  if(!t||!tag)return;
+  if(!t.inheritedTags)t.inheritedTags=[];
+  if(!t.inheritedTags.some(x=>x.toLowerCase()===tag.toLowerCase()))t.inheritedTags.push(tag);
+  recomputeTaskTags(t);
+  touchTaskActivity(t);
+  if(isFloatingMode())_floatingDirtyTaskIds.add(taskId);
+  save('tasks');
+  if(rerender){openTaskDetail(taskId);renderActiveView();renderSidebar();}
+}
+function removeTaskTag(taskId,tag){
+  const t=(db.tasks||[]).find(x=>x.id===taskId);
+  const clean=normalizeTaskTagName(tag);
+  if(!t||!clean)return;
+  const re=new RegExp('(^|\\s)#'+clean.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi');
+  t.inheritedTags=(t.inheritedTags||[]).filter(x=>x.toLowerCase()!==clean.toLowerCase());
+  if(t.title)t.title=t.title.replace(re,' ').replace(/\s{2,}/g,' ').trim();
+  if(t.description)t.description=t.description.replace(re,' ').replace(/[ \t]{2,}/g,' ').trim();
+  recomputeTaskTags(t);
+  touchTaskActivity(t);
+  if(isFloatingMode())_floatingDirtyTaskIds.add(taskId);
+  save('tasks');
+  openTaskDetail(taskId);renderActiveView();renderSidebar();
+}
+function addTaskTagFromInput(taskId,el){
+  if(!el)return;
+  const tag=normalizeTaskTagName(el.value);
+  if(!tag)return;
+  el.value='';
+  closeAC();
+  addTaskTag(taskId,tag);
+}
+function taskTagInputChanged(el,taskId){
+  checkAC(el);
+  const raw=el.value||'';
+  if(/\s$|,$/.test(raw))addTaskTagFromInput(taskId,el);
+}
+function taskTagInputKey(e,taskId){
+  if(taskInputKey(e,()=>addTaskTagFromInput(taskId,e.currentTarget),()=>{e.currentTarget.value='';closeAC();}))return true;
+  if(e.key===',' ){e.preventDefault();addTaskTagFromInput(taskId,e.currentTarget);return true;}
+  return false;
+}
+function taskInputKey(e,onEnter,onEscape){
+  if(acState&&acState.el===e.currentTarget){
+    if(e.key==='Tab'||e.key==='Enter'){e.preventDefault();e.stopPropagation();selectAC();return true;}
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeAC();return true;}
+    if(e.key==='ArrowDown'){e.preventDefault();e.stopPropagation();navAC(1);return true;}
+    if(e.key==='ArrowUp'){e.preventDefault();e.stopPropagation();navAC(-1);return true;}
+  }
+  if(e.key==='Enter'&&onEnter){e.preventDefault();onEnter();return true;}
+  if(e.key==='Escape'&&onEscape){e.preventDefault();onEscape();return true;}
+  return false;
 }
 // Get pixel coordinates of the caret inside a textarea
 function getCaretCoords(el){
@@ -7168,10 +7687,10 @@ function renderTagCloud(){renderAllSections();}
 const EVENT_TYPES={
   create:{icon:'✨', verb:'Created'},
   delete:{icon:'🗑️', verb:'Deleted'},
-  section_create:{icon:'✨', verb:'New section'},
-  section_rename:{icon:'✏️', verb:'Renamed section'},
-  section_filter:{icon:'🔧', verb:'Section filter'},
-  section_delete:{icon:'🗑️', verb:'Removed section'},
+  section_create:{icon:'✨', verb:'New Smart List'},
+  section_rename:{icon:'✏️', verb:'Renamed Smart List'},
+  section_filter:{icon:'🔧', verb:'Smart List filter'},
+  section_delete:{icon:'🗑️', verb:'Removed Smart List'},
   search_create: {icon:'🔍', verb:'Search'},
   task_complete:{icon:'✅', verb:'Completed task'},
 };
@@ -7205,9 +7724,9 @@ function renderCalendar(){
 function navMonth(d){calViewDate.setMonth(calViewDate.getMonth()+d);renderCalendar();}
 function selCalDay(ds){selectedDate=ds;feedTopDate=ds>=todayStr()?null:ds;feedDaysLoaded=7;feedDayShowMore={};activeTab='today';_feedDayTrackPaused=Date.now();updateDateBar();renderTabBar();renderActiveView();renderCalendar();const c=document.getElementById('content-area');if(c)c.scrollTop=0;}
 
-/* ═══════════ RIGHT SIDEBAR: CUSTOM SECTIONS ═══════════ */
+/* ═══════════ RIGHT SIDEBAR: SMART LISTS ═══════════ */
 function addSection(){
-  // Create a draft section in setup mode — user commits via "Create section" button
+  // Create a draft Smart List in setup mode — user commits via the setup button.
   const sec={id:genId('sec'),name:'',query:'',height:200,_setupMode:true,_isNew:true};
   db.sections.push(sec);
   renderAllSections();
@@ -7249,10 +7768,10 @@ function saveSectionSetup(id){
   delete s._setupMode;
   delete s._isNew;
   if(wasNew){
-    logEvent('section_create',`New section: ${name}`,id);
+    logEvent('section_create',`New Smart List: ${name}`,id);
   } else {
-    if(oldName!==name)logEvent('section_rename',`Renamed section: "${oldName}" → "${name}"`,id);
-    if(oldQuery!==query)logEvent('section_filter',`Section "${name}" filter: ${query||'(empty)'}`,id);
+    if(oldName!==name)logEvent('section_rename',`Renamed Smart List: "${oldName}" → "${name}"`,id);
+    if(oldQuery!==query)logEvent('section_filter',`Smart List "${name}" filter: ${query||'(empty)'}`,id);
   }
   save();renderAllSections();renderActiveView();
 }
@@ -7279,7 +7798,7 @@ function handleSetupKey(e,id){
 }
 
 const SEC_PAGE_SIZE=30;
-// Track how many items each section is showing
+// Track how many items each Smart List is showing
 let sectionShowCount={};
 
 function renderSectionPanel(sec){
@@ -7287,8 +7806,8 @@ function renderSectionPanel(sec){
   if(sec._setupMode){
     const isNew=sec._isNew;
     const badge=isNew?'New':'Edit';
-    const title=isNew?'Set up section':'Edit section';
-    const btnLabel=isNew?'Create section':'Save';
+    const title=isNew?'Set up Smart List':'Edit Smart List';
+    const btnLabel=isNew?'Create Smart List':'Save';
     return `<div class="rs-panel rs-panel-setup" data-sid="${sec.id}">
       <div class="rs-setup">
         <div class="rs-setup-hdr">
@@ -7296,7 +7815,7 @@ function renderSectionPanel(sec){
           <span class="rs-setup-title">${title}</span>
         </div>
         <div class="rs-setup-field">
-          <label>Section name</label>
+          <label>Smart List name</label>
           <input class="rs-setup-name" type="text" placeholder="e.g. Meetings, Action items, Ideas" value="${escH(sec.name||'')}" onkeydown="handleSetupKey(event,'${sec.id}')">
           <div class="rs-setup-hint">Shown as the header in the sidebar.</div>
         </div>
@@ -7330,9 +7849,7 @@ function renderSectionPanel(sec){
     const isHelp=(sec.query||'').toLowerCase().includes('#dailydispatchhelp');
     // Task rows first
     bodyHtml=taskMatches.map(t=>{
-      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
-      const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
-      return`<div class="rs-task" onclick="openTaskDetail('${t.id}')"><div class="rs-task-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!t.completed});renderAllSections();renderActiveView();renderSidebar()"></div><span class="rs-task-title">${escH(t.title.slice(0,40))}</span><span class="pri-tag ${pri}">${priLabel}</span></div>`;
+      return`<div class="rs-task" onclick="openTaskDetail('${t.id}')"><div class="rs-task-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!t.completed});renderAllSections();renderActiveView();renderSidebar()"></div><span class="rs-task-title">${escH(t.title.slice(0,40))}</span>${renderTaskPriorityPill(t)}</div>`;
     }).join('');
     // Entry rows
     bodyHtml+=visible.map(e=>`<div class="rs-entry" style="border-left-color:${e.isNote?'var(--accent)':'transparent'}" onclick="openAsNote('${e.id}')">${isHelp?'':'<span class="rs-time">'+fmtShortDate(e.ts)+'</span>'}${e.isNote?'<strong>'+escH((e.noteTitle||'').replace(/^#+\s+/,'').slice(0,30))+'</strong> ':''}<span>${escH((e.isNote?e.content:e.content).slice(0,60))}</span></div>`).join('');
@@ -7344,7 +7861,7 @@ function renderSectionPanel(sec){
       <span class="rs-drag-handle" title="Drag to reorder">&#x2630;</span>
       ${totalAll?'<span class="rs-live-dot"></span>':''}
       <span class="rs-title-display" ondblclick="editSection('${sec.id}')" title="Double-click to edit">${escH(sec.name||'Untitled')}</span>
-      <button class="rs-edit" onclick="editSection('${sec.id}')" title="Edit section">&#9998;</button>
+      <button class="rs-edit" onclick="editSection('${sec.id}')" title="Edit Smart List">&#9998;</button>
       <button class="rs-del" onclick="delSection('${sec.id}')" title="Remove">&times;</button>
     </div>
     <div class="rs-query-display" onclick="editSection('${sec.id}')" title="Click to edit filter">
@@ -7585,8 +8102,8 @@ function matchEntries(query){
       if(matched.has(e.id))return;
       if(dateFilter&&e.date!==dateFilter)return;
       const content=contentCache.get(e.id);
-      if(tags.length&&!tags.every(t=>(e.tags||[]).some(et=>et.toLowerCase()===t)))return;
-      if(mentions.length&&!mentions.every(m=>(e.mentions||[]).some(em=>em.toLowerCase()===m)))return;
+      if(tags.length&&!tags.every(t=>(e.tags||[]).some(et=>et.toLowerCase().includes(t))))return;
+      if(mentions.length&&!mentions.every(m=>(e.mentions||[]).some(em=>em.toLowerCase().includes(m))))return;
       if(lineMode){
         // At least one line of content (or the note title) must contain all line terms literally
         const lines=(e.content||'').toLowerCase().split('\n').concat([(e.noteTitle||'').toLowerCase()]);
@@ -7599,6 +8116,49 @@ function matchEntries(query){
     });
   }
   return base.filter(e=>matched.has(e.id)).sort((a,b)=>b.ts-a.ts);
+}
+// Match individual lines across all entries for line: queries.
+// Returns [{line, entryId, noteTitle, ts}] sorted by ts descending.
+function matchLines(query){
+  if(!query||!query.trim())return[];
+  let q=query.trim().toLowerCase();
+  if(q.startsWith('line:'))q=q.slice(5).trim();
+  if(!q)return[];
+  // Parse terms the same way matchEntries does
+  const phrases=[];
+  let stripped=q;
+  stripped=stripped.replace(/"([^"]+)"/g,(_,m)=>{phrases.push(m);return ' ';});
+  const parts=stripped.split(/\s+/).filter(Boolean);
+  const lineTerms=[...phrases];
+  let dateFilter=null;
+  parts.forEach(p=>{
+    if(p==='or')return;
+    if(p.startsWith('date:')){dateFilter=p.slice(5)==='today'?todayStr():p.slice(5);return;}
+    if(p.startsWith('-'))return; // excludes not useful at line level
+    lineTerms.push(p);
+  });
+  const excludes=parts.filter(p=>p.startsWith('-')&&p.length>1).map(p=>p.slice(1));
+  if(!lineTerms.length)return[];
+  const results=[];
+  const base=db.entries.filter(e=>!e.eventType);
+  base.forEach(e=>{
+    if(dateFilter&&e.date!==dateFilter)return;
+    const lines=(e.content||'').split('\n');
+    const title=(e.noteTitle||'Untitled').replace(/^#+\s+/,'');
+    lines.forEach(ln=>{
+      const raw=ln.trim();
+      if(!raw)return;
+      // Skip template/macro token-only lines
+      if(/^\{\{(table|task|smartlist):/i.test(raw))return;
+      const lower=raw.toLowerCase();
+      if(excludes.some(x=>lower.includes(x)))return;
+      if(lineTerms.every(t=>lower.includes(t))){
+        results.push({line:raw.slice(0,200),entryId:e.id,noteTitle:title,ts:e.updatedTs||e.ts});
+      }
+    });
+  });
+  results.sort((a,b)=>b.ts-a.ts);
+  return results;
 }
 // Match tasks against the same query syntax as matchEntries
 function matchTasks(query){
@@ -7641,8 +8201,8 @@ function matchTasks(query){
       if(matched.has(t.id))return;
       if(dateFilter&&dateStr(new Date(t.created_at))!==dateFilter)return;
       const content=(t.title+' '+(t.description||'')).toLowerCase();
-      if(tags.length&&!tags.every(tg=>(t.tags||[]).some(tt=>tt.toLowerCase()===tg)))return;
-      if(mentions.length&&!mentions.every(m=>(t.mentions||[]).some(tm=>tm.toLowerCase()===m)))return;
+      if(tags.length&&!tags.every(tg=>(t.tags||[]).some(tt=>tt.toLowerCase().includes(tg))))return;
+      if(mentions.length&&!mentions.every(m=>(t.mentions||[]).some(tm=>tm.toLowerCase().includes(m))))return;
       if(words.length&&!words.every(w=>content.includes(w)))return;
       if(excludes.length&&excludes.some(w=>content.includes(w)))return;
       matched.add(t.id);
@@ -7651,18 +8211,67 @@ function matchTasks(query){
   return tasks.filter(t=>matched.has(t.id)).sort((a,b)=>(b.completed_at||b.created_at||0)-(a.completed_at||a.created_at||0));
 }
 
+// Apply the same task query language to an explicit task pool. Used by the
+// Tasks page so Board/List filtering can include done tasks when the current
+// pool includes them, while saved sections keep matchTasks() behavior.
+function filterTaskPoolByQuery(pool,query){
+  if(!query||!query.trim())return pool;
+  let q=query.trim();
+  let completedFilter=null;
+  q=q.replace(/\bcompleted:(\S+)/gi,(_,v)=>{
+    completedFilter=v.toLowerCase()==='today'?todayStr():v.toLowerCase();
+    return '';
+  }).trim();
+  let tasks=pool;
+  if(completedFilter){
+    tasks=tasks.filter(t=>t.completed&&t.completed_at&&dateStr(new Date(t.completed_at))===completedFilter);
+  }
+  if(!q)return tasks;
+  const orGroups=q.split(/\s+OR\s+/i);
+  const matched=new Set();
+  for(const group of orGroups){
+    let stripped=group.trim().toLowerCase();
+    const excludes=[];
+    stripped=stripped.replace(/-"([^"]+)"/g,(_,m)=>{excludes.push(m);return ' ';});
+    const phrases=[];
+    stripped=stripped.replace(/"([^"]+)"/g,(_,m)=>{phrases.push(m);return ' ';});
+    const parts=stripped.split(/\s+/).filter(Boolean);
+    const tags=[],mentions=[],words=[...phrases];
+    let dateFilter=null;
+    parts.forEach(p=>{
+      if(p==='or')return;
+      if(p.startsWith('date:')){dateFilter=p.slice(5)==='today'?todayStr():p.slice(5);return;}
+      if(p.startsWith('#'))tags.push(p.slice(1));
+      else if(p.startsWith('@'))mentions.push(p.slice(1));
+      else if(p.startsWith('-')&&p.length>1)excludes.push(p.slice(1));
+      else words.push(p);
+    });
+    tasks.forEach(t=>{
+      if(matched.has(t.id))return;
+      if(dateFilter&&dateStr(new Date(t.created_at))!==dateFilter)return;
+      const content=(t.title+' '+(t.description||'')).toLowerCase();
+      if(tags.length&&!tags.every(tg=>(t.tags||[]).some(tt=>tt.toLowerCase().includes(tg))))return;
+      if(mentions.length&&!mentions.every(m=>(t.mentions||[]).some(tm=>tm.toLowerCase().includes(m))))return;
+      if(words.length&&!words.every(w=>content.includes(w)))return;
+      if(excludes.length&&excludes.some(w=>content.includes(w)))return;
+      matched.add(t.id);
+    });
+  }
+  return tasks.filter(t=>matched.has(t.id));
+}
+
 function updateSection(id,field,val){
   const s=db.sections.find(x=>x.id===id);if(!s)return;
   const old=s[field];
   s[field]=val;
-  if(field==='name'&&old!==val){logEvent('section_rename',`Renamed section: "${old}" → "${val}"`,id);renderActiveView();}
-  else if(field==='query'&&old!==val){logEvent('section_filter',`Section "${s.name}" filter: ${val||'(empty)'}`,id);renderActiveView();}
+  if(field==='name'&&old!==val){logEvent('section_rename',`Renamed Smart List: "${old}" → "${val}"`,id);renderActiveView();}
+  else if(field==='query'&&old!==val){logEvent('section_filter',`Smart List "${s.name}" filter: ${val||'(empty)'}`,id);renderActiveView();}
   save();
   if(field==='query')renderAllSections();
 }
 function delSection(id){
   const s=db.sections.find(x=>x.id===id);
-  if(s)logEvent('section_delete',`Removed section: ${s.name}`,id);
+  if(s)logEvent('section_delete',`Removed Smart List: ${s.name}`,id);
   db.sections=db.sections.filter(s=>s.id!==id);
   save();renderAllSections();renderActiveView();
 }
@@ -7745,7 +8354,14 @@ function openFloatingNote(){
   db.entries.push(entry);
   save();
   // Open popup synchronously (user gesture required)
-  _openFloatingWindowFor(entry.id);
+  const win=_openFloatingWindowFor(entry.id);
+  if(!win){
+    _floatingWindowOpen=false;
+    localStorage.removeItem('dd_float_note');
+    db.entries=db.entries.filter(e=>e.id!==entry.id);
+    save('entries','settings');
+    if(typeof showToast==='function')showToast('Popup blocked — allow popups to use the floating note','error');
+  }
 }
 function openFloatingNoteFor(id){
   _floatingWindowOpen=true;
@@ -7759,7 +8375,12 @@ function openFloatingNoteFor(id){
   }));
   // Open popup synchronously (user gesture required)
   const win=_openFloatingWindowFor(id);
-  if(!win)return;
+  if(!win){
+    _floatingWindowOpen=false;
+    localStorage.removeItem('dd_float_note');
+    if(typeof showToast==='function')showToast('Popup blocked — allow popups to use the floating note','error');
+    return;
+  }
   if(openTabs.includes(id)){
     openTabs=openTabs.filter(x=>x!==id);
     if(activeTab===id)activeTab=openTabs[openTabs.length-1]||'today';
@@ -7923,11 +8544,13 @@ function _searchTipsHtml(){
 function renderSearchTab(area,tabId){
   const st=searchTabs.find(s=>s.id===tabId);
   if(!st)return;
-  const results=st.query?matchEntries(st.query):[];
-  const taskResults=st.query?matchTasks(st.query):[];
+  const isLineQuery=st.query&&st.query.trim().toLowerCase().startsWith('line:');
+  const results=st.query&&!isLineQuery?matchEntries(st.query):[];
+  const taskResults=st.query&&!isLineQuery?matchTasks(st.query):[];
   const total=results.length;
   const visible=results.slice(0,st.showCount);
   const hasMore=total>st.showCount;
+  const lineResults=isLineQuery?matchLines(st.query):[];
 
   let h=`<div class="search-tab">
     <div class="search-tab-bar">
@@ -7936,12 +8559,32 @@ function renderSearchTab(area,tabId){
              value="${escH(st.query)}"
              oninput="updateSearchTab('${tabId}',this.value)"
              onkeydown="if(event.key==='Escape'){closeTab('${tabId}');event.preventDefault();}">
-      <span class="search-tab-count">${st.query?(total+taskResults.length)+' results':''}</span>
+      <span class="search-tab-count">${st.query?(isLineQuery?lineResults.length+' lines':(total+taskResults.length)+' results'):''}</span>
     </div>
     <div class="search-tab-results">`;
-
   if(!st.query){
     h+=_searchTipsHtml();
+  } else if(isLineQuery){
+    // Line-level results: show individual matching lines, not entries
+    const lineVisible=lineResults.slice(0,st.showCount);
+    const lineHasMore=lineResults.length>st.showCount;
+    if(!lineResults.length){
+      h+=`<div class="sr-empty">No matching lines for "${escH(st.query)}"</div>`;
+    } else {
+      const hlTerms=st.query.trim().replace(/^line:\s*/i,'').replace(/"([^"]+)"/g,'$1').split(/\s+/)
+        .filter(w=>!w.startsWith('-')&&w!=='or'&&!w.startsWith('date:')).join('|')||'NOMATCH';
+      h+=`<div class="search-date-hdr" style="display:flex;align-items:center;gap:6px">Lines <span style="font-weight:400;color:var(--text3)">${lineResults.length}</span></div>`;
+      lineVisible.forEach(r=>{
+        const cleaned=cleanForDisplay(r.line);
+        h+=`<div class="line-result">
+          <span class="line-result-text">${hlMatch(escH(cleaned),hlTerms)}</span>
+          <span class="line-result-note" onclick="event.stopPropagation();openNoteTab('${r.entryId}')" title="${escH(r.noteTitle)}">${escH(r.noteTitle.slice(0,30))}</span>
+        </div>`;
+      });
+      if(lineHasMore){
+        h+=`<div class="rs-show-more" onclick="showMoreSearchTab('${tabId}')">Show more (${lineResults.length-st.showCount} remaining)</div>`;
+      }
+    }
   } else if(!total&&!taskResults.length){
     h+=`<div class="sr-empty">No results for "${escH(st.query)}"</div>`;
   } else {
@@ -7949,12 +8592,10 @@ function renderSearchTab(area,tabId){
     if(taskResults.length){
       h+=`<div class="search-date-hdr" style="display:flex;align-items:center;gap:6px">Tasks <span style="font-weight:400;color:var(--text3)">${taskResults.length}</span></div>`;
       taskResults.forEach(t=>{
-        const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
-        const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
         h+=`<div class="rs-task" style="padding:5px 8px;font-size:12px" onclick="openTaskDetail('${t.id}')">
           <div class="rs-task-chk${t.completed?' checked':''}" onclick="event.stopPropagation();completeTask('${t.id}',${!t.completed});renderActiveView();renderSidebar()"></div>
           <span class="rs-task-title">${escH(t.title.slice(0,60))}</span>
-          <span class="pri-tag ${pri}">${priLabel}</span>
+          ${renderTaskPriorityPill(t)}
         </div>`;
       });
     }
@@ -7967,7 +8608,7 @@ function renderSearchTab(area,tabId){
       h+=`<div class="search-date-hdr">${label}</div>`;
       entries.forEach(e=>{
         const borderColor=getEntryBorderColor(e.tags);
-        const content=e.isNote?'<strong>'+escH((e.noteTitle||'Untitled').slice(0,50))+'</strong> — '+escH(e.content.replace(/#[a-zA-Z0-9_-]+/g,'').slice(0,80)):escH(e.content.slice(0,120));
+        const content=e.isNote?'<strong>'+escH((e.noteTitle||'Untitled').slice(0,50))+'</strong> — '+escH(cleanForDisplay(e.content,e).slice(0,80)):escH(cleanForDisplay(e.content,e).slice(0,120));
         const highlighted=hlMatch(content,st.query.split(/\s+/).filter(w=>!w.startsWith('#')&&!w.startsWith('@')&&!w.startsWith('-')).join('|')||'NOMATCH');
         h+=`<div class="entry-card" data-id="${e.id}" onclick="jumpToEntry('${e.id}')" style="border-left-color:${borderColor}">
           <span class="entry-time">${fmtTime(e.ts)}</span>
@@ -7988,6 +8629,8 @@ const _searchLogTimers={};
 function updateSearchTab(tabId,query){
   const st=searchTabs.find(s=>s.id===tabId);
   if(!st)return;
+  const input=document.getElementById('search-tab-input');
+  const caret=input?input.selectionStart:query.length;
   st.query=query;
   st.showCount=SEARCH_PAGE;
   // Debounced log: capture/update the search criteria as a feed event
@@ -8007,35 +8650,11 @@ function updateSearchTab(tabId,query){
     if(activeTab!==tabId)renderActiveView();
   },1500);
   renderTabBar(); // update tab label
-  // Re-render results only
-  const resultsEl=document.querySelector('.search-tab-results');
-  const countEl=document.querySelector('.search-tab-count');
-  if(!resultsEl)return;
-  const results=query?matchEntries(query):[];
-  const total=results.length;
-  const visible=results.slice(0,st.showCount);
-  if(countEl)countEl.textContent=query?total+' results':'';
-  if(!query){resultsEl.innerHTML=_searchTipsHtml();return;}
-  if(!total){resultsEl.innerHTML=`<div class="sr-empty">No results for "${escH(query)}"</div>`;return;}
-  let h='';
-  const byDate={};
-  visible.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e);});
-  for(const[date,entries]of Object.entries(byDate)){
-    const d=new Date(date+'T12:00:00');
-    h+=`<div class="search-date-hdr">${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})}</div>`;
-    entries.forEach(e=>{
-      const borderColor=getEntryBorderColor(e.tags);
-      const content=e.isNote?'<strong>'+escH((e.noteTitle||'Untitled').slice(0,50))+'</strong> — '+escH(e.content.replace(/#[a-zA-Z0-9_-]+/g,'').slice(0,80)):escH(e.content.slice(0,120));
-      const qWords=query.split(/\s+/).filter(w=>!w.startsWith('#')&&!w.startsWith('@')&&!w.startsWith('-')).join('|')||'NOMATCH';
-      h+=`<div class="entry-card" data-id="${e.id}" onclick="jumpToEntry('${e.id}')" style="border-left-color:${borderColor}">
-        <span class="entry-time">${fmtTime(e.ts)}</span>
-        <span class="entry-content">${hlMatch(content,qWords)}</span>
-        ${(e.tags||[]).length?'<span class="entry-inline-tags">'+e.tags.map(t=>{const c=getTagColor(t);return`<span class="tag-pill" style="background:${c}12;color:${c}">#${escH(t)}</span>`;}).join('')+'</span>':''}
-      </div>`;
-    });
-  }
-  if(total>st.showCount)h+=`<div class="rs-show-more" onclick="showMoreSearchTab('${tabId}')">Show more (${total-st.showCount} remaining)</div>`;
-  resultsEl.innerHTML=h;
+  renderActiveView();
+  setTimeout(()=>{
+    const next=document.getElementById('search-tab-input');
+    if(next){next.focus();next.selectionStart=next.selectionEnd=Math.min(caret,next.value.length);}
+  },0);
 }
 
 function showMoreSearchTab(tabId){
@@ -8112,13 +8731,11 @@ function renderDailySummaryDashboard(area,entry){
   h+=`<div class="ds-section"><div class="ds-section-title">Tasks Completed</div>`;
   if(data.tasksCompleted.length){
     data.tasksCompleted.forEach(t=>{
-      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
-      const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
       const noteLink=t.note_id?`<span class="ds-task-note" onclick="event.stopPropagation();openAsNote('${t.note_id}')" title="Open linked note">&#128196;</span>`:'';
       h+=`<div class="ds-task-row" onclick="openTaskDetail('${t.id}')">
         <span class="ds-task-icon">&#9989;</span>
         <span class="ds-task-title">${escH(t.title)}</span>
-        <span class="pri-tag ${pri}">${priLabel}</span>
+        ${renderTaskPriorityPill(t)}
         <span class="ds-task-time">${fmtTime(t.completed_at)}</span>
         ${noteLink}
       </div>`;
@@ -8132,13 +8749,11 @@ function renderDailySummaryDashboard(area,entry){
   h+=`<div class="ds-section"><div class="ds-section-title">Tasks Created</div>`;
   if(data.tasksCreated.length){
     data.tasksCreated.forEach(t=>{
-      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
-      const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
       const status=t.completed?'&#9989;':'&#9744;';
       h+=`<div class="ds-task-row" onclick="openTaskDetail('${t.id}')">
         <span class="ds-task-icon">${status}</span>
         <span class="ds-task-title">${escH(t.title)}</span>
-        <span class="pri-tag ${pri}">${priLabel}</span>
+        ${renderTaskPriorityPill(t)}
         <span class="ds-task-time">${fmtTime(t.created_at)}</span>
       </div>`;
     });
@@ -8208,6 +8823,15 @@ function renderDailySummaryDashboard(area,entry){
 
   h+=`</div>`; // close .ds-wrap
   area.innerHTML=h;
+}
+
+function openOrGenerateDailySummary(ds){
+  const prev=selectedDate;
+  selectedDate=ds||selectedDate;
+  const entry=db.entries.find(e=>e.isNote&&(e.tags||[]).includes('daily-summary')&&e.date===selectedDate);
+  if(entry)openNoteTab(entry.id);
+  else generateWrapUp();
+  selectedDate=prev;
 }
 
 function generateWrapUp(){
@@ -8395,13 +9019,11 @@ function renderWeeklySummaryDashboard(area,entry){
   h+=`<div class="ds-section"><div class="ds-section-title">&#128640; Shipped This Week</div>`;
   if(data.tasksCompleted.length){
     data.tasksCompleted.forEach(t=>{
-      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
-      const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
       const day=new Date(t.completed_at).toLocaleDateString('en-US',{weekday:'short'});
       h+=`<div class="ds-task-row" onclick="openTaskDetail('${t.id}')">
         <span class="ds-task-icon">&#9989;</span>
         <span class="ds-task-title" style="font-weight:600">${escH(t.title)}</span>
-        <span class="pri-tag ${pri}">${priLabel}</span>
+        ${renderTaskPriorityPill(t)}
         <span class="ds-task-time">${day}</span>
       </div>`;
     });
@@ -8418,13 +9040,11 @@ function renderWeeklySummaryDashboard(area,entry){
   </div>`;
   if(data.tasksCarried.length){
     data.tasksCarried.forEach(t=>{
-      const pri=t.priority==='H'?'high':t.priority==='M'?'med':'low';
-      const priLabel=t.priority==='H'?'High':t.priority==='M'?'Med':'Low';
       const dueLabel=t.due_date?fmtShortDate(new Date(t.due_date+'T12:00:00').getTime()):'no date';
       h+=`<div class="ds-task-row" style="opacity:0.6" onclick="openTaskDetail('${t.id}')">
         <span class="ds-task-icon">&#9744;</span>
         <span class="ds-task-title">${escH(t.title)}</span>
-        <span class="pri-tag ${pri}">${priLabel}</span>
+        ${renderTaskPriorityPill(t)}
         <span class="ds-task-time">${dueLabel}</span>
       </div>`;
     });
@@ -8476,6 +9096,16 @@ function renderWeeklySummaryDashboard(area,entry){
 
   h+=`</div>`;
   area.innerHTML=h;
+}
+
+function openOrGenerateWeeklyReview(ds){
+  const prev=selectedDate;
+  selectedDate=ds||selectedDate;
+  const ws=getWeekStart(selectedDate),we=getWeekEnd(selectedDate);
+  const entry=db.entries.find(e=>e.isNote&&(e.tags||[]).includes('weekly-summary')&&e.date>=ws&&e.date<=we);
+  if(entry)openNoteTab(entry.id);
+  else generateWeeklyWrapUp();
+  selectedDate=prev;
 }
 
 function generateWeeklyWrapUp(){
@@ -8531,7 +9161,7 @@ function generateWeeklyWrapUp(){
     entry.content=md;
     entry.updatedTs=Date.now();
   } else {
-    entry={id:genId('e'),content:md,tags:['weekly-summary'],date:todayStr(),ts:Date.now(),isNote:true,noteTitle:`Week ${data.weekNumber} — ${data.weekLabel}`,updatedTs:Date.now(),_weekStart:ws};
+    entry={id:genId('e'),content:md,tags:['weekly-summary'],date:ws,ts:Date.now(),isNote:true,noteTitle:`Week ${data.weekNumber} — ${data.weekLabel}`,updatedTs:Date.now(),_weekStart:ws};
     db.entries.push(entry);
   }
   save();openNoteTab(entry.id);renderAllSections();
@@ -8703,7 +9333,7 @@ function renderSidebarSections(){
   const el=document.getElementById('sb-sections-body');
   if(!el)return;
   const secs=db.sections||[];
-  if(!secs.length){el.innerHTML='<div style="padding:6px 8px;font-size:10px;color:var(--text3)">No sections yet. Click + to add.</div>';return;}
+  if(!secs.length){el.innerHTML='<div style="padding:6px 8px;font-size:10px;color:var(--text3)">No Smart Lists yet. Click + to add.</div>';return;}
   el.innerHTML=secs.map(sec=>renderSectionPanel(sec)).join('');
   // Backlinks render independently into #sb-backlinks-body
   renderBacklinks();
@@ -8920,6 +9550,25 @@ function openHome(){
   activeTab='home';
   renderTabBar();renderActiveView();
   const c=document.getElementById('content-area');if(c)c.scrollTop=0;
+}
+function renderBmcSupportBlock(extraClass=''){
+  return`<div class="bmc-support ${extraClass}">
+    <img class="bmc-qr-thumb" src="images/qr-code.png" alt="Buy Me a Coffee QR code" onclick="showBmcQrModal()" title="Click to enlarge Buy Me a Coffee QR code">
+    <div class="bmc-support-copy">
+      <div class="bmc-support-title">Buy Me a Coffee</div>
+      <div class="bmc-support-text">Scan the QR code to support DailyDispatch. Click the code to enlarge it for easy scanning.</div>
+    </div>
+  </div>`;
+}
+function showBmcQrModal(){
+  const existing=document.getElementById('bmc-qr-modal');
+  if(existing)existing.remove();
+  const overlay=document.createElement('div');
+  overlay.id='bmc-qr-modal';
+  overlay.className='bmc-qr-modal';
+  overlay.innerHTML='<img src="images/qr-code.png" alt="Buy Me a Coffee QR code">';
+  overlay.addEventListener('click',()=>overlay.remove());
+  document.body.appendChild(overlay);
 }
 function openGallery(){
   if(!openTabs.includes('gallery'))openTabs.push('gallery');
@@ -9194,7 +9843,7 @@ function renderHome(area){
         <div class="home-step">
           <div class="home-step-num">${iconSearch}</div>
           <h3>Find anything</h3>
-          <p>Power search with <code>#tags</code>, <code>@people</code>, boolean operators, and live-updating sidebar sections. No folders, no filing &mdash; just type.</p>
+          <p>Power search with <code>#tags</code>, <code>@people</code>, boolean operators, and live-updating Smart Lists. No folders, no filing &mdash; just type.</p>
         </div>
       </div>
     </section>
@@ -9309,8 +9958,8 @@ function renderHome(area){
         </div>
         <div class="home-card">
           <div class="home-card-icon">${iconSection}</div>
-          <h3>Live sidebar sections</h3>
-          <p>Pin a filter query to the sidebar and it becomes a live dashboard. New entries matching the query appear automatically.</p>
+          <h3>Live Smart Lists</h3>
+          <p>Pin a filter query to the sidebar as a Smart List. New entries matching the query appear automatically.</p>
         </div>
         <div class="home-card">
           <div class="home-card-icon">${iconTemplate}</div>
@@ -9350,7 +9999,7 @@ function renderHome(area){
         <div class="home-persona">
           <div class="home-persona-emoji">&#128300;</div>
           <h3>Researcher &amp; Designer</h3>
-          <p>Collects insights across dozens of sessions. Needs tags, search, and sidebar sections that organize themselves as new data comes in.</p>
+          <p>Collects insights across dozens of sessions. Needs tags, search, and Smart Lists that organize themselves as new data comes in.</p>
         </div>
         <div class="home-persona">
           <div class="home-persona-emoji">&#127793;</div>
@@ -9392,6 +10041,8 @@ function renderHome(area){
       <p class="home-cta-footnote">Reopen this page any time from the home icon next to the logo.</p>
     </section>
 
+    ${renderBmcSupportBlock('home-bmc-support')}
+
     <div class="tc-footer">
       <img class="tc-footer-logo" src="${_TC_LOGO}" alt="Torg Crafted">
       <span class="tc-footer-text">DailyDispatch created by <strong>Torg Crafted</strong></span>
@@ -9406,8 +10057,95 @@ function closeSettings(){
 /* ═══════════ THEMES ═══════════ */
 /* ═══════════ CHANGELOG ═══════════ */
 const _TC_LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB8QAAAe8CAYAAADLSyrKAAAACXBIWXMAABcRAAAXEQHKJvM/AAAgAElEQVR4nOzcUU0DURRF0ftI/SABLKEAcIAEnFAcIAEJOHgECUBJJpu1FHTO/dwzXTNzHgAAAAAAAABoeT7NzI2jAgAAAAAAABBzvnJRAAAAAAAAAIoEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkgRxAAAAAAAAAJIEcQAAAAAAAACSBHEAAAAAAAAAkk4HeqjHvffDAX4HAAAAAAAAAD+01tpH2c4X4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJJ2cFQCAS1trPczMvWGBb3jde98arGGt9XXLl/++A/A9e+9lMgAALs0X4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACSdnBUAgD/wPDNnw8JFPM3MtSnhsO5m5s15AAAAjkkQBwDg4vbe7zPzbln4vbXWhxnh0N723l4CAwAAOCh/mQ4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAAAAQJIgDgAAAAAAAECSIA4AAAAAAABAkiAOAAAAAPDJnh3IAAAAAAzyt77HVxoBALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAALwISXoAACAASURBVAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABgSYgDAAAAAAAAsCTEAQAAAAAAAFgS4gAAAAAAAAAsCXEAAAAAAAAAloQ4AAAAAAAAAEtCHAAAAAAAAIAlIQ4AAAAAAADAkhAHAAAAAAAAYEmIAwAAAAAAALAkxAEAAAAAAABYEuIAAAAAAAAALAlxAAAAAAAAAJaEOAAAAAAAAABLQhwAAAAAAACAJSEOAAAAAAAAwJIQBwAAAAAAAGBJiAMAAAAAAACwJMQBAAAAAAAAWBLiAAAAAAAAACwJcQAAAAAAAACWhDgAAAAAAAAAS0IcAAAAAAAAgCUhDgAAAAAAAMCSEAcAAAAAAABg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QBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASOkHjxUAAKBftdZDjwcAAADgYVSIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFIS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IA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAI2hUq4AAAcwSURBVACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAMAAAAAAACQkkAcAAAAAAAAgJQE4gAAAAAAAACkJBAHAAAAAAAAICWBOAAAAAAAAAApCcQBAAAAAAAASEkgDgAAAAAAAEBKAnEAAAAAAAAAUhKIAwAAAAAAAJCSQBwAAAAAAACAlATiAAAAAAAAAKQkEAcAAAAAAAAgJYE4AAAAAAAAACkJxAEAAAAAAABISSAOAAAAAAAAQEoCcQAAAAAAAABSEogDAAAAAAAAkJJAHAAAAAAAAICUBOIAAAAAAAAApCQQBwAAAAAAACAlgTgAAAAAAAAAKQnEAQAAAAAAAEhJIA4AAAAAAABASgJxAAAAAAAAAFISiAPw/9u5YxOAYRgAgjZkr2S0jJ7GG6QRzx2ol+oHAQAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkXYOOevbe74A9AAAAAAAAAAiYFMTvMwAAAAAAAADwm5fpAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAAJAniAAAAAAAAACQJ4gAAAAAAAAAkCeIAAAAAAAAA9Ky1PnNTzKBqbMoFAAAAAElFTkSuQmCC';
-const APP_VERSION='3.8.0';
+const APP_VERSION='3.14.2';
 const CHANGELOG=[
+  {
+    version:'3.14.2',
+    date:'2026-05-07',
+    title:'Local support QR code',
+    changes:[
+      '**Buy Me a Coffee QR block** — Home and Settings now show a compact local QR-code support block instead of loading an external button script',
+      '**Clickable QR modal** — clicking the QR code opens a larger scan-friendly modal, and clicking anywhere dismisses it',
+    ]
+  },
+  {
+    version:'3.14.1',
+    date:'2026-05-07',
+    title:'Support button placement',
+    changes:[
+      '**Buy Me a Coffee button** — Home and Settings now render the creator support button using the provided Buy Me a Coffee widget configuration',
+      '**Widget render helper** — the external button script is attached after each page render so it actually initializes inside the single-file app',
+    ]
+  },
+  {
+    version:'3.14.0',
+    date:'2026-05-07',
+    title:'Selection copy formats',
+    changes:[
+      '**Selection toolbar copy options** — highlighted note text now offers Copy as: MD and Rich Text directly in the floating formatting menu',
+      '**Rich clipboard output** — Rich Text copy writes HTML plus a plain-text fallback so markdown formatting can paste cleanly into rich editors',
+    ]
+  },
+  {
+    version:'3.13.1',
+    date:'2026-04-29',
+    title:'Due date picker fixes',
+    changes:[
+      '**Task modal due date stays clickable** — the modal now uses a real positioned date input instead of swapping in a hidden picker control',
+      '**Today task-add date picker anchors correctly** — quick-add tasks use an inline date input so the browser calendar opens in place instead of jumping to the page corner',
+    ]
+  },
+  {
+    version:'3.13.0',
+    date:'2026-04-29',
+    title:'Editable task tags',
+    changes:[
+      '**Task tags are editable in the modal** — add tags from the Tags field with existing-tag autocomplete, or type a new tag and press Enter, comma, or space',
+      '**Remove tags directly** — each tag pill has a remove control; removing a tag also clears matching `#tag` tokens from the task title/description so it does not immediately come back',
+    ]
+  },
+  {
+    version:'3.12.0',
+    date:'2026-04-29',
+    title:'Sections renamed to Smart Lists',
+    changes:[
+      '**Sidebar Sections are now Smart Lists** — the product language now matches the saved-filter/dashboard concept throughout the app chrome, setup flow, help docs, settings, events, and backup copy',
+      '**No data migration required** — existing saved filters keep working; only the user-facing name changed',
+    ]
+  },
+  {
+    version:'3.11.0',
+    date:'2026-04-29',
+    title:'Tag-first task workflow and reviews',
+    changes:[
+      '**Tags stay the organizing layer** — task filters, search tabs, and Smart Lists now use the same partial `#tag` and `@person` matching, so `#Daily` finds `#DailyDispatch` consistently',
+      '**Task capture inherits context** — tasks created from filtered task views, active tag-filtered feed views, and search contexts carry the visible `#tag` context automatically',
+      '**Stale task review** — Tasks has a new Stale filter plus clickable open-age badges and a Today review prompt for tasks open 14+ days',
+      '**Daily and weekly review prompts** — Today now opens an existing daily/weekly review when one exists, or generates one when it does not',
+      '**Clickable priorities everywhere** — priority pills in task lists, search results, Smart Lists, and review dashboards all filter the Tasks view',
+    ]
+  },
+  {
+    version:'3.10.0',
+    date:'2026-04-15',
+    title:'Line-level search results',
+    changes:[
+      '**`line:` search shows individual lines** — `line: #decision` now renders each matching line as its own result row, not the whole note. Each row has a link to the source note on the right.',
+      '**Works in Smart Lists too** — `{{smartlist:line: #decision}}` renders line-level results inline in your note, with note links to jump to the source',
+      '**Header shows line count** — search bar displays "N lines" instead of "N results" for `line:` queries',
+    ]
+  },
+  {
+    version:'3.9.0',
+    date:'2026-04-15',
+    title:'Clean note titles and auto-rename links',
+    changes:[
+      '**Strip heading prefix from titles** — `# Meeting Notes` now shows as `Meeting Notes` in tabs, sidebar, Quick Open, and `[[links]]`',
+      '**Auto-rename link propagation** — renaming a note (editing line 1) automatically updates all `[[links]]` pointing to it across your entire journal',
+      '**One-time migration** — existing `# ` prefixes in titles and `[[# Heading]]` links are cleaned up on first load',
+      '**Debounced rename** — link propagation waits 600ms after you stop typing to avoid unnecessary work during fast edits',
+    ]
+  },
   {
     version:'3.8.0',
     date:'2026-04-14',
@@ -9829,7 +10567,7 @@ const CHANGELOG=[
     date:'2026-04-06',
     title:'Guided Setup and Help as a section',
     changes:[
-      'New section creation opens a **Guided Setup Card** with labeled Section name and Filter fields — discoverable, not hidden',
+      'New Smart List creation opens a **Guided Setup Card** with labeled Smart List name and Filter fields — discoverable, not hidden',
       'Pencil edit / double-click name / click query row all reopen the setup card',
       'Help is now a normal section filtered by `#DailyDispatchHelp` (removed the dedicated sidebar widget)',
       'Default Meetings section seeded on first launch',
@@ -10079,7 +10817,7 @@ function applyTheme(name){
 }
 
 function renderSettingsTab(area){
-  const stats=`${db.entries.filter(e=>!e.eventType&&!e.isHelp).length} entries, ${db.sections.length} sections, ${(db.people||[]).length} people`;
+  const stats=`${db.entries.filter(e=>!e.eventType&&!e.isHelp).length} entries, ${db.sections.length} Smart Lists, ${(db.people||[]).length} people`;
   area.innerHTML=`<div class="settings-tab">
     <div class="settings-grid">
       <div class="settings-col">
@@ -10106,7 +10844,7 @@ function renderSettingsTab(area){
             <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);font-weight:600;margin-bottom:6px">What's in the backup</div>
             <div style="font-size:12px;color:var(--text2);line-height:1.7">
               All <strong>entries</strong> and <strong>notes</strong> (including tables and help pages) &middot;
-              all <strong>sections</strong> &middot;
+              all <strong>Smart Lists</strong> &middot;
               all <strong>tags</strong> with their colors &middot;
               your <strong>people</strong> list &middot;
               your <strong>theme</strong> and <strong>floating note</strong> settings &middot;
@@ -10210,6 +10948,7 @@ function renderSettingsTab(area){
         <span style="color:var(--accent)">DailyDispatch Online</span> with cloud sync, mobile app, and team features is coming soon.
       </div>
     </div>
+    ${renderBmcSupportBlock('settings-bmc-support')}
     <div class="tc-footer">
       <img class="tc-footer-logo" src="${_TC_LOGO}" alt="Torg Crafted">
       <span class="tc-footer-text">DailyDispatch created by <strong>Torg Crafted</strong></span>
@@ -10253,6 +10992,12 @@ function renameTag(oldName,newName){
     if(e.content)e.content=e.content.replace(new RegExp('#'+oldName+'\\b','gi'),'#'+newName);
     if(e.mentions)e.mentions=e.mentions; // no change needed
   });
+  (db.tasks||[]).forEach(t=>{
+    if(t.tags)t.tags=[...new Set(t.tags.map(x=>x===oldName?newName:x))];
+    if(t.inheritedTags)t.inheritedTags=[...new Set(t.inheritedTags.map(x=>x===oldName?newName:x))];
+    if(t.title)t.title=t.title.replace(new RegExp('#'+oldName+'\\b','gi'),'#'+newName);
+    if(t.description)t.description=t.description.replace(new RegExp('#'+oldName+'\\b','gi'),'#'+newName);
+  });
   // Update tagColors
   if(db.tagColors[oldName]){db.tagColors[newName]=db.tagColors[oldName];delete db.tagColors[oldName];}
   save();renderTagEditor();
@@ -10267,7 +11012,13 @@ function removeTag(tag){
     // Strip # prefix but leave the word
     if(e.content)e.content=e.content.replace(new RegExp('#('+esc+')\\b','gi'),'$1');
     // Re-derive noteTitle from first line if it's a note
-    if(e.isNote)e.noteTitle=(e.content.split('\n')[0]||'').trim().slice(0,80)||'Untitled';
+    if(e.isNote)e.noteTitle=(e.content.split('\n')[0]||'').trim().replace(/^#{1,6}\s+/,'').slice(0,80)||'Untitled';
+  });
+  (db.tasks||[]).forEach(t=>{
+    if(t.tags)t.tags=t.tags.filter(x=>x.toLowerCase()!==tag.toLowerCase());
+    if(t.inheritedTags)t.inheritedTags=t.inheritedTags.filter(x=>x.toLowerCase()!==tag.toLowerCase());
+    if(t.title)t.title=t.title.replace(new RegExp('#('+esc+')\\b','gi'),'$1');
+    if(t.description)t.description=t.description.replace(new RegExp('#('+esc+')\\b','gi'),'$1');
   });
   delete db.tagColors[tag.toLowerCase()];
   save();renderTagEditor();
@@ -10280,6 +11031,12 @@ function mergeTag(from,into){
       e.tags=[...new Set(e.tags)];
     }
     if(e.content)e.content=e.content.replace(new RegExp('#'+from+'\\b','gi'),'#'+into);
+  });
+  (db.tasks||[]).forEach(t=>{
+    if(t.tags)t.tags=[...new Set(t.tags.map(x=>x===from?into:x))];
+    if(t.inheritedTags)t.inheritedTags=[...new Set(t.inheritedTags.map(x=>x===from?into:x))];
+    if(t.title)t.title=t.title.replace(new RegExp('#'+from+'\\b','gi'),'#'+into);
+    if(t.description)t.description=t.description.replace(new RegExp('#'+from+'\\b','gi'),'#'+into);
   });
   if(db.tagColors[from])delete db.tagColors[from];
   save();renderTagEditor();
@@ -10322,7 +11079,7 @@ function removePerson(name){
     if(e.mentions)e.mentions=e.mentions.filter(m=>m.toLowerCase()!==name.toLowerCase());
     // Strip @ prefix but leave the name
     if(e.content)e.content=e.content.replace(new RegExp('@('+esc+')\\b','g'),'$1');
-    if(e.isNote)e.noteTitle=(e.content.split('\n')[0]||'').trim().slice(0,80)||'Untitled';
+    if(e.isNote)e.noteTitle=(e.content.split('\n')[0]||'').trim().replace(/^#{1,6}\s+/,'').slice(0,80)||'Untitled';
   });
   save();renderPeopleEditor();
 }
@@ -10392,7 +11149,7 @@ function importData(e){
 function _showImportModeDialog(data){
   // Count what's in the file for context
   const eCnt=(data.entries||[]).length, tCnt=(data.tasks||[]).length, sCnt=(data.sections||[]).length;
-  const summary=`${eCnt} note${eCnt!==1?'s':''}, ${tCnt} task${tCnt!==1?'s':''}, ${sCnt} section${sCnt!==1?'s':''}`;
+  const summary=`${eCnt} note${eCnt!==1?'s':''}, ${tCnt} task${tCnt!==1?'s':''}, ${sCnt} Smart List${sCnt!==1?'s':''}`;
   return new Promise(resolve=>{
     const ov=document.createElement('div');
     ov.className='modal-overlay open';
@@ -10591,7 +11348,7 @@ DailyDispatch is a work journal where notes and tasks live together. Capture wha
 - [[Notes & Markdown Editor]] — Rich markdown editing
 - [[Slash Commands]] — Quick formatting, tasks, and Smart Lists
 - [[Tags & Filtering]] — Organization and sidebar filters
-- [[Sections & Custom Views]] — Saved filter dashboards
+- [[Smart Lists]] — Saved filter dashboards
 - [[Search Tabs & Boolean Queries]] — Power search
 - [[Floating Note Window]] — Meeting notes popup
 - [[Events & Activity Log]] — Activity history
@@ -10659,6 +11416,7 @@ Each task has:
 - **Star** — mark for Today view without changing the due date
 - **Description** — markdown details field for context
 - **Comments** — timestamped progress log (Enter to add, newest on top)
+- **Tags** — add/remove tags in the task modal, or type \`#project\` in the title or description
 
 ## Board View
 
@@ -10672,6 +11430,10 @@ Toggle to **List** view for a flat grouped table. Tasks are grouped by column, s
 
 Toggle to **Calendar** to see tasks plotted on a monthly grid by due date. Click any task to open the detail modal. Click **+** on any day to create a new task with that date pre-filled.
 
+## Tags as Projects
+
+Use tags as lightweight projects. Search the Tasks page for \`#clientx\`, \`#launch\`, or \`#api -blocked\` to filter the board or list without creating a separate project system.
+
 ## Today View
 
 The Today command card shows tasks that are:
@@ -10681,6 +11443,8 @@ The Today command card shows tasks that are:
 ## Task-Note Link
 
 Tasks created with \`/task\` in a note stay linked. Complete a task on the board and it updates in the note. Open the task detail modal and click "Open linked note" to jump to the source.
+
+Tasks created inside a tagged note inherit that note's tags, so a task made in a \`#projectx\` note also appears when you filter Tasks by \`#projectx\`.
 
 ## Task Detail Modal
 
@@ -10725,7 +11489,7 @@ The editor shows **rendered markdown on lines you're not editing** and **raw mar
 
 ## Task Widgets
 
-Type \`/task\` to create a task. It renders as an inline card showing the checkbox, title, priority, and due date. Tasks are live — check them off in the note or on the board.
+Type \`/task\` to create a task. It renders as an inline card showing the checkbox, title, priority, and due date. Tasks are live — check them off in the note or on the board. If the note has tags, the task inherits them.
 
 ## Smart Lists
 
@@ -10828,24 +11592,28 @@ The **Tags** section in the sidebar shows all your tags. Click any tag to **filt
 
 Each tag gets an automatic color from a 12-color palette. Change colors in **Settings > Tags**.
 
+## Task Tags
+
+Tasks also use tags. Add \`#projectx\` to a task title or description, then search for \`#projectx\` on the Tasks page to filter the board or list. Tasks created from tagged notes inherit the note's tags automatically.
+
 ## Tag Management
 
-In Settings under **Tags**: rename (updates all entries), change color, delete, or merge (drag one tag onto another).
+In Settings under **Tags**: rename (updates entries and tasks), change color, delete, or merge (drag one tag onto another).
 
-See also: [[Sections & Custom Views]], [[Search Tabs & Boolean Queries]]
+See also: [[Smart Lists]], [[Search Tabs & Boolean Queries]]
 
 ---
 #DailyDispatchHelp`},
 
-{id:'help_sections',noteTitle:'Sections & Custom Views',content:`# Sections & Custom Views
+{id:'help_sections',noteTitle:'Smart Lists',content:`# Smart Lists
 
-## What Are Sections?
+## What Are Smart Lists?
 
-Sections are **saved filter queries** in the sidebar. They create live dashboards that update automatically as you add entries matching their filter.
+Smart Lists are **saved filter queries** in the sidebar. They create live dashboards that update automatically as you add entries matching their filter.
 
-## Creating a Section
+## Creating a Smart List
 
-Click **+** in the Sections header. Fill in a name and filter query, then click **Create section**.
+Click **+** in the Smart Lists header. Fill in a name and filter query, then click **Create Smart List**.
 
 ## Filter Examples
 
@@ -10855,16 +11623,16 @@ Click **+** in the Sections header. Fill in a name and filter query, then click 
 - \`#meeting OR #standup\` — either tag
 - \`"action item"\` — exact phrase match
 
-## Managing Sections
+## Managing Smart Lists
 
 - **Edit** — click the ✎ pencil icon
 - **Resize** — drag the bottom edge
-- **Reorder** — drag sections by the ☰ handle
+- **Reorder** — drag Smart Lists by the ☰ handle
 - **Delete** — click the × button
 
-## Help Section
+## Help Smart List
 
-The pre-installed **Help** section filters by \`#DailyDispatchHelp\`. It's a regular section — you can edit, move, or delete it like any other.
+The pre-installed **Help** Smart List filters by \`#DailyDispatchHelp\`. It's a regular Smart List — you can edit, move, or delete it like any other.
 
 See also: [[Search Tabs & Boolean Queries]], [[Tags & Filtering]]
 
@@ -10900,7 +11668,7 @@ Click **Search** in the sidebar or press **Cmd+K**. Each search opens as a tab y
 
 Keep several searches open to compare views. Each search auto-saves as a feed event you can reopen later.
 
-See also: [[Sections & Custom Views]], [[Tags & Filtering]]
+See also: [[Smart Lists]], [[Tags & Filtering]]
 
 ---
 #DailyDispatchHelp`},
@@ -10928,7 +11696,7 @@ In **Settings > Floating Note Window**:
 
 - Start with \`/h1 Meeting title\` then \`/bullet\` for attendees
 - Use \`/task\` for action items — they'll appear on your task board
-- Tag with \`#meeting @attendee\` so it appears in your Meetings section
+- Tag with \`#meeting @attendee\` so it appears in your Meetings Smart List
 
 See also: [[Notes & Markdown Editor]], [[Tasks & Board]]
 
@@ -10937,16 +11705,16 @@ See also: [[Notes & Markdown Editor]], [[Tasks & Board]]
 
 {id:'help_events',noteTitle:'Events & Activity Log',content:`# Events & Activity Log
 
-Events are activity-log items that appear **inline in your feed**. They record section changes and searches as a history of your workflow.
+Events are activity-log items that appear **inline in your feed**. They record Smart List changes and searches as a history of your workflow.
 
 ## Event Types
 
 | Icon | Event |
 |---|---|
-| ✨ | Section created |
-| ✏️ | Section renamed |
-| 🔧 | Section filter changed |
-| 🗑️ | Section deleted |
+| ✨ | Smart List created |
+| ✏️ | Smart List renamed |
+| 🔧 | Smart List filter changed |
+| 🗑️ | Smart List deleted |
 | 🔍 | Search query executed |
 
 ## Search Events
@@ -10955,7 +11723,7 @@ Each search query is logged as an event with a **"reopen"** link — click it to
 
 ## Visibility
 
-Events only appear in the feed. They're excluded from search results and section queries. Tag filters also hide events automatically.
+Events only appear in the feed. They're excluded from search results and Smart List queries. Tag filters also hide events automatically.
 
 See also: [[Search Tabs & Boolean Queries]]
 
@@ -10970,7 +11738,7 @@ Type \`@\` followed by a name. An autocomplete dropdown shows existing people. N
 
 ## Filtering by Person
 
-Use \`@person\` in search or section filters to find entries mentioning someone.
+Use \`@person\` in search or Smart List filters to find entries mentioning someone.
 
 ## Managing People
 
@@ -10989,7 +11757,7 @@ Everything lives in your browser's **IndexedDB**. No server, no account, no inte
 
 ## Export
 
-**Settings > Data > Export JSON Backup** downloads a \`.json\` file with all entries, notes, tasks, sections, tags, and settings.
+**Settings > Data > Export JSON Backup** downloads a \`.json\` file with all entries, notes, tasks, Smart Lists, tags, and settings.
 
 ## Import
 
@@ -11041,7 +11809,7 @@ Settings > Data shows your last backup date. Export JSON to save all entries, no
 
 ## Danger Zone
 
-**Purge All Data** permanently deletes everything — entries, notes, tasks, sections, images, and settings. Type PURGE to confirm. This cannot be undone.
+**Purge All Data** permanently deletes everything — entries, notes, tasks, Smart Lists, images, and settings. Type PURGE to confirm. This cannot be undone.
 
 ## Onboarding
 
@@ -11136,7 +11904,7 @@ function setTaskAddPri(p){
 }
 function toggleTaskAddDate(){
   const dinp=document.getElementById('task-add-due-input');
-  if(dinp){dinp.showPicker?dinp.showPicker():dinp.click();}
+  if(dinp){try{dinp.showPicker?dinp.showPicker():dinp.click();}catch(e){dinp.focus();}}
 }
 function setTaskAddDate(val){
   const lbl=document.getElementById('task-add-due-label');
@@ -11154,7 +11922,8 @@ function submitTaskAdd(){
   const task=createTask({
     title:inp.value.trim(),
     priority:priEl?priEl.dataset.val:'L',
-    due_date:hasDue?dueInp.value:null
+    due_date:hasDue?dueInp.value:null,
+    tags:getActiveContextTags()
   });
   // Tasks added from Today view are starred for today (unless user set a
   // specific due date, in which case the date speaks for itself).
@@ -11189,7 +11958,7 @@ function openTaskDetail(taskId){
     <div class="tm-header">
       <div class="tm-chk${t.completed?' checked':''}" onclick="completeTask('${t.id}',${!t.completed});openTaskDetail('${t.id}');renderActiveView();renderSidebar()"></div>
       <span class="tm-star${t.today?' active':''}" onclick="toggleTaskToday('${t.id}');openTaskDetail('${t.id}');renderActiveView();renderSidebar()" title="${t.today?'Remove from Today':'Star for Today'}">&#9733;</span>
-      <textarea class="tm-title" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onchange="updateTask('${t.id}',{title:this.value.trim()});renderActiveView();renderSidebar()">${escH(t.title)}</textarea>
+      <textarea class="tm-title" rows="1" oninput="taskModalFieldChanged(this,'${t.id}','title')" onkeydown="taskInputKey(event,null,null)" onchange="renderActiveView();renderSidebar()">${escH(t.title)}</textarea>
       <button class="tm-close" onclick="closeTaskModal()">&times;</button>
     </div>
     <div class="tm-fields">
@@ -11199,11 +11968,8 @@ function openTaskDetail(taskId){
       </div>
       <div class="tm-field">
         <label>Due date</label>
-        ${t.due_date
-          ?`<input type="date" value="${t.due_date}" onchange="updateTask('${t.id}',{due_date:this.value||null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()">
-            <button class="tm-due-clear" onclick="updateTask('${t.id}',{due_date:null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()" title="Clear date">&times;</button>`
-          :`<button class="tm-due-set" onclick="_tmShowDatePicker(this,'${t.id}')">Set date</button>
-            <input type="date" style="display:none" value="" onchange="updateTask('${t.id}',{due_date:this.value||null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()">`}
+        <input class="tm-date-input" type="date" value="${t.due_date||''}" onchange="updateTask('${t.id}',{due_date:this.value||null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()">
+        ${t.due_date?`<button class="tm-due-clear" onclick="updateTask('${t.id}',{due_date:null});openTaskDetail('${t.id}');renderActiveView();renderSidebar()" title="Clear date">&times;</button>`:''}
       </div>
       <div class="tm-field">
         <label>Column</label>
@@ -11212,8 +11978,12 @@ function openTaskDetail(taskId){
     </div>
     ${t.note_id?`<div class="tm-note-link" onclick="closeTaskModal();openAsNote('${t.note_id}')"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10" x2="13" y2="10"/></svg> Open linked note</div>`:''}
     <div class="tm-section">
+      <div class="tm-section-label">Tags</div>
+      ${renderTaskTagEditor(t)}
+    </div>
+    <div class="tm-section">
       <div class="tm-section-label">Description</div>
-      <textarea class="tm-desc" placeholder="Add details..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onchange="updateTask('${t.id}',{description:this.value})">${escH(t.description||'')}</textarea>
+      <textarea class="tm-desc" placeholder="Add details... Use #tag or @person" oninput="taskModalFieldChanged(this,'${t.id}','description')" onkeydown="taskInputKey(event,null,null)" onchange="renderActiveView();renderSidebar()">${escH(t.description||'')}</textarea>
     </div>
     <div class="tm-section">
       <div class="tm-section-label">Comments</div>
@@ -11242,13 +12012,6 @@ function closeTaskModal(){
   document.getElementById('task-modal')?.classList.remove('open');
   renderActiveView();renderSidebar();
 }
-function _tmShowDatePicker(btn,taskId){
-  const inp=btn.nextElementSibling;
-  btn.style.display='none';
-  inp.style.display='inline-block';
-  // Delay showPicker so browser has time to layout the now-visible input
-  requestAnimationFrame(()=>{try{inp.showPicker();}catch(e){inp.focus();}});
-}
 // Cmd+Enter closes task modal (save & close)
 document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){
@@ -11275,6 +12038,8 @@ function addTaskComment(taskId,inputEl){
   if(!t)return;
   if(!t.comments)t.comments=[];
   t.comments.push({id:genId('tc'),text,ts:Date.now()});
+  touchTaskActivity(t);
+  if(isFloatingMode())_floatingDirtyTaskIds.add(taskId);
   save('tasks');
   inputEl.value='';
   // Re-render comment list without closing modal
@@ -11353,6 +12118,10 @@ function createTask(opts){
   if(!opts||!opts.title||!opts.title.trim())return null;
   const inboxCol=(db.columns||[]).find(c=>!c.isDone&&c.order===0)||(db.columns||[])[0];
   const colId=opts.column_id||inboxCol?.id||'col_inbox';
+  const linkedNote=opts.note_id?db.entries.find(e=>e.id===opts.note_id):null;
+  const inheritedTags=[...new Set([...(opts.tags||[]),...((linkedNote&&linkedNote.tags)||[])])];
+  const taskTags=[...new Set([...extractTags(opts.title||''),...inheritedTags])];
+  const now=Date.now();
   const task={
     id:genId('t'),
     title:opts.title.trim(),
@@ -11361,13 +12130,16 @@ function createTask(opts){
     column_id:colId,
     completed:false,
     note_id:opts.note_id||null,
-    created_at:Date.now(),
+    created_at:now,
+    updated_at:now,
+    last_activity_at:now,
     completed_at:null,
     order:getNextTaskOrder(colId),
     today:false,
     description:'',
     comments:[],
-    tags:extractTags(opts.title||''),
+    tags:taskTags,
+    inheritedTags,
     mentions:extractMentions(opts.title||'')
   };
   if(!db.tasks)db.tasks=[];
@@ -11381,13 +12153,13 @@ function updateTask(id,changes){
   const t=(db.tasks||[]).find(x=>x.id===id);
   if(!t)return null;
   Object.assign(t,changes);
+  touchTaskActivity(t);
   if(isFloatingMode())_floatingDirtyTaskIds.add(id);
   // Re-extract tags/mentions when title or description changes
   if(changes.title!==undefined||changes.description!==undefined){
     const text=(t.title||'')+' '+(t.description||'');
-    t.tags=extractTags(text);
+    recomputeTaskTags(t);
     t.mentions=extractMentions(text);
-    invalidateTagCache();
   }
   save('tasks');
   return t;
@@ -11396,6 +12168,7 @@ function completeTask(id,completed){
   const t=(db.tasks||[]).find(x=>x.id===id);
   if(!t)return;
   t.completed=!!completed;
+  touchTaskActivity(t);
   if(isFloatingMode())_floatingDirtyTaskIds.add(id);
   if(completed){
     t.completed_at=Date.now();
@@ -11410,7 +12183,7 @@ function completeTask(id,completed){
     if(inbox)t.column_id=inbox.id;
   }
   t.order=getNextTaskOrder(t.column_id);
-  save('tasks');
+  save('tasks','entries');
 }
 function deleteTask(id){
   db.tasks=(db.tasks||[]).filter(t=>t.id!==id);
@@ -11420,6 +12193,8 @@ function toggleTaskToday(id){
   const t=(db.tasks||[]).find(x=>x.id===id);
   if(!t)return;
   t.today=!t.today;
+  touchTaskActivity(t);
+  if(isFloatingMode())_floatingDirtyTaskIds.add(id);
   save('tasks');
 }
 function getTasksForToday(){
@@ -11791,6 +12566,18 @@ async function init(){
   if(!db.people)db.people=[];
   ensureDefaultColumns();
   migrateCheckboxesToTaskWidgets();
+  // Migration: strip heading prefixes from noteTitles and [[# Heading]] links.
+  // Runs once — after this pass, no titles or links will have leading # prefixes.
+  {let _migrated=false;
+  db.entries.forEach(e=>{
+    if(e.isNote&&e.noteTitle&&/^#{1,6}\s+/.test(e.noteTitle)){
+      e.noteTitle=e.noteTitle.replace(/^#{1,6}\s+/,'');_migrated=true;
+    }
+    if(e.content&&/\[\[#{1,6}\s+/.test(e.content)){
+      e.content=e.content.replace(/\[\[(#{1,6}\s+)([^\]]+)\]\]/g,'[[$2]]');_migrated=true;
+    }
+  });
+  if(_migrated){save();console.log('[DD-INIT] Migrated heading prefixes from titles and links');}}
   ensureHelpNotes();
   if(db.theme)applyTheme(db.theme);
   // First-launch: open the home tab once so new users get the landing page.
@@ -11914,9 +12701,12 @@ async function init(){
   if(localStorage.getItem('dd_float_note')||localStorage.getItem('dd_float_closed')||localStorage.getItem('dd_float_images')||localStorage.getItem('dd_float_events'))_floatingWindowOpen=true;
   // Poll every second — most reliable cross-window detection method
   setInterval(_recoverFloatingNote,1000);
+  // Date rollover: laptops often sleep across midnight. Keep Today pinned to
+  // the actual current day when the app wakes back up.
+  setInterval(checkDateRollover,60000);
   // Also try immediately on focus/visibility change
-  window.addEventListener('focus',_recoverFloatingNote);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)_recoverFloatingNote();});
+  window.addEventListener('focus',()=>{_recoverFloatingNote();checkDateRollover();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){_recoverFloatingNote();checkDateRollover();}});
   // Deep link: open note from URL hash (takes priority, adds on top of restored tabs)
   const hash=window.location.hash.slice(1);
   if(hash){const e=db.entries.find(x=>x.id===hash&&x.isNote);if(e){openAsNote(hash);history.replaceState(null,'',window.location.pathname);}}
